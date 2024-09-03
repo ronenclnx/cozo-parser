@@ -1331,235 +1331,235 @@ impl SearchInput {
 
         Ok(Disjunction::conj(conj))
     }
-    fn normalize_hnsw(
-        mut self,
-        base_handle: RelationHandle,
-        idx_handle: RelationHandle,
-        manifest: HnswIndexManifest,
-        gen: &mut TempSymbGen,
-    ) -> Result<Disjunction> {
-        let mut conj = Vec::with_capacity(self.bindings.len() + 8);
-        let mut bindings = Vec::with_capacity(self.bindings.len());
-        let mut seen_variables = BTreeSet::new();
+    // fn normalize_hnsw(
+    //     mut self,
+    //     base_handle: RelationHandle,
+    //     idx_handle: RelationHandle,
+    //     manifest: HnswIndexManifest,
+    //     gen: &mut TempSymbGen,
+    // ) -> Result<Disjunction> {
+    //     let mut conj = Vec::with_capacity(self.bindings.len() + 8);
+    //     let mut bindings = Vec::with_capacity(self.bindings.len());
+    //     let mut seen_variables = BTreeSet::new();
 
-        for col in base_handle
-            .metadata
-            .keys
-            .iter()
-            .chain(base_handle.metadata.non_keys.iter())
-        {
-            if let Some(arg) = self.bindings.remove(&col.name) {
-                match arg {
-                    Expr::Binding { var, .. } => {
-                        if var.is_ignored_symbol() {
-                            bindings.push(gen.next_ignored(var.span));
-                        } else if seen_variables.insert(var.clone()) {
-                            bindings.push(var);
-                        } else {
-                            let span = var.span;
-                            let dup = gen.next(span);
-                            let unif = NormalFormAtom::Unification(Unification {
-                                binding: dup.clone(),
-                                expr: Expr::Binding {
-                                    var,
-                                    tuple_pos: None,
-                                },
-                                one_many_unif: false,
-                                span,
-                            });
-                            conj.push(unif);
-                            bindings.push(dup);
-                        }
-                    }
-                    expr => {
-                        let span = expr.span();
-                        let kw = gen.next(span);
-                        bindings.push(kw.clone());
-                        let unif = NormalFormAtom::Unification(Unification {
-                            binding: kw,
-                            expr,
-                            one_many_unif: false,
-                            span,
-                        });
-                        conj.push(unif)
-                    }
-                }
-            } else {
-                bindings.push(gen.next_ignored(self.span));
-            }
-        }
+    //     for col in base_handle
+    //         .metadata
+    //         .keys
+    //         .iter()
+    //         .chain(base_handle.metadata.non_keys.iter())
+    //     {
+    //         if let Some(arg) = self.bindings.remove(&col.name) {
+    //             match arg {
+    //                 Expr::Binding { var, .. } => {
+    //                     if var.is_ignored_symbol() {
+    //                         bindings.push(gen.next_ignored(var.span));
+    //                     } else if seen_variables.insert(var.clone()) {
+    //                         bindings.push(var);
+    //                     } else {
+    //                         let span = var.span;
+    //                         let dup = gen.next(span);
+    //                         let unif = NormalFormAtom::Unification(Unification {
+    //                             binding: dup.clone(),
+    //                             expr: Expr::Binding {
+    //                                 var,
+    //                                 tuple_pos: None,
+    //                             },
+    //                             one_many_unif: false,
+    //                             span,
+    //                         });
+    //                         conj.push(unif);
+    //                         bindings.push(dup);
+    //                     }
+    //                 }
+    //                 expr => {
+    //                     let span = expr.span();
+    //                     let kw = gen.next(span);
+    //                     bindings.push(kw.clone());
+    //                     let unif = NormalFormAtom::Unification(Unification {
+    //                         binding: kw,
+    //                         expr,
+    //                         one_many_unif: false,
+    //                         span,
+    //                     });
+    //                     conj.push(unif)
+    //                 }
+    //             }
+    //         } else {
+    //             bindings.push(gen.next_ignored(self.span));
+    //         }
+    //     }
 
-        if let Some((name, _)) = self.bindings.pop_first() {
-            bail!(NamedFieldNotFound(
-                self.relation.name.to_string(),
-                name.to_string(),
-                self.span
-            ));
-        }
+    //     if let Some((name, _)) = self.bindings.pop_first() {
+    //         bail!(NamedFieldNotFound(
+    //             self.relation.name.to_string(),
+    //             name.to_string(),
+    //             self.span
+    //         ));
+    //     }
 
-        #[derive(Debug, Error, Diagnostic)]
-        #[error("Field `{0}` is required for HNSW search")]
-        #[diagnostic(code(parser::hnsw_query_required))]
-        struct HnswRequiredMissing(String, #[label] SourceSpan);
+    //     #[derive(Debug, Error, Diagnostic)]
+    //     #[error("Field `{0}` is required for HNSW search")]
+    //     #[diagnostic(code(parser::hnsw_query_required))]
+    //     struct HnswRequiredMissing(String, #[label] SourceSpan);
 
-        let query = match self
-            .parameters
-            .remove("query")
-            .ok_or_else(|| miette!(HnswRequiredMissing("query".to_string(), self.span)))?
-        {
-            Expr::Binding { var, .. } => var,
-            expr => {
-                let span = expr.span();
-                let kw = gen.next(span);
-                let unif = NormalFormAtom::Unification(Unification {
-                    binding: kw.clone(),
-                    expr,
-                    one_many_unif: false,
-                    span,
-                });
-                conj.push(unif);
-                kw
-            }
-        };
+    //     let query = match self
+    //         .parameters
+    //         .remove("query")
+    //         .ok_or_else(|| miette!(HnswRequiredMissing("query".to_string(), self.span)))?
+    //     {
+    //         Expr::Binding { var, .. } => var,
+    //         expr => {
+    //             let span = expr.span();
+    //             let kw = gen.next(span);
+    //             let unif = NormalFormAtom::Unification(Unification {
+    //                 binding: kw.clone(),
+    //                 expr,
+    //                 one_many_unif: false,
+    //                 span,
+    //             });
+    //             conj.push(unif);
+    //             kw
+    //         }
+    //     };
 
-        let k_expr = self
-            .parameters
-            .remove("k")
-            .ok_or_else(|| miette!(HnswRequiredMissing("k".to_string(), self.span)))?;
-        let k = k_expr.eval_to_const()?;
-        let k = k.get_int().ok_or(ExpectedPosIntForHnswK(self.span))?;
+    //     let k_expr = self
+    //         .parameters
+    //         .remove("k")
+    //         .ok_or_else(|| miette!(HnswRequiredMissing("k".to_string(), self.span)))?;
+    //     let k = k_expr.eval_to_const()?;
+    //     let k = k.get_int().ok_or(ExpectedPosIntForHnswK(self.span))?;
 
-        #[derive(Debug, Error, Diagnostic)]
-        #[error("Expected positive integer for `k`")]
-        #[diagnostic(code(parser::expected_int_for_hnsw_k))]
-        struct ExpectedPosIntForHnswK(#[label] SourceSpan);
+    //     #[derive(Debug, Error, Diagnostic)]
+    //     #[error("Expected positive integer for `k`")]
+    //     #[diagnostic(code(parser::expected_int_for_hnsw_k))]
+    //     struct ExpectedPosIntForHnswK(#[label] SourceSpan);
 
-        ensure!(k > 0, ExpectedPosIntForHnswK(self.span));
+    //     ensure!(k > 0, ExpectedPosIntForHnswK(self.span));
 
-        let ef_expr = self
-            .parameters
-            .remove("ef")
-            .ok_or_else(|| miette!(HnswRequiredMissing("ef".to_string(), self.span)))?;
-        let ef = ef_expr.eval_to_const()?;
-        let ef = ef.get_int().ok_or(ExpectedPosIntForHnswEf(self.span))?;
+    //     let ef_expr = self
+    //         .parameters
+    //         .remove("ef")
+    //         .ok_or_else(|| miette!(HnswRequiredMissing("ef".to_string(), self.span)))?;
+    //     let ef = ef_expr.eval_to_const()?;
+    //     let ef = ef.get_int().ok_or(ExpectedPosIntForHnswEf(self.span))?;
 
-        #[derive(Debug, Error, Diagnostic)]
-        #[error("Expected positive integer for `ef`")]
-        #[diagnostic(code(parser::expected_int_for_hnsw_ef))]
-        struct ExpectedPosIntForHnswEf(#[label] SourceSpan);
+    //     #[derive(Debug, Error, Diagnostic)]
+    //     #[error("Expected positive integer for `ef`")]
+    //     #[diagnostic(code(parser::expected_int_for_hnsw_ef))]
+    //     struct ExpectedPosIntForHnswEf(#[label] SourceSpan);
 
-        ensure!(ef > 0, ExpectedPosIntForHnswEf(self.span));
+    //     ensure!(ef > 0, ExpectedPosIntForHnswEf(self.span));
 
-        let radius_expr = self.parameters.remove("radius");
-        let radius = match radius_expr {
-            Some(expr) => {
-                let r = expr.eval_to_const()?;
-                let r = r.get_float().ok_or(ExpectedFloatForHnswRadius(self.span))?;
+    //     let radius_expr = self.parameters.remove("radius");
+    //     let radius = match radius_expr {
+    //         Some(expr) => {
+    //             let r = expr.eval_to_const()?;
+    //             let r = r.get_float().ok_or(ExpectedFloatForHnswRadius(self.span))?;
 
-                #[derive(Debug, Error, Diagnostic)]
-                #[error("Expected positive float for `radius`")]
-                #[diagnostic(code(parser::expected_float_for_hnsw_radius))]
-                struct ExpectedFloatForHnswRadius(#[label] SourceSpan);
+    //             #[derive(Debug, Error, Diagnostic)]
+    //             #[error("Expected positive float for `radius`")]
+    //             #[diagnostic(code(parser::expected_float_for_hnsw_radius))]
+    //             struct ExpectedFloatForHnswRadius(#[label] SourceSpan);
 
-                ensure!(r > 0.0, ExpectedFloatForHnswRadius(self.span));
-                Some(r)
-            }
-            None => None,
-        };
+    //             ensure!(r > 0.0, ExpectedFloatForHnswRadius(self.span));
+    //             Some(r)
+    //         }
+    //         None => None,
+    //     };
 
-        let filter = self.parameters.remove("filter");
+    //     let filter = self.parameters.remove("filter");
 
-        let bind_field = match self.parameters.remove("bind_field") {
-            None => None,
-            Some(Expr::Binding { var, .. }) => Some(var),
-            Some(expr) => {
-                let span = expr.span();
-                let kw = gen.next(span);
-                let unif = NormalFormAtom::Unification(Unification {
-                    binding: kw.clone(),
-                    expr,
-                    one_many_unif: false,
-                    span,
-                });
-                conj.push(unif);
-                Some(kw)
-            }
-        };
+    //     let bind_field = match self.parameters.remove("bind_field") {
+    //         None => None,
+    //         Some(Expr::Binding { var, .. }) => Some(var),
+    //         Some(expr) => {
+    //             let span = expr.span();
+    //             let kw = gen.next(span);
+    //             let unif = NormalFormAtom::Unification(Unification {
+    //                 binding: kw.clone(),
+    //                 expr,
+    //                 one_many_unif: false,
+    //                 span,
+    //             });
+    //             conj.push(unif);
+    //             Some(kw)
+    //         }
+    //     };
 
-        let bind_field_idx = match self.parameters.remove("bind_field_idx") {
-            None => None,
-            Some(Expr::Binding { var, .. }) => Some(var),
-            Some(expr) => {
-                let span = expr.span();
-                let kw = gen.next(span);
-                let unif = NormalFormAtom::Unification(Unification {
-                    binding: kw.clone(),
-                    expr,
-                    one_many_unif: false,
-                    span,
-                });
-                conj.push(unif);
-                Some(kw)
-            }
-        };
+    //     let bind_field_idx = match self.parameters.remove("bind_field_idx") {
+    //         None => None,
+    //         Some(Expr::Binding { var, .. }) => Some(var),
+    //         Some(expr) => {
+    //             let span = expr.span();
+    //             let kw = gen.next(span);
+    //             let unif = NormalFormAtom::Unification(Unification {
+    //                 binding: kw.clone(),
+    //                 expr,
+    //                 one_many_unif: false,
+    //                 span,
+    //             });
+    //             conj.push(unif);
+    //             Some(kw)
+    //         }
+    //     };
 
-        let bind_distance = match self.parameters.remove("bind_distance") {
-            None => None,
-            Some(Expr::Binding { var, .. }) => Some(var),
-            Some(expr) => {
-                let span = expr.span();
-                let kw = gen.next(span);
-                let unif = NormalFormAtom::Unification(Unification {
-                    binding: kw.clone(),
-                    expr,
-                    one_many_unif: false,
-                    span,
-                });
-                conj.push(unif);
-                Some(kw)
-            }
-        };
+    //     let bind_distance = match self.parameters.remove("bind_distance") {
+    //         None => None,
+    //         Some(Expr::Binding { var, .. }) => Some(var),
+    //         Some(expr) => {
+    //             let span = expr.span();
+    //             let kw = gen.next(span);
+    //             let unif = NormalFormAtom::Unification(Unification {
+    //                 binding: kw.clone(),
+    //                 expr,
+    //                 one_many_unif: false,
+    //                 span,
+    //             });
+    //             conj.push(unif);
+    //             Some(kw)
+    //         }
+    //     };
 
-        let bind_vector = match self.parameters.remove("bind_vector") {
-            None => None,
-            Some(Expr::Binding { var, .. }) => Some(var),
-            Some(expr) => {
-                let span = expr.span();
-                let kw = gen.next(span);
-                let unif = NormalFormAtom::Unification(Unification {
-                    binding: kw.clone(),
-                    expr,
-                    one_many_unif: false,
-                    span,
-                });
-                conj.push(unif);
-                Some(kw)
-            }
-        };
+    //     let bind_vector = match self.parameters.remove("bind_vector") {
+    //         None => None,
+    //         Some(Expr::Binding { var, .. }) => Some(var),
+    //         Some(expr) => {
+    //             let span = expr.span();
+    //             let kw = gen.next(span);
+    //             let unif = NormalFormAtom::Unification(Unification {
+    //                 binding: kw.clone(),
+    //                 expr,
+    //                 one_many_unif: false,
+    //                 span,
+    //             });
+    //             conj.push(unif);
+    //             Some(kw)
+    //         }
+    //     };
 
-        if !self.parameters.is_empty() {
-            bail!("Unexpected parameters for HNSW: {:?}", self.parameters);
-        }
+    //     if !self.parameters.is_empty() {
+    //         bail!("Unexpected parameters for HNSW: {:?}", self.parameters);
+    //     }
 
-        conj.push(NormalFormAtom::HnswSearch(HnswSearch {
-            base_handle,
-            idx_handle,
-            manifest,
-            bindings,
-            k: k as usize,
-            ef: ef as usize,
-            query,
-            bind_field,
-            bind_field_idx,
-            bind_distance,
-            bind_vector,
-            radius,
-            filter,
-            span: self.span,
-        }));
+    //     conj.push(NormalFormAtom::HnswSearch(HnswSearch {
+    //         base_handle,
+    //         idx_handle,
+    //         manifest,
+    //         bindings,
+    //         k: k as usize,
+    //         ef: ef as usize,
+    //         query,
+    //         bind_field,
+    //         bind_field_idx,
+    //         bind_distance,
+    //         bind_vector,
+    //         radius,
+    //         filter,
+    //         span: self.span,
+    //     }));
 
-        Ok(Disjunction::conj(conj))
-    }
+    //     Ok(Disjunction::conj(conj))
+    // }
     pub(crate) fn normalize(
         self,
         gen: &mut TempSymbGen,
@@ -1573,11 +1573,11 @@ impl SearchInput {
                 base_handle.access_level
             ));
         }
-        if let Some((idx_handle, manifest)) =
-            base_handle.hnsw_indices.get(&self.index.name).cloned()
-        {
-            return self.normalize_hnsw(base_handle, idx_handle, manifest, gen);
-        }
+        // if let Some((idx_handle, manifest)) =
+        //     base_handle.hnsw_indices.get(&self.index.name).cloned()
+        // {
+        //     // return self.normalize_hnsw(base_handle, idx_handle, manifest, gen);
+        // }
         if let Some((idx_handle, manifest)) = base_handle.fts_indices.get(&self.index.name).cloned()
         {
             return self.normalize_fts(base_handle, idx_handle, manifest, gen);

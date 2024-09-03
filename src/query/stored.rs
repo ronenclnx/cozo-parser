@@ -250,7 +250,7 @@ impl<'a> SessionTx<'a> {
                 && (is_callback_target
                     || (propagate_triggers && !relation_store.put_triggers.is_empty())));
         let has_indices = !relation_store.indices.is_empty();
-        let has_hnsw_indices = !relation_store.hnsw_indices.is_empty();
+        // let has_hnsw_indices = !relation_store.hnsw_indices.is_empty();
         let has_fts_indices = !relation_store.fts_indices.is_empty();
         let has_lsh_indices = !relation_store.lsh_indices.is_empty();
         let mut new_tuples: Vec<DataValue> = vec![];
@@ -273,7 +273,7 @@ impl<'a> SessionTx<'a> {
         };
         key_extractors.extend(val_extractors);
         let mut stack = vec![];
-        let hnsw_filters = Self::make_hnsw_filters(relation_store)?;
+        // let hnsw_filters = Self::make_hnsw_filters(relation_store)?;
         let fts_lsh_processors = self.make_fts_lsh_processors(relation_store)?;
         let lsh_perms = self.make_lsh_hash_perms(relation_store);
 
@@ -305,7 +305,7 @@ impl<'a> SessionTx<'a> {
 
             if need_to_collect
                 || has_indices
-                || has_hnsw_indices
+                // || has_hnsw_indices
                 || has_fts_indices
                 || has_lsh_indices
             {
@@ -333,7 +333,7 @@ impl<'a> SessionTx<'a> {
                     }
                 }
 
-                self.update_in_hnsw(relation_store, &mut stack, &hnsw_filters, &extracted)?;
+                // self.update_in_hnsw(relation_store, &mut stack, &hnsw_filters, &extracted)?;
                 self.put_in_fts(relation_store, &mut stack, &fts_lsh_processors, &extracted)?;
                 self.put_in_lsh(
                     relation_store,
@@ -432,26 +432,26 @@ impl<'a> SessionTx<'a> {
         Ok(())
     }
 
-    fn update_in_hnsw(
-        &mut self,
-        relation_store: &RelationHandle,
-        stack: &mut Vec<DataValue>,
-        hnsw_filters: &BTreeMap<SmartString<LazyCompact>, Vec<Bytecode>>,
-        new_kv: &[DataValue],
-    ) -> Result<()> {
-        for (name, (idx_handle, idx_manifest)) in relation_store.hnsw_indices.iter() {
-            let filter = hnsw_filters.get(name);
-            self.hnsw_put(
-                idx_manifest,
-                relation_store,
-                idx_handle,
-                filter,
-                stack,
-                new_kv,
-            )?;
-        }
-        Ok(())
-    }
+    // fn update_in_hnsw(
+    //     &mut self,
+    //     relation_store: &RelationHandle,
+    //     stack: &mut Vec<DataValue>,
+    //     hnsw_filters: &BTreeMap<SmartString<LazyCompact>, Vec<Bytecode>>,
+    //     new_kv: &[DataValue],
+    // ) -> Result<()> {
+    //     for (name, (idx_handle, idx_manifest)) in relation_store.hnsw_indices.iter() {
+    //         let filter = hnsw_filters.get(name);
+    //         self.hnsw_put(
+    //             idx_manifest,
+    //             relation_store,
+    //             idx_handle,
+    //             filter,
+    //             stack,
+    //             new_kv,
+    //         )?;
+    //     }
+    //     Ok(())
+    // }
 
     fn make_lsh_hash_perms(
         &self,
@@ -502,24 +502,24 @@ impl<'a> SessionTx<'a> {
         Ok(processors)
     }
 
-    fn make_hnsw_filters(
-        relation_store: &RelationHandle,
-    ) -> Result<BTreeMap<SmartString<LazyCompact>, Vec<Bytecode>>> {
-        let mut hnsw_filters = BTreeMap::new();
-        for (name, (_, manifest)) in relation_store.hnsw_indices.iter() {
-            if let Some(f_code) = &manifest.index_filter {
-                let parsed = CozoScriptParser::parse(Rule::expr, f_code)
-                    .into_diagnostic()?
-                    .next()
-                    .unwrap();
-                let mut code_expr = build_expr(parsed, &Default::default())?;
-                let binding_map = relation_store.raw_binding_map();
-                code_expr.fill_binding_indices(&binding_map)?;
-                hnsw_filters.insert(name.clone(), code_expr.compile()?);
-            }
-        }
-        Ok(hnsw_filters)
-    }
+    // fn make_hnsw_filters(
+    //     relation_store: &RelationHandle,
+    // ) -> Result<BTreeMap<SmartString<LazyCompact>, Vec<Bytecode>>> {
+    //     let mut hnsw_filters = BTreeMap::new();
+    //     // for (name, (_, manifest)) in relation_store.hnsw_indices.iter() {
+    //     //     if let Some(f_code) = &manifest.index_filter {
+    //     //         let parsed = CozoScriptParser::parse(Rule::expr, f_code)
+    //     //             .into_diagnostic()?
+    //     //             .next()
+    //     //             .unwrap();
+    //     //         let mut code_expr = build_expr(parsed, &Default::default())?;
+    //     //         let binding_map = relation_store.raw_binding_map();
+    //     //         code_expr.fill_binding_indices(&binding_map)?;
+    //     //         hnsw_filters.insert(name.clone(), code_expr.compile()?);
+    //     //     }
+    //     // }
+    //     Ok(hnsw_filters)
+    // }
 
     fn update_in_relation<'s, S: Storage<'s>>(
         &mut self,
@@ -560,7 +560,7 @@ impl<'a> SessionTx<'a> {
                 && (is_callback_target
                     || (propagate_triggers && !relation_store.put_triggers.is_empty())));
         let has_indices = !relation_store.indices.is_empty();
-        let has_hnsw_indices = !relation_store.hnsw_indices.is_empty();
+        // let has_hnsw_indices = !relation_store.hnsw_indices.is_empty();
         let has_fts_indices = !relation_store.fts_indices.is_empty();
         let has_lsh_indices = !relation_store.lsh_indices.is_empty();
         let mut new_tuples: Vec<DataValue> = vec![];
@@ -574,7 +574,7 @@ impl<'a> SessionTx<'a> {
         )?;
 
         let mut stack = vec![];
-        let hnsw_filters = Self::make_hnsw_filters(relation_store)?;
+        // let hnsw_filters = Self::make_hnsw_filters(relation_store)?;
         let fts_lsh_processors = self.make_fts_lsh_processors(relation_store)?;
         let lsh_perms = self.make_lsh_hash_perms(relation_store);
 
@@ -619,7 +619,7 @@ impl<'a> SessionTx<'a> {
 
             if need_to_collect
                 || has_indices
-                || has_hnsw_indices
+                // || has_hnsw_indices
                 || has_fts_indices
                 || has_lsh_indices
             {
@@ -631,7 +631,7 @@ impl<'a> SessionTx<'a> {
                     old_tuples.push(DataValue::List(old_kv));
                 }
 
-                self.update_in_hnsw(relation_store, &mut stack, &hnsw_filters, &new_kv)?;
+                // self.update_in_hnsw(relation_store, &mut stack, &hnsw_filters, &new_kv)?;
                 self.put_in_fts(relation_store, &mut stack, &fts_lsh_processors, &new_kv)?;
                 self.put_in_lsh(
                     relation_store,
@@ -954,7 +954,7 @@ impl<'a> SessionTx<'a> {
                 && (is_callback_target
                     || (propagate_triggers && !relation_store.rm_triggers.is_empty())));
         let has_indices = !relation_store.indices.is_empty();
-        let has_hnsw_indices = !relation_store.hnsw_indices.is_empty();
+        // let has_hnsw_indices = !relation_store.hnsw_indices.is_empty();
         let has_fts_indices = !relation_store.fts_indices.is_empty();
         let has_lsh_indices = !relation_store.lsh_indices.is_empty();
         let fts_processors = self.make_fts_lsh_processors(relation_store)?;
@@ -982,7 +982,7 @@ impl<'a> SessionTx<'a> {
                     });
                 }
             }
-            if need_to_collect || has_indices || has_hnsw_indices || has_fts_indices || has_lsh_indices {
+            if need_to_collect || has_indices || has_fts_indices || has_lsh_indices {
                 if let Some(existing) = self.store_tx.get(&key, false)? {
                     let mut tup = extracted.clone();
                     extend_tuple_from_v(&mut tup, &existing);
@@ -996,11 +996,11 @@ impl<'a> SessionTx<'a> {
                             self.store_tx.del(&encoded)?;
                         }
                     }
-                    if has_hnsw_indices {
-                        for (idx_handle, _) in relation_store.hnsw_indices.values() {
-                            self.hnsw_remove(relation_store, idx_handle, &extracted)?;
-                        }
-                    }
+                    // if has_hnsw_indices {
+                    //     for (idx_handle, _) in relation_store.hnsw_indices.values() {
+                    //         self.hnsw_remove(relation_store, idx_handle, &extracted)?;
+                    //     }
+                    // }
                     if need_to_collect {
                         old_tuples.push(DataValue::List(tup));
                     }

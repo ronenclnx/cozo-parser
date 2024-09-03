@@ -1711,26 +1711,26 @@ impl<'s, S: Storage<'s>> Db<S> {
                 json!({ "indices": cols }),
             ]);
         }
-        for (name, (rel, manifest)) in &handle.hnsw_indices {
-            rows.push(vec![
-                json!(name),
-                json!("hnsw"),
-                json!([rel.name]),
-                json!({
-                    "vec_dim": manifest.vec_dim,
-                    "dtype": manifest.dtype,
-                    "vec_fields": manifest.vec_fields,
-                    "distance": manifest.distance,
-                    "ef_construction": manifest.ef_construction,
-                    "m_neighbours": manifest.m_neighbours,
-                    "m_max": manifest.m_max,
-                    "m_max0": manifest.m_max0,
-                    "level_multiplier": manifest.level_multiplier,
-                    "extend_candidates": manifest.extend_candidates,
-                    "keep_pruned_connections": manifest.keep_pruned_connections,
-                }),
-            ]);
-        }
+        // for (name, (rel, manifest)) in &handle.hnsw_indices {
+        //     rows.push(vec![
+        //         json!(name),
+        //         json!("hnsw"),
+        //         json!([rel.name]),
+        //         json!({
+        //             "vec_dim": manifest.vec_dim,
+        //             "dtype": manifest.dtype,
+        //             "vec_fields": manifest.vec_fields,
+        //             "distance": manifest.distance,
+        //             "ef_construction": manifest.ef_construction,
+        //             "m_neighbours": manifest.m_neighbours,
+        //             "m_max": manifest.m_max,
+        //             "m_max0": manifest.m_max0,
+        //             "level_multiplier": manifest.level_multiplier,
+        //             "extend_candidates": manifest.extend_candidates,
+        //             "keep_pruned_connections": manifest.keep_pruned_connections,
+        //         }),
+        //     ]);
+        // }
         for (name, (rel, manifest)) in &handle.fts_indices {
             rows.push(vec![
                 json!(name),

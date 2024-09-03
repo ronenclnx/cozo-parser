@@ -29,7 +29,7 @@ use crate::parse::expr::build_expr;
 use crate::parse::sys::{FtsIndexConfig, HnswIndexConfig, MinHashLshConfig};
 use crate::parse::{CozoScriptParser, Rule, SourceSpan};
 use crate::query::compile::IndexPositionUse;
-use crate::runtime::hnsw::HnswIndexManifest;
+// use crate::runtime::hnsw::HnswIndexManifest;
 use crate::runtime::minhash_lsh::{HashPermutations, LshParams, MinHashLshIndexManifest, Weights};
 use crate::runtime::transact::SessionTx;
 use crate::utils::TempCollector;
@@ -83,8 +83,8 @@ pub(crate) struct RelationHandle {
     pub(crate) access_level: AccessLevel,
     pub(crate) is_temp: bool,
     pub(crate) indices: BTreeMap<SmartString<LazyCompact>, (RelationHandle, Vec<usize>)>,
-    pub(crate) hnsw_indices:
-        BTreeMap<SmartString<LazyCompact>, (RelationHandle, HnswIndexManifest)>,
+    // pub(crate) hnsw_indices:
+    //     BTreeMap<SmartString<LazyCompact>, (RelationHandle, HnswIndexManifest)>,
     pub(crate) fts_indices: BTreeMap<SmartString<LazyCompact>, (RelationHandle, FtsIndexManifest)>,
     pub(crate) lsh_indices: BTreeMap<
         SmartString<LazyCompact>,
@@ -96,13 +96,13 @@ pub(crate) struct RelationHandle {
 impl RelationHandle {
     pub(crate) fn has_index(&self, index_name: &str) -> bool {
         self.indices.contains_key(index_name)
-            || self.hnsw_indices.contains_key(index_name)
+            // || self.hnsw_indices.contains_key(index_name)
             || self.fts_indices.contains_key(index_name)
             || self.lsh_indices.contains_key(index_name)
     }
     pub(crate) fn has_no_index(&self) -> bool {
         self.indices.is_empty()
-            && self.hnsw_indices.is_empty()
+            // && self.hnsw_indices.is_empty()
             && self.fts_indices.is_empty()
             && self.lsh_indices.is_empty()
     }
@@ -617,7 +617,7 @@ impl<'a> SessionTx<'a> {
             access_level: AccessLevel::Normal,
             is_temp,
             indices: Default::default(),
-            hnsw_indices: Default::default(),
+            // hnsw_indices: Default::default(),
             fts_indices: Default::default(),
             lsh_indices: Default::default(),
             description: Default::default(),
@@ -706,10 +706,10 @@ impl<'a> SessionTx<'a> {
             to_clean.extend(more_to_clean);
         }
 
-        for k in store.hnsw_indices.keys() {
-            let more_to_clean = self.destroy_relation(&format!("{name}:{k}"))?;
-            to_clean.extend(more_to_clean);
-        }
+        // for k in store.hnsw_indices.keys() {
+        //     let more_to_clean = self.destroy_relation(&format!("{name}:{k}"))?;
+        //     to_clean.extend(more_to_clean);
+        // }
 
         let key = DataValue::from(name);
         let encoded = vec![key].encode_as_key(RelationId::SYSTEM);
@@ -1133,61 +1133,61 @@ impl<'a> SessionTx<'a> {
             non_idx_keys,
         )?;
 
-        // add index to relation
-        let manifest = HnswIndexManifest {
-            base_relation: config.base_relation.clone(),
-            index_name: config.index_name.clone(),
-            vec_dim: config.vec_dim,
-            dtype: config.dtype,
-            vec_fields: vec_field_indices,
-            distance: config.distance,
-            ef_construction: config.ef_construction,
-            m_neighbours: config.m_neighbours,
-            m_max: config.m_neighbours,
-            m_max0: config.m_neighbours * 2,
-            level_multiplier: 1. / (config.m_neighbours as f64).ln(),
-            index_filter: config.index_filter.clone(),
-            extend_candidates: config.extend_candidates,
-            keep_pruned_connections: config.keep_pruned_connections,
-        };
+        // // add index to relation
+        // let manifest = HnswIndexManifest {
+        //     base_relation: config.base_relation.clone(),
+        //     index_name: config.index_name.clone(),
+        //     vec_dim: config.vec_dim,
+        //     dtype: config.dtype,
+        //     vec_fields: vec_field_indices,
+        //     distance: config.distance,
+        //     ef_construction: config.ef_construction,
+        //     m_neighbours: config.m_neighbours,
+        //     m_max: config.m_neighbours,
+        //     m_max0: config.m_neighbours * 2,
+        //     level_multiplier: 1. / (config.m_neighbours as f64).ln(),
+        //     index_filter: config.index_filter.clone(),
+        //     extend_candidates: config.extend_candidates,
+        //     keep_pruned_connections: config.keep_pruned_connections,
+        // };
 
         // populate index
         let mut all_tuples = TempCollector::default();
         for tuple in rel_handle.scan_all(self) {
             all_tuples.push(tuple?);
         }
-        let filter = if let Some(f_code) = &manifest.index_filter {
-            let parsed = CozoScriptParser::parse(Rule::expr, f_code)
-                .into_diagnostic()?
-                .next()
-                .unwrap();
-            let mut code_expr = build_expr(parsed, &Default::default())?;
-            let binding_map = rel_handle.raw_binding_map();
-            code_expr.fill_binding_indices(&binding_map)?;
-            code_expr.compile()?
-        } else {
-            vec![]
-        };
-        let filter = if filter.is_empty() {
-            None
-        } else {
-            Some(&filter)
-        };
-        let mut stack = vec![];
-        for tuple in all_tuples.into_iter() {
-            self.hnsw_put(
-                &manifest,
-                &rel_handle,
-                &idx_handle,
-                filter,
-                &mut stack,
-                &tuple,
-            )?;
-        }
+        // let filter = if let Some(f_code) = &manifest.index_filter {
+        //     let parsed = CozoScriptParser::parse(Rule::expr, f_code)
+        //         .into_diagnostic()?
+        //         .next()
+        //         .unwrap();
+        //     let mut code_expr = build_expr(parsed, &Default::default())?;
+        //     let binding_map = rel_handle.raw_binding_map();
+        //     code_expr.fill_binding_indices(&binding_map)?;
+        //     code_expr.compile()?
+        // } else {
+        //     vec![]
+        // };
+        // let filter = if filter.is_empty() {
+        //     None
+        // } else {
+        //     Some(&filter)
+        // };
+        // let mut stack = vec![];
+        // for tuple in all_tuples.into_iter() {
+        //     self.hnsw_put(
+        //         &manifest,
+        //         &rel_handle,
+        //         &idx_handle,
+        //         filter,
+        //         &mut stack,
+        //         &tuple,
+        //     )?;
+        // }
 
-        rel_handle
-            .hnsw_indices
-            .insert(config.index_name.clone(), (idx_handle, manifest));
+        // rel_handle
+        //     .hnsw_indices
+        //     .insert(config.index_name.clone(), (idx_handle, manifest));
 
         // update relation metadata
         let new_encoded =
@@ -1381,7 +1381,7 @@ impl<'a> SessionTx<'a> {
             self.tokenizers.hashed_cache.write().unwrap().clear();
         }
         if rel.indices.remove(&idx_name.name).is_none()
-            && rel.hnsw_indices.remove(&idx_name.name).is_none()
+            // && rel.hnsw_indices.remove(&idx_name.name).is_none()
             && rel.lsh_indices.remove(&idx_name.name).is_none()
             && rel.fts_indices.remove(&idx_name.name).is_none()
         {
