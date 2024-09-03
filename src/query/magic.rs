@@ -176,10 +176,10 @@ fn magic_rewrite_ruleset(
                     seen_bindings.insert(u.binding.clone());
                     collected_atoms.push(MagicAtom::Unification(u));
                 }
-                MagicAtom::HnswSearch(s) => {
-                    seen_bindings.extend(s.all_bindings().cloned());
-                    collected_atoms.push(MagicAtom::HnswSearch(s));
-                }
+                // MagicAtom::HnswSearch(s) => {
+                //     seen_bindings.extend(s.all_bindings().cloned());
+                //     collected_atoms.push(MagicAtom::HnswSearch(s));
+                // }
                 MagicAtom::FtsSearch(s) => {
                     seen_bindings.extend(s.all_bindings().cloned());
                     collected_atoms.push(MagicAtom::FtsSearch(s));
@@ -531,14 +531,14 @@ impl NormalFormAtom {
                 }
                 MagicAtom::Relation(v)
             }
-            NormalFormAtom::HnswSearch(s) => {
-                for arg in s.all_bindings() {
-                    if !seen_bindings.contains(arg) {
-                        seen_bindings.insert(arg.clone());
-                    }
-                }
-                MagicAtom::HnswSearch(s.clone())
-            }
+            // NormalFormAtom::HnswSearch(s) => {
+            //     for arg in s.all_bindings() {
+            //         if !seen_bindings.contains(arg) {
+            //             seen_bindings.insert(arg.clone());
+            //         }
+            //     }
+            //     MagicAtom::HnswSearch(s.clone())
+            // }
             NormalFormAtom::FtsSearch(s) => {
                 for arg in s.all_bindings() {
                     if !seen_bindings.contains(arg) {

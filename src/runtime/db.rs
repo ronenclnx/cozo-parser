@@ -44,7 +44,7 @@ use crate::parse::sys::SysOp;
 use crate::parse::{parse_expressions, parse_script, CozoScript, SourceSpan};
 use crate::query::compile::{CompiledProgram, CompiledRule, CompiledRuleSet};
 use crate::query::ra::{
-    FilteredRA, FtsSearchRA, HnswSearchRA, InnerJoin, LshSearchRA, NegJoin, RelAlgebra, ReorderRA,
+    FilteredRA, FtsSearchRA, InnerJoin, LshSearchRA, NegJoin, RelAlgebra, ReorderRA,
     StoredRA, StoredWithValidityRA, TempStoreRA, UnificationRA,
 };
 #[allow(unused_imports)]
@@ -1115,18 +1115,18 @@ impl<'s, S: Storage<'s>> Db<S> {
                                             json!(expr.to_string()),
                                         )
                                     }
-                                    RelAlgebra::HnswSearch(HnswSearchRA {
-                                        hnsw_search, ..
-                                    }) => (
-                                        "hnsw_index",
-                                        json!(format!(":{}", hnsw_search.query.name)),
-                                        json!(hnsw_search.query.name),
-                                        json!(hnsw_search
-                                            .filter
-                                            .iter()
-                                            .map(|f| f.to_string())
-                                            .collect_vec()),
-                                    ),
+                                    // RelAlgebra::HnswSearch(HnswSearchRA {
+                                    //     hnsw_search, ..
+                                    // }) => (
+                                    //     "hnsw_index",
+                                    //     json!(format!(":{}", hnsw_search.query.name)),
+                                    //     json!(hnsw_search.query.name),
+                                    //     json!(hnsw_search
+                                    //         .filter
+                                    //         .iter()
+                                    //         .map(|f| f.to_string())
+                                    //         .collect_vec()),
+                                    // ),
                                     RelAlgebra::FtsSearch(FtsSearchRA { fts_search, .. }) => (
                                         "fts_index",
                                         json!(format!(":{}", fts_search.query.name)),

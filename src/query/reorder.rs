@@ -72,14 +72,14 @@ impl NormalFormInlineRule {
                 NormalFormAtom::Predicate(p) => {
                     pending.push(NormalFormAtom::Predicate(p));
                 }
-                NormalFormAtom::HnswSearch(s) => {
-                    if seen_variables.contains(&s.query) {
-                        seen_variables.extend(s.all_bindings().cloned());
-                        round_1_collected.push(NormalFormAtom::HnswSearch(s));
-                    } else {
-                        pending.push(NormalFormAtom::HnswSearch(s));
-                    }
-                }
+                // NormalFormAtom::HnswSearch(s) => {
+                //     if seen_variables.contains(&s.query) {
+                //         seen_variables.extend(s.all_bindings().cloned());
+                //         round_1_collected.push(NormalFormAtom::HnswSearch(s));
+                //     } else {
+                //         pending.push(NormalFormAtom::HnswSearch(s));
+                //     }
+                // }
                 NormalFormAtom::FtsSearch(s) => {
                     if seen_variables.contains(&s.query) {
                         seen_variables.extend(s.all_bindings().cloned());
@@ -124,10 +124,10 @@ impl NormalFormInlineRule {
                     seen_variables.insert(u.binding.clone());
                     collected.push(NormalFormAtom::Unification(u));
                 }
-                NormalFormAtom::HnswSearch(s) => {
-                    seen_variables.extend(s.all_bindings().cloned());
-                    collected.push(NormalFormAtom::HnswSearch(s));
-                }
+                // NormalFormAtom::HnswSearch(s) => {
+                //     seen_variables.extend(s.all_bindings().cloned());
+                //     collected.push(NormalFormAtom::HnswSearch(s));
+                // }
                 NormalFormAtom::FtsSearch(s) => {
                     seen_variables.extend(s.all_bindings().cloned());
                     collected.push(NormalFormAtom::FtsSearch(s));
@@ -154,14 +154,14 @@ impl NormalFormInlineRule {
                             pending.push(NormalFormAtom::NegatedRelation(v.clone()));
                         }
                     }
-                    NormalFormAtom::HnswSearch(s) => {
-                        if seen_variables.contains(&s.query) {
-                            seen_variables.extend(s.all_bindings().cloned());
-                            collected.push(NormalFormAtom::HnswSearch(s.clone()));
-                        } else {
-                            pending.push(NormalFormAtom::HnswSearch(s.clone()));
-                        }
-                    }
+                    // NormalFormAtom::HnswSearch(s) => {
+                    //     if seen_variables.contains(&s.query) {
+                    //         seen_variables.extend(s.all_bindings().cloned());
+                    //         collected.push(NormalFormAtom::HnswSearch(s.clone()));
+                    //     } else {
+                    //         pending.push(NormalFormAtom::HnswSearch(s.clone()));
+                    //     }
+                    // }
                     NormalFormAtom::FtsSearch(s) => {
                         if seen_variables.contains(&s.query) {
                             seen_variables.extend(s.all_bindings().cloned());
@@ -220,9 +220,9 @@ impl NormalFormInlineRule {
                     NormalFormAtom::Unification(u) => {
                         bail!(UnboundVariable(u.span))
                     }
-                    NormalFormAtom::HnswSearch(s) => {
-                        bail!(UnboundVariable(s.span))
-                    }
+                    // NormalFormAtom::HnswSearch(s) => {
+                    //     bail!(UnboundVariable(s.span))
+                    // }
                     NormalFormAtom::FtsSearch(s) => {
                         bail!(UnboundVariable(s.span))
                     }

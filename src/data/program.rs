@@ -26,7 +26,7 @@ use crate::fts::FtsIndexManifest;
 use crate::parse::SourceSpan;
 use crate::query::compile::ContainedRuleMultiplicity;
 use crate::query::logical::{Disjunction, NamedFieldNotFound};
-use crate::runtime::hnsw::HnswIndexManifest;
+// use crate::runtime::hnsw::HnswIndexManifest;
 use crate::runtime::minhash_lsh::{LshSearch, MinHashLshIndexManifest};
 use crate::runtime::relation::{
     AccessLevel, InputRelationHandle, InsufficientAccessLevel, RelationHandle,
@@ -965,23 +965,23 @@ pub(crate) struct SearchInput {
     pub(crate) span: SourceSpan,
 }
 
-#[derive(Clone, Debug)]
-pub(crate) struct HnswSearch {
-    pub(crate) base_handle: RelationHandle,
-    pub(crate) idx_handle: RelationHandle,
-    pub(crate) manifest: HnswIndexManifest,
-    pub(crate) bindings: Vec<Symbol>,
-    pub(crate) k: usize,
-    pub(crate) ef: usize,
-    pub(crate) query: Symbol,
-    pub(crate) bind_field: Option<Symbol>,
-    pub(crate) bind_field_idx: Option<Symbol>,
-    pub(crate) bind_distance: Option<Symbol>,
-    pub(crate) bind_vector: Option<Symbol>,
-    pub(crate) radius: Option<f64>,
-    pub(crate) filter: Option<Expr>,
-    pub(crate) span: SourceSpan,
-}
+// #[derive(Clone, Debug)]
+// pub(crate) struct HnswSearch {
+//     pub(crate) base_handle: RelationHandle,
+//     pub(crate) idx_handle: RelationHandle,
+//     // pub(crate) manifest: HnswIndexManifest,
+//     pub(crate) bindings: Vec<Symbol>,
+//     pub(crate) k: usize,
+//     pub(crate) ef: usize,
+//     pub(crate) query: Symbol,
+//     pub(crate) bind_field: Option<Symbol>,
+//     pub(crate) bind_field_idx: Option<Symbol>,
+//     pub(crate) bind_distance: Option<Symbol>,
+//     pub(crate) bind_vector: Option<Symbol>,
+//     pub(crate) radius: Option<f64>,
+//     pub(crate) filter: Option<Expr>,
+//     pub(crate) span: SourceSpan,
+// }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub(crate) enum FtsScoreKind {
@@ -1006,16 +1006,16 @@ pub(crate) struct FtsSearch {
     pub(crate) span: SourceSpan,
 }
 
-impl HnswSearch {
-    pub(crate) fn all_bindings(&self) -> impl Iterator<Item=&Symbol> {
-        self.bindings
-            .iter()
-            .chain(self.bind_field.iter())
-            .chain(self.bind_field_idx.iter())
-            .chain(self.bind_distance.iter())
-            .chain(self.bind_vector.iter())
-    }
-}
+// impl HnswSearch {
+//     pub(crate) fn all_bindings(&self) -> impl Iterator<Item=&Symbol> {
+//         self.bindings
+//             .iter()
+//             .chain(self.bind_field.iter())
+//             .chain(self.bind_field_idx.iter())
+//             .chain(self.bind_distance.iter())
+//             .chain(self.bind_vector.iter())
+//     }
+// }
 
 impl FtsSearch {
     pub(crate) fn all_bindings(&self) -> impl Iterator<Item=&Symbol> {
@@ -1724,7 +1724,7 @@ pub(crate) enum NormalFormAtom {
     NegatedRelation(NormalFormRelationApplyAtom),
     Predicate(Expr),
     Unification(Unification),
-    HnswSearch(HnswSearch),
+    // HnswSearch(HnswSearch),
     FtsSearch(FtsSearch),
     LshSearch(LshSearch),
 }
@@ -1737,7 +1737,7 @@ pub(crate) enum MagicAtom {
     NegatedRule(MagicRuleApplyAtom),
     NegatedRelation(MagicRelationApplyAtom),
     Unification(Unification),
-    HnswSearch(HnswSearch),
+    // HnswSearch(HnswSearch),
     FtsSearch(FtsSearch),
     LshSearch(LshSearch),
 }
