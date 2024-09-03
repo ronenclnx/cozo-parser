@@ -174,10 +174,10 @@ impl ImperativeStmt {
                         collector.insert(m.base_relation.clone());
                         collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
                     }
-                    SysOp::CreateMinHashLshIndex(m) => {
-                        collector.insert(m.base_relation.clone());
-                        collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
-                    }
+                    // SysOp::CreateMinHashLshIndex(m) => {
+                    //     collector.insert(m.base_relation.clone());
+                    //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+                    // }
                     SysOp::RemoveIndex(rel, idx) => {
                         collector.insert(SmartString::from(format!("{}:{}", rel.name, idx.name)));
                     }

@@ -31,8 +31,9 @@ impl NormalFormAtom {
             | NormalFormAtom::Predicate(_)
             | NormalFormAtom::Unification(_)
             // | NormalFormAtom::HnswSearch(_)
-            | NormalFormAtom::FtsSearch(_)
-            | NormalFormAtom::LshSearch(_) => Default::default(),
+            // | NormalFormAtom::FtsSearch(_)
+            // | NormalFormAtom::LshSearch(_)
+             => Default::default(),
             NormalFormAtom::Rule(r) => BTreeMap::from([(&r.name, false)]),
             NormalFormAtom::NegatedRule(r) => BTreeMap::from([(&r.name, true)]),
         }

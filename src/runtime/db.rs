@@ -44,7 +44,7 @@ use crate::parse::sys::SysOp;
 use crate::parse::{parse_expressions, parse_script, CozoScript, SourceSpan};
 use crate::query::compile::{CompiledProgram, CompiledRule, CompiledRuleSet};
 use crate::query::ra::{
-    FilteredRA, FtsSearchRA, InnerJoin, LshSearchRA, NegJoin, RelAlgebra, ReorderRA,
+    FilteredRA, FtsSearchRA, InnerJoin, NegJoin, RelAlgebra, ReorderRA,
     StoredRA, StoredWithValidityRA, TempStoreRA, UnificationRA,
 };
 #[allow(unused_imports)]
@@ -1137,16 +1137,16 @@ impl<'s, S: Storage<'s>> Db<S> {
                                             .map(|f| f.to_string())
                                             .collect_vec()),
                                     ),
-                                    RelAlgebra::LshSearch(LshSearchRA { lsh_search, .. }) => (
-                                        "lsh_index",
-                                        json!(format!(":{}", lsh_search.query.name)),
-                                        json!(lsh_search.query.name),
-                                        json!(lsh_search
-                                            .filter
-                                            .iter()
-                                            .map(|f| f.to_string())
-                                            .collect_vec()),
-                                    ),
+                                    // RelAlgebra::LshSearch(LshSearchRA { lsh_search, .. }) => (
+                                    //     "lsh_index",
+                                    //     json!(format!(":{}", lsh_search.query.name)),
+                                    //     json!(lsh_search.query.name),
+                                    //     json!(lsh_search
+                                    //         .filter
+                                    //         .iter()
+                                    //         .map(|f| f.to_string())
+                                    //         .collect_vec()),
+                                    // ),
                                 };
                                 ret_for_relation.push(json!({
                                     STRATUM: stratum,
@@ -1314,26 +1314,26 @@ impl<'s, S: Storage<'s>> Db<S> {
                     vec![vec![DataValue::from(OK_STR)]],
                 ))
             }
-            SysOp::CreateMinHashLshIndex(config) => {
-                if read_only {
-                    bail!("Cannot create minhash lsh index in read-only mode");
-                }
-                if skip_locking {
-                    tx.create_minhash_lsh_index(config)?;
-                } else {
-                    let lock = self
-                        .obtain_relation_locks(iter::once(&config.base_relation))
-                        .pop()
-                        .unwrap();
-                    let _guard = lock.write().unwrap();
-                    tx.create_minhash_lsh_index(config)?;
-                }
+            // SysOp::CreateMinHashLshIndex(config) => {
+            //     if read_only {
+            //         bail!("Cannot create minhash lsh index in read-only mode");
+            //     }
+            //     if skip_locking {
+            //         tx.create_minhash_lsh_index(config)?;
+            //     } else {
+            //         let lock = self
+            //             .obtain_relation_locks(iter::once(&config.base_relation))
+            //             .pop()
+            //             .unwrap();
+            //         let _guard = lock.write().unwrap();
+            //         tx.create_minhash_lsh_index(config)?;
+            //     }
 
-                Ok(NamedRows::new(
-                    vec![STATUS_STR.to_string()],
-                    vec![vec![DataValue::from(OK_STR)]],
-                ))
-            }
+            //     Ok(NamedRows::new(
+            //         vec![STATUS_STR.to_string()],
+            //         vec![vec![DataValue::from(OK_STR)]],
+            //     ))
+            // }
             SysOp::RemoveIndex(rel_name, idx_name) => {
                 if read_only {
                     bail!("Cannot remove index in read-only mode");
@@ -1731,35 +1731,35 @@ impl<'s, S: Storage<'s>> Db<S> {
         //         }),
         //     ]);
         // }
-        for (name, (rel, manifest)) in &handle.fts_indices {
-            rows.push(vec![
-                json!(name),
-                json!("fts"),
-                json!([rel.name]),
-                json!({
-                    "extractor": manifest.extractor,
-                    "tokenizer": manifest.tokenizer,
-                    "tokenizer_filters": manifest.filters,
-                }),
-            ]);
-        }
-        for (name, (rel, inv_rel, manifest)) in &handle.lsh_indices {
-            rows.push(vec![
-                json!(name),
-                json!("lsh"),
-                json!([rel.name, inv_rel.name]),
-                json!({
-                    "extractor": manifest.extractor,
-                    "tokenizer": manifest.tokenizer,
-                    "tokenizer_filters": manifest.filters,
-                    "n_gram": manifest.n_gram,
-                    "num_perm": manifest.num_perm,
-                    "n_bands": manifest.n_bands,
-                    "n_rows_in_band": manifest.n_rows_in_band,
-                    "threshold": manifest.threshold,
-                }),
-            ]);
-        }
+        // // for (name, (rel, manifest)) in &handle.fts_indices {
+        // //     rows.push(vec![
+        // //         json!(name),
+        // //         json!("fts"),
+        // //         json!([rel.name]),
+        // //         json!({
+        // //             "extractor": manifest.extractor,
+        // //             "tokenizer": manifest.tokenizer,
+        // //             "tokenizer_filters": manifest.filters,
+        // //         }),
+        // //     ]);
+        // // }
+        // // for (name, (rel, inv_rel, manifest)) in &handle.lsh_indices {
+        // //     rows.push(vec![
+        // //         json!(name),
+        // //         json!("lsh"),
+        // //         json!([rel.name, inv_rel.name]),
+        // //         json!({
+        // //             "extractor": manifest.extractor,
+        // //             "tokenizer": manifest.tokenizer,
+        // //             "tokenizer_filters": manifest.filters,
+        // //             "n_gram": manifest.n_gram,
+        // //             "num_perm": manifest.num_perm,
+        // //             "n_bands": manifest.n_bands,
+        // //             "n_rows_in_band": manifest.n_rows_in_band,
+        // //             "threshold": manifest.threshold,
+        // //         }),
+        // //     ]);
+        // // }
         let rows = rows
             .into_iter()
             .map(|row| row.into_iter().map(DataValue::from).collect_vec())

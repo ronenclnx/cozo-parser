@@ -24,7 +24,7 @@ use crate::data::symb::Symbol;
 use crate::data::tuple::{Tuple, TupleIter};
 use crate::data::value::{DataValue, ValidityTs};
 use crate::parse::SourceSpan;
-use crate::runtime::minhash_lsh::LshSearch;
+// use crate::runtime::minhash_lsh::LshSearch;
 use crate::runtime::relation::RelationHandle;
 use crate::runtime::temp_store::EpochStore;
 use crate::runtime::transact::SessionTx;
@@ -42,7 +42,7 @@ pub(crate) enum RelAlgebra {
     Unification(UnificationRA),
     // HnswSearch(HnswSearchRA),
     FtsSearch(FtsSearchRA),
-    LshSearch(LshSearchRA),
+    // LshSearch(LshSearchRA),
 }
 
 impl RelAlgebra {
@@ -59,7 +59,7 @@ impl RelAlgebra {
             RelAlgebra::StoredWithValidity(i) => i.span,
             // RelAlgebra::HnswSearch(i) => i.hnsw_search.span,
             RelAlgebra::FtsSearch(i) => i.fts_search.span,
-            RelAlgebra::LshSearch(i) => i.lsh_search.span,
+            // RelAlgebra::LshSearch(i) => i.lsh_search.span,
         }
     }
 }
@@ -294,11 +294,11 @@ impl Debug for RelAlgebra {
                 .field(&bindings)
                 .field(&s.fts_search.idx_handle.name)
                 .finish(),
-            RelAlgebra::LshSearch(s) => f
-                .debug_tuple("LshSearch")
-                .field(&bindings)
-                .field(&s.lsh_search.idx_handle.name)
-                .finish(),
+            // RelAlgebra::LshSearch(s) => f
+            //     .debug_tuple("LshSearch")
+            //     .field(&bindings)
+            //     .field(&s.lsh_search.idx_handle.name)
+            //     .finish(),
             RelAlgebra::StoredWithValidity(r) => f
                 .debug_tuple("StoredWithValidity")
                 .field(&bindings)
@@ -371,9 +371,9 @@ impl RelAlgebra {
             RelAlgebra::FtsSearch(s) => {
                 s.fill_binding_indices_and_compile()?;
             }
-            RelAlgebra::LshSearch(s) => {
-                s.fill_binding_indices_and_compile()?;
-            }
+            // RelAlgebra::LshSearch(s) => {
+            //     s.fill_binding_indices_and_compile()?;
+            // }
             RelAlgebra::StoredWithValidity(v) => {
                 v.fill_binding_indices_and_compile()?;
             }
@@ -471,8 +471,7 @@ impl RelAlgebra {
             | RelAlgebra::NegJoin(_)
             | RelAlgebra::Unification(_)
             // | RelAlgebra::HnswSearch(_)
-            | RelAlgebra::FtsSearch(_)
-            | RelAlgebra::LshSearch(_)) => {
+            | RelAlgebra::FtsSearch(_)) => {
                 let span = filter.span();
                 RelAlgebra::Filter(FilteredRA {
                     parent: Box::new(s),
@@ -637,18 +636,18 @@ impl RelAlgebra {
             own_bindings,
         }))
     }
-    pub(crate) fn lsh_search(
-        self,
-        fts_search: LshSearch,
-        own_bindings: Vec<Symbol>,
-    ) -> Result<Self> {
-        Ok(Self::LshSearch(LshSearchRA {
-            parent: Box::new(self),
-            lsh_search: fts_search,
-            filter_bytecode: None,
-            own_bindings,
-        }))
-    }
+    // pub(crate) fn lsh_search(
+    //     self,
+    //     fts_search: LshSearch,
+    //     own_bindings: Vec<Symbol>,
+    // ) -> Result<Self> {
+    //     Ok(Self::LshSearch(LshSearchRA {
+    //         parent: Box::new(self),
+    //         lsh_search: fts_search,
+    //         filter_bytecode: None,
+    //         own_bindings,
+    //     }))
+    // }
     pub(crate) fn join(
         self,
         right: RelAlgebra,
@@ -900,78 +899,78 @@ pub(crate) struct StoredRA {
 //     pub(crate) own_bindings: Vec<Symbol>,
 // }
 
-#[derive(Debug)]
-pub(crate) struct LshSearchRA {
-    pub(crate) parent: Box<RelAlgebra>,
-    pub(crate) lsh_search: LshSearch,
-    pub(crate) filter_bytecode: Option<(Vec<Bytecode>, SourceSpan)>,
-    pub(crate) own_bindings: Vec<Symbol>,
-}
+// #[derive(Debug)]
+// pub(crate) struct LshSearchRA {
+//     pub(crate) parent: Box<RelAlgebra>,
+//     pub(crate) lsh_search: LshSearch,
+//     pub(crate) filter_bytecode: Option<(Vec<Bytecode>, SourceSpan)>,
+//     pub(crate) own_bindings: Vec<Symbol>,
+// }
 
-impl LshSearchRA {
-    fn fill_binding_indices_and_compile(&mut self) -> Result<()> {
-        self.parent.fill_binding_indices_and_compile()?;
-        if self.lsh_search.filter.is_some() {
-            let bindings: BTreeMap<_, _> = self
-                .own_bindings
-                .iter()
-                .cloned()
-                .enumerate()
-                .map(|(a, b)| (b, a))
-                .collect();
-            let filter = self.lsh_search.filter.as_mut().unwrap();
-            filter.fill_binding_indices(&bindings)?;
-            self.filter_bytecode = Some((filter.compile()?, filter.span()));
-        }
-        Ok(())
-    }
-    fn iter<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        delta_rule: Option<&MagicSymbol>,
-        stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<TupleIter<'a>> {
-        let bindings = self.parent.bindings_after_eliminate();
-        let mut bind_idx = usize::MAX;
-        for (i, b) in bindings.iter().enumerate() {
-            if *b == self.lsh_search.query {
-                bind_idx = i;
-                break;
-            }
-        }
-        let config = self.lsh_search.clone();
-        let filter_code = self.filter_bytecode.clone();
-        let mut stack = vec![];
-        let perms = config.manifest.get_hash_perms();
-        let tokenizer = tx.tokenizers.get(
-            &config.idx_handle.name,
-            &config.manifest.tokenizer,
-            &config.manifest.filters,
-        )?;
+// impl LshSearchRA {
+//     fn fill_binding_indices_and_compile(&mut self) -> Result<()> {
+//         self.parent.fill_binding_indices_and_compile()?;
+//         if self.lsh_search.filter.is_some() {
+//             let bindings: BTreeMap<_, _> = self
+//                 .own_bindings
+//                 .iter()
+//                 .cloned()
+//                 .enumerate()
+//                 .map(|(a, b)| (b, a))
+//                 .collect();
+//             let filter = self.lsh_search.filter.as_mut().unwrap();
+//             filter.fill_binding_indices(&bindings)?;
+//             self.filter_bytecode = Some((filter.compile()?, filter.span()));
+//         }
+//         Ok(())
+//     }
+//     fn iter<'a>(
+//         &'a self,
+//         tx: &'a SessionTx<'_>,
+//         delta_rule: Option<&MagicSymbol>,
+//         stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+//     ) -> Result<TupleIter<'a>> {
+//         let bindings = self.parent.bindings_after_eliminate();
+//         let mut bind_idx = usize::MAX;
+//         for (i, b) in bindings.iter().enumerate() {
+//             if *b == self.lsh_search.query {
+//                 bind_idx = i;
+//                 break;
+//             }
+//         }
+//         let config = self.lsh_search.clone();
+//         let filter_code = self.filter_bytecode.clone();
+//         let mut stack = vec![];
+//         let perms = config.manifest.get_hash_perms();
+//         let tokenizer = tx.tokenizers.get(
+//             &config.idx_handle.name,
+//             &config.manifest.tokenizer,
+//             &config.manifest.filters,
+//         )?;
 
-        let it = self
-            .parent
-            .iter(tx, delta_rule, stores)?
-            .map_ok(move |tuple| -> Result<_> {
-                let res = tx.lsh_search(
-                    &tuple[bind_idx],
-                    &config,
-                    &mut stack,
-                    &filter_code,
-                    &perms,
-                    &tokenizer,
-                )?;
-                Ok(res.into_iter().map(move |t| {
-                    let mut r = tuple.clone();
-                    r.extend(t);
-                    r
-                }))
-            })
-            .map(flatten_err)
-            .flatten_ok();
-        Ok(Box::new(it))
-    }
-}
+//         let it = self
+//             .parent
+//             .iter(tx, delta_rule, stores)?
+//             .map_ok(move |tuple| -> Result<_> {
+//                 let res = tx.lsh_search(
+//                     &tuple[bind_idx],
+//                     &config,
+//                     &mut stack,
+//                     &filter_code,
+//                     &perms,
+//                     &tokenizer,
+//                 )?;
+//                 Ok(res.into_iter().map(move |t| {
+//                     let mut r = tuple.clone();
+//                     r.extend(t);
+//                     r
+//                 }))
+//             })
+//             .map(flatten_err)
+//             .flatten_ok();
+//         Ok(Box::new(it))
+//     }
+// }
 
 #[derive(Debug)]
 pub(crate) struct FtsSearchRA {
@@ -1832,7 +1831,7 @@ impl RelAlgebra {
             RelAlgebra::Unification(r) => r.do_eliminate_temp_vars(used),
             // RelAlgebra::HnswSearch(_) => Ok(()),
             RelAlgebra::FtsSearch(_) => Ok(()),
-            RelAlgebra::LshSearch(_) => Ok(()),
+            // RelAlgebra::LshSearch(_) => Ok(()),
         }
     }
 
@@ -1849,7 +1848,7 @@ impl RelAlgebra {
             RelAlgebra::Unification(u) => Some(&u.to_eliminate),
             // RelAlgebra::HnswSearch(_) => None,
             RelAlgebra::FtsSearch(_) => None,
-            RelAlgebra::LshSearch(_) => None,
+            // RelAlgebra::LshSearch(_) => None,
         }
     }
 
@@ -1889,11 +1888,11 @@ impl RelAlgebra {
                 bindings.extend_from_slice(&s.own_bindings);
                 bindings
             }
-            RelAlgebra::LshSearch(s) => {
-                let mut bindings = s.parent.bindings_after_eliminate();
-                bindings.extend_from_slice(&s.own_bindings);
-                bindings
-            }
+            // RelAlgebra::LshSearch(s) => {
+            //     let mut bindings = s.parent.bindings_after_eliminate();
+            //     bindings.extend_from_slice(&s.own_bindings);
+            //     bindings
+            // }
         }
     }
     pub(crate) fn iter<'a>(
@@ -1914,7 +1913,7 @@ impl RelAlgebra {
             RelAlgebra::Unification(r) => r.iter(tx, delta_rule, stores),
             // RelAlgebra::HnswSearch(r) => r.iter(tx, delta_rule, stores),
             RelAlgebra::FtsSearch(r) => r.iter(tx, delta_rule, stores),
-            RelAlgebra::LshSearch(r) => r.iter(tx, delta_rule, stores),
+            // RelAlgebra::LshSearch(r) => r.iter(tx, delta_rule, stores),
         }
     }
 }
@@ -2096,7 +2095,7 @@ impl InnerJoin {
             }
             // RelAlgebra::HnswSearch(_) => "hnsw_search_join",
             RelAlgebra::FtsSearch(_) => "fts_search_join",
-            RelAlgebra::LshSearch(_) => "lsh_search_join",
+            // RelAlgebra::LshSearch(_) => "lsh_search_join",
             RelAlgebra::StoredWithValidity(_) => {
                 let join_indices = self
                     .joiner
@@ -2207,8 +2206,7 @@ impl InnerJoin {
             | RelAlgebra::Filter(_)
             | RelAlgebra::Unification(_)
             // | RelAlgebra::HnswSearch(_)
-            | RelAlgebra::FtsSearch(_)
-            | RelAlgebra::LshSearch(_) => {
+            | RelAlgebra::FtsSearch(_) => {
                 self.materialized_join(tx, eliminate_indices, delta_rule, stores)
             }
             RelAlgebra::Reorder(_) => {
