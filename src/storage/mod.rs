@@ -11,7 +11,7 @@ use miette::Result;
 
 use crate::data::tuple::Tuple;
 use crate::data::value::ValidityTs;
-use crate::decode_tuple_from_kv;
+use crate::runtime::relation::decode_tuple_from_kv;
 
 pub(crate) mod mem;
 #[cfg(feature = "storage-rocksdb")]

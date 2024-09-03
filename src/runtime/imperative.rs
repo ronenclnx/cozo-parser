@@ -23,8 +23,8 @@ use crate::runtime::callback::CallbackCollector;
 use crate::runtime::db::{seconds_since_the_epoch, RunningQueryCleanup, RunningQueryHandle};
 use crate::runtime::relation::InputRelationHandle;
 use crate::runtime::transact::SessionTx;
-use crate::runtime::db::{Poison, NamedRows};
-use crate::{Db, ValidityTs};
+use crate::runtime::db::{Db, Poison, NamedRows};
+use crate::data::value::ValidityTs;
 use crate::storage::Storage;
 use crate::data::value::{DataValue};
 

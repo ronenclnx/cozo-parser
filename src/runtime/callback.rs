@@ -12,7 +12,7 @@ use std::fmt::{Display, Formatter};
 use crossbeam::channel::Sender;
 use smartstring::{LazyCompact, SmartString};
 
-use crate::{Db};
+use crate::runtime::db::{Db};
 use crate::storage::Storage;
 use crate::runtime::db::NamedRows;
 

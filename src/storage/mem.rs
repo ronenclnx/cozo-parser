@@ -24,12 +24,13 @@ use crate::data::value::ValidityTs;
 use crate::runtime::relation::{decode_tuple_from_kv, extend_tuple_from_v};
 use crate::storage::{Storage, StoreTx};
 use crate::utils::swap_option_result;
+use crate::runtime::db::Db;
 
 /// Create a database backed by memory.
 /// This is the fastest storage, but non-persistent.
 /// Supports concurrent readers but only a single writer.
-pub fn new_cozo_mem() -> Result<crate::Db<MemStorage>> {
-    let ret = crate::Db::new(MemStorage::default())?;
+pub fn new_cozo_mem() -> Result<Db<MemStorage>> {
+    let ret = Db::new(MemStorage::default())?;
 
     ret.initialize()?;
     Ok(ret)

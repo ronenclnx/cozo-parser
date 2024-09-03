@@ -57,7 +57,8 @@ use crate::runtime::relation::{
 use crate::runtime::transact::SessionTx;
 use crate::storage::temp::TempStorage;
 use crate::storage::Storage;
-use crate::{decode_tuple_from_kv, Symbol};
+use crate::runtime::relation::decode_tuple_from_kv;
+use crate::data::symb::{Symbol};
 use crate::fixed_rule::FixedRule;
 
 pub(crate) struct RunningQueryHandle {

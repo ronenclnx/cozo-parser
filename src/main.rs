@@ -49,8 +49,8 @@ use serde_json::json;
 
 use data::value::{DataValue, Num, ValidityTs};
 // use fixed_rule::{FixedRule};
-use runtime::db::Db;
-use runtime::relation::decode_tuple_from_kv;
+// use runtime::db::Db;
+// use runtime::relation::decode_tuple_from_kv;
 // #[cfg(feature = "storage-sqlite")]
 // use storage::sqlite::{new_cozo_sqlite, SqliteStorage};
 // use storage::{Storage, StoreTx};
