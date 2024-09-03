@@ -372,33 +372,33 @@ impl<'a> SessionTx<'a> {
         Ok(())
     }
 
-    fn put_in_fts(
-        &mut self,
-        rel_handle: &RelationHandle,
-        stack: &mut Vec<DataValue>,
-        processors: &BTreeMap<SmartString<LazyCompact>, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
-        new_kv: &[DataValue],
-    ) -> Result<()> {
-        for (k, (idx_handle, _)) in rel_handle.fts_indices.iter() {
-            let (tokenizer, extractor) = processors.get(k).unwrap();
-            self.put_fts_index_item(new_kv, extractor, stack, tokenizer, rel_handle, idx_handle)?;
-        }
-        Ok(())
-    }
+    // fn put_in_fts(
+    //     &mut self,
+    //     rel_handle: &RelationHandle,
+    //     stack: &mut Vec<DataValue>,
+    //     processors: &BTreeMap<SmartString<LazyCompact>, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
+    //     new_kv: &[DataValue],
+    // ) -> Result<()> {
+    //     for (k, (idx_handle, _)) in rel_handle.fts_indices.iter() {
+    //         let (tokenizer, extractor) = processors.get(k).unwrap();
+    //         self.put_fts_index_item(new_kv, extractor, stack, tokenizer, rel_handle, idx_handle)?;
+    //     }
+    //     Ok(())
+    // }
 
-    fn del_in_fts(
-        &mut self,
-        rel_handle: &RelationHandle,
-        stack: &mut Vec<DataValue>,
-        processors: &BTreeMap<SmartString<LazyCompact>, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
-        old_kv: &[DataValue],
-    ) -> Result<()> {
-        for (k, (idx_handle, _)) in rel_handle.fts_indices.iter() {
-            let (tokenizer, extractor) = processors.get(k).unwrap();
-            self.del_fts_index_item(old_kv, extractor, stack, tokenizer, rel_handle, idx_handle)?;
-        }
-        Ok(())
-    }
+    // fn del_in_fts(
+    //     &mut self,
+    //     rel_handle: &RelationHandle,
+    //     stack: &mut Vec<DataValue>,
+    //     processors: &BTreeMap<SmartString<LazyCompact>, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
+    //     old_kv: &[DataValue],
+    // ) -> Result<()> {
+    //     for (k, (idx_handle, _)) in rel_handle.fts_indices.iter() {
+    //         let (tokenizer, extractor) = processors.get(k).unwrap();
+    //         // self.del_fts_index_item(old_kv, extractor, stack, tokenizer, rel_handle, idx_handle)?;
+    //     }
+    //     Ok(())
+    // }
 
     // fn put_in_lsh(
     //     &mut self,

@@ -44,7 +44,7 @@ use crate::parse::sys::SysOp;
 use crate::parse::{parse_expressions, parse_script, CozoScript, SourceSpan};
 use crate::query::compile::{CompiledProgram, CompiledRule, CompiledRuleSet};
 use crate::query::ra::{
-    FilteredRA, FtsSearchRA, InnerJoin, NegJoin, RelAlgebra, ReorderRA,
+    FilteredRA, InnerJoin, NegJoin, RelAlgebra, ReorderRA,
     StoredRA, StoredWithValidityRA, TempStoreRA, UnificationRA,
 };
 #[allow(unused_imports)]
@@ -1127,16 +1127,16 @@ impl<'s, S: Storage<'s>> Db<S> {
                                     //         .map(|f| f.to_string())
                                     //         .collect_vec()),
                                     // ),
-                                    RelAlgebra::FtsSearch(FtsSearchRA { fts_search, .. }) => (
-                                        "fts_index",
-                                        json!(format!(":{}", fts_search.query.name)),
-                                        json!(fts_search.query.name),
-                                        json!(fts_search
-                                            .filter
-                                            .iter()
-                                            .map(|f| f.to_string())
-                                            .collect_vec()),
-                                    ),
+                                    // RelAlgebra::FtsSearch(FtsSearchRA { fts_search, .. }) => (
+                                    //     "fts_index",
+                                    //     json!(format!(":{}", fts_search.query.name)),
+                                    //     json!(fts_search.query.name),
+                                    //     json!(fts_search
+                                    //         .filter
+                                    //         .iter()
+                                    //         .map(|f| f.to_string())
+                                    //         .collect_vec()),
+                                    // ),
                                     // RelAlgebra::LshSearch(LshSearchRA { lsh_search, .. }) => (
                                     //     "lsh_index",
                                     //     json!(format!(":{}", lsh_search.query.name)),
@@ -1276,44 +1276,44 @@ impl<'s, S: Storage<'s>> Db<S> {
                     vec![vec![DataValue::from(OK_STR)]],
                 ))
             }
-            SysOp::CreateVectorIndex(config) => {
-                if read_only {
-                    bail!("Cannot create vector index in read-only mode");
-                }
-                if skip_locking {
-                    tx.create_hnsw_index(config)?;
-                } else {
-                    let lock = self
-                        .obtain_relation_locks(iter::once(&config.base_relation))
-                        .pop()
-                        .unwrap();
-                    let _guard = lock.write().unwrap();
-                    tx.create_hnsw_index(config)?;
-                }
-                Ok(NamedRows::new(
-                    vec![STATUS_STR.to_string()],
-                    vec![vec![DataValue::from(OK_STR)]],
-                ))
-            }
-            SysOp::CreateFtsIndex(config) => {
-                if read_only {
-                    bail!("Cannot create fts index in read-only mode");
-                }
-                if skip_locking {
-                    tx.create_fts_index(config)?;
-                } else {
-                    let lock = self
-                        .obtain_relation_locks(iter::once(&config.base_relation))
-                        .pop()
-                        .unwrap();
-                    let _guard = lock.write().unwrap();
-                    tx.create_fts_index(config)?;
-                }
-                Ok(NamedRows::new(
-                    vec![STATUS_STR.to_string()],
-                    vec![vec![DataValue::from(OK_STR)]],
-                ))
-            }
+            // SysOp::CreateVectorIndex(config) => {
+            //     if read_only {
+            //         bail!("Cannot create vector index in read-only mode");
+            //     }
+            //     if skip_locking {
+            //         tx.create_hnsw_index(config)?;
+            //     } else {
+            //         let lock = self
+            //             .obtain_relation_locks(iter::once(&config.base_relation))
+            //             .pop()
+            //             .unwrap();
+            //         let _guard = lock.write().unwrap();
+            //         tx.create_hnsw_index(config)?;
+            //     }
+            //     Ok(NamedRows::new(
+            //         vec![STATUS_STR.to_string()],
+            //         vec![vec![DataValue::from(OK_STR)]],
+            //     ))
+            // }
+            // SysOp::CreateFtsIndex(config) => {
+            //     if read_only {
+            //         bail!("Cannot create fts index in read-only mode");
+            //     }
+            //     if skip_locking {
+            //         tx.create_fts_index(config)?;
+            //     } else {
+            //         let lock = self
+            //             .obtain_relation_locks(iter::once(&config.base_relation))
+            //             .pop()
+            //             .unwrap();
+            //         let _guard = lock.write().unwrap();
+            //         tx.create_fts_index(config)?;
+            //     }
+            //     Ok(NamedRows::new(
+            //         vec![STATUS_STR.to_string()],
+            //         vec![vec![DataValue::from(OK_STR)]],
+            //     ))
+            // }
             // SysOp::CreateMinHashLshIndex(config) => {
             //     if read_only {
             //         bail!("Cannot create minhash lsh index in read-only mode");

@@ -43,8 +43,8 @@ pub(crate) enum SysOp {
     SetTriggers(Symbol, Vec<String>, Vec<String>, Vec<String>),
     SetAccessLevel(Vec<Symbol>, AccessLevel),
     CreateIndex(Symbol, Symbol, Vec<Symbol>),
-    CreateVectorIndex(HnswIndexConfig),
-    CreateFtsIndex(FtsIndexConfig),
+    // CreateVectorIndex(HnswIndexConfig),
+    // CreateFtsIndex(FtsIndexConfig),
     // CreateMinHashLshIndex(MinHashLshConfig),
     RemoveIndex(Symbol, Symbol),
     DescribeRelation(Symbol, SmartString<LazyCompact>)
@@ -402,116 +402,116 @@ pub(crate) fn parse_sys(
         // //         r => unreachable!("{:?}", r),
         // //     }
         // // }
-        Rule::fts_idx_op => {
-            let inner = inner.into_inner().next().unwrap();
-            match inner.as_rule() {
-                Rule::index_create_adv => {
-                    let mut inner = inner.into_inner();
-                    let rel = inner.next().unwrap();
-                    let name = inner.next().unwrap();
-                    let mut filters = vec![];
-                    let mut tokenizer = TokenizerConfig {
-                        name: Default::default(),
-                        args: Default::default(),
-                    };
-                    let mut extractor = "".to_string();
-                    let mut extract_filter = "".to_string();
-                    for opt_pair in inner {
-                        let mut opt_inner = opt_pair.into_inner();
-                        let opt_name = opt_inner.next().unwrap();
-                        let opt_val = opt_inner.next().unwrap();
-                        match opt_name.as_str() {
-                            "extractor" => {
-                                let mut ex = build_expr(opt_val, param_pool)?;
-                                ex.partial_eval()?;
-                                extractor = ex.to_string();
-                            }
-                            "extract_filter" => {
-                                let mut ex = build_expr(opt_val, param_pool)?;
-                                ex.partial_eval()?;
-                                extract_filter = ex.to_string();
-                            }
-                            "tokenizer" => {
-                                let mut expr = build_expr(opt_val, param_pool)?;
-                                expr.partial_eval()?;
-                                match expr {
-                                    Expr::UnboundApply { op, args, .. } => {
-                                        let mut targs = vec![];
-                                        for arg in args.iter() {
-                                            let v = arg.clone().eval_to_const()?;
-                                            targs.push(v);
-                                        }
-                                        tokenizer.name = op;
-                                        tokenizer.args = targs;
-                                    }
-                                    Expr::Binding { var, .. } => {
-                                        tokenizer.name = var.name;
-                                        tokenizer.args = vec![];
-                                    }
-                                    _ => bail!("Tokenizer must be a symbol or a call for an existing tokenizer"),
-                                }
-                            }
-                            "filters" => {
-                                let mut expr = build_expr(opt_val, param_pool)?;
-                                expr.partial_eval()?;
-                                match expr {
-                                    Expr::Apply { op, args, .. } => {
-                                        if op.name != "OP_LIST" {
-                                            bail!("Filters must be a list of filters");
-                                        }
-                                        for arg in args.iter() {
-                                            match arg {
-                                                Expr::UnboundApply { op, args, .. } => {
-                                                    let mut targs = vec![];
-                                                    for arg in args.iter() {
-                                                        let v = arg.clone().eval_to_const()?;
-                                                        targs.push(v);
-                                                    }
-                                                    filters.push(TokenizerConfig {
-                                                        name: op.clone(),
-                                                        args: targs,
-                                                    })
-                                                }
-                                                Expr::Binding { var, .. } => {
-                                                    filters.push(TokenizerConfig {
-                                                        name: var.name.clone(),
-                                                        args: vec![],
-                                                    })
-                                                }
-                                                _ => bail!("Tokenizer must be a symbol or a call for an existing tokenizer"),
-                                            }
-                                        }
-                                    }
-                                    _ => bail!("Filters must be a list of filters"),
-                                }
-                            }
-                            _ => bail!("Unknown option {} for FTS index", opt_name.as_str()),
-                        }
-                    }
-                    if !extract_filter.is_empty() {
-                        extractor = format!("if({}, {})", extract_filter, extractor);
-                    }
-                    let config = FtsIndexConfig {
-                        base_relation: SmartString::from(rel.as_str()),
-                        index_name: SmartString::from(name.as_str()),
-                        extractor,
-                        tokenizer,
-                        filters,
-                    };
-                    SysOp::CreateFtsIndex(config)
-                }
-                Rule::index_drop => {
-                    let mut inner = inner.into_inner();
-                    let rel = inner.next().unwrap();
-                    let name = inner.next().unwrap();
-                    SysOp::RemoveIndex(
-                        Symbol::new(rel.as_str(), rel.extract_span()),
-                        Symbol::new(name.as_str(), name.extract_span()),
-                    )
-                }
-                r => unreachable!("{:?}", r),
-            }
-        }
+        // Rule::fts_idx_op => {
+        //     let inner = inner.into_inner().next().unwrap();
+        //     match inner.as_rule() {
+        //         Rule::index_create_adv => {
+        //             let mut inner = inner.into_inner();
+        //             let rel = inner.next().unwrap();
+        //             let name = inner.next().unwrap();
+        //             let mut filters = vec![];
+        //             let mut tokenizer = TokenizerConfig {
+        //                 name: Default::default(),
+        //                 args: Default::default(),
+        //             };
+        //             let mut extractor = "".to_string();
+        //             let mut extract_filter = "".to_string();
+        //             for opt_pair in inner {
+        //                 let mut opt_inner = opt_pair.into_inner();
+        //                 let opt_name = opt_inner.next().unwrap();
+        //                 let opt_val = opt_inner.next().unwrap();
+        //                 match opt_name.as_str() {
+        //                     "extractor" => {
+        //                         let mut ex = build_expr(opt_val, param_pool)?;
+        //                         ex.partial_eval()?;
+        //                         extractor = ex.to_string();
+        //                     }
+        //                     "extract_filter" => {
+        //                         let mut ex = build_expr(opt_val, param_pool)?;
+        //                         ex.partial_eval()?;
+        //                         extract_filter = ex.to_string();
+        //                     }
+        //                     "tokenizer" => {
+        //                         let mut expr = build_expr(opt_val, param_pool)?;
+        //                         expr.partial_eval()?;
+        //                         match expr {
+        //                             Expr::UnboundApply { op, args, .. } => {
+        //                                 let mut targs = vec![];
+        //                                 for arg in args.iter() {
+        //                                     let v = arg.clone().eval_to_const()?;
+        //                                     targs.push(v);
+        //                                 }
+        //                                 tokenizer.name = op;
+        //                                 tokenizer.args = targs;
+        //                             }
+        //                             Expr::Binding { var, .. } => {
+        //                                 tokenizer.name = var.name;
+        //                                 tokenizer.args = vec![];
+        //                             }
+        //                             _ => bail!("Tokenizer must be a symbol or a call for an existing tokenizer"),
+        //                         }
+        //                     }
+        //                     "filters" => {
+        //                         let mut expr = build_expr(opt_val, param_pool)?;
+        //                         expr.partial_eval()?;
+        //                         match expr {
+        //                             Expr::Apply { op, args, .. } => {
+        //                                 if op.name != "OP_LIST" {
+        //                                     bail!("Filters must be a list of filters");
+        //                                 }
+        //                                 for arg in args.iter() {
+        //                                     match arg {
+        //                                         Expr::UnboundApply { op, args, .. } => {
+        //                                             let mut targs = vec![];
+        //                                             for arg in args.iter() {
+        //                                                 let v = arg.clone().eval_to_const()?;
+        //                                                 targs.push(v);
+        //                                             }
+        //                                             filters.push(TokenizerConfig {
+        //                                                 name: op.clone(),
+        //                                                 args: targs,
+        //                                             })
+        //                                         }
+        //                                         Expr::Binding { var, .. } => {
+        //                                             filters.push(TokenizerConfig {
+        //                                                 name: var.name.clone(),
+        //                                                 args: vec![],
+        //                                             })
+        //                                         }
+        //                                         _ => bail!("Tokenizer must be a symbol or a call for an existing tokenizer"),
+        //                                     }
+        //                                 }
+        //                             }
+        //                             _ => bail!("Filters must be a list of filters"),
+        //                         }
+        //                     }
+        //                     _ => bail!("Unknown option {} for FTS index", opt_name.as_str()),
+        //                 }
+        //             }
+        //             if !extract_filter.is_empty() {
+        //                 extractor = format!("if({}, {})", extract_filter, extractor);
+        //             }
+        //             let config = FtsIndexConfig {
+        //                 base_relation: SmartString::from(rel.as_str()),
+        //                 index_name: SmartString::from(name.as_str()),
+        //                 extractor,
+        //                 tokenizer,
+        //                 filters,
+        //             };
+        //             SysOp::CreateFtsIndex(config)
+        //         }
+        //         Rule::index_drop => {
+        //             let mut inner = inner.into_inner();
+        //             let rel = inner.next().unwrap();
+        //             let name = inner.next().unwrap();
+        //             SysOp::RemoveIndex(
+        //                 Symbol::new(rel.as_str(), rel.extract_span()),
+        //                 Symbol::new(name.as_str(), name.extract_span()),
+        //             )
+        //         }
+        //         r => unreachable!("{:?}", r),
+        //     }
+        // }
         Rule::vec_idx_op => {
             let inner = inner.into_inner().next().unwrap();
             match inner.as_rule() {
@@ -608,19 +608,21 @@ pub(crate) fn parse_sys(
                     if m_neighbours == 0 {
                         bail!("m_neighbours must be set");
                     }
-                    SysOp::CreateVectorIndex(HnswIndexConfig {
-                        base_relation: SmartString::from(rel.as_str()),
-                        index_name: SmartString::from(name.as_str()),
-                        vec_dim,
-                        dtype,
-                        vec_fields,
-                        distance,
-                        ef_construction,
-                        m_neighbours,
-                        index_filter,
-                        extend_candidates,
-                        keep_pruned_connections,
-                    })
+
+                    todo!()
+                    // SysOp::CreateVectorIndex(HnswIndexConfig {
+                    //     base_relation: SmartString::from(rel.as_str()),
+                    //     index_name: SmartString::from(name.as_str()),
+                    //     vec_dim,
+                    //     dtype,
+                    //     vec_fields,
+                    //     distance,
+                    //     ef_construction,
+                    //     m_neighbours,
+                    //     index_filter,
+                    //     extend_candidates,
+                    //     keep_pruned_connections,
+                    // })
                 }
                 Rule::index_drop => {
                     let mut inner = inner.into_inner();

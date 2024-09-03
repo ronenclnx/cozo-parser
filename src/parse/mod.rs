@@ -166,14 +166,14 @@ impl ImperativeStmt {
                         collector.insert(symb.name.clone());
                         collector.insert(SmartString::from(format!("{}:{}", symb.name, subs.name)));
                     }
-                    SysOp::CreateVectorIndex(m) => {
-                        collector.insert(m.base_relation.clone());
-                        collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
-                    }
-                    SysOp::CreateFtsIndex(m) => {
-                        collector.insert(m.base_relation.clone());
-                        collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
-                    }
+                    // SysOp::CreateVectorIndex(m) => {
+                    //     collector.insert(m.base_relation.clone());
+                    //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+                    // }
+                    // SysOp::CreateFtsIndex(m) => {
+                    //     collector.insert(m.base_relation.clone());
+                    //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+                    // }
                     // SysOp::CreateMinHashLshIndex(m) => {
                     //     collector.insert(m.base_relation.clone());
                     //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
