@@ -396,31 +396,31 @@ impl<'s, S: Storage<'s>> Db<S> {
         }
     }
 
-    /// Run the CozoScript passed in. The `params` argument is a map of parameters.
-    pub fn run_script(
-        &'s self,
-        payload: &str,
-        params: BTreeMap<String, DataValue>,
-        mutability: ScriptMutability,
-    ) -> Result<NamedRows> {
-        let cur_vld = current_validity();
-        self.do_run_script(
-            payload,
-            &params,
-            cur_vld,
-            mutability == ScriptMutability::Immutable,
-        )
-    }
+    // /// Run the CozoScript passed in. The `params` argument is a map of parameters.
+    // pub fn run_script(
+    //     &'s self,
+    //     payload: &str,
+    //     params: BTreeMap<String, DataValue>,
+    //     mutability: ScriptMutability,
+    // ) -> Result<NamedRows> {
+    //     let cur_vld = current_validity();
+    //     self.do_run_script(
+    //         payload,
+    //         &params,
+    //         cur_vld,
+    //         mutability == ScriptMutability::Immutable,
+    //     )
+    // }
 
-    /// Run the CozoScript passed in. The `params` argument is a map of parameters.
-    pub fn run_script_read_only(
-        &'s self,
-        payload: &str,
-        params: BTreeMap<String, DataValue>,
-    ) -> Result<NamedRows> {
-        let cur_vld = current_validity();
-        self.do_run_script(payload, &params, cur_vld, true)
-    }
+    // /// Run the CozoScript passed in. The `params` argument is a map of parameters.
+    // pub fn run_script_read_only(
+    //     &'s self,
+    //     payload: &str,
+    //     params: BTreeMap<String, DataValue>,
+    // ) -> Result<NamedRows> {
+    //     let cur_vld = current_validity();
+    //     self.do_run_script(payload, &params, cur_vld, true)
+    // }
 
     /// Export relations to JSON data.
     ///
@@ -891,24 +891,24 @@ impl<'s, S: Storage<'s>> Db<S> {
         Ok(q_res)
     }
 
-    fn do_run_script(
-        &'s self,
-        payload: &str,
-        param_pool: &BTreeMap<String, DataValue>,
-        cur_vld: ValidityTs,
-        read_only: bool,
-    ) -> Result<NamedRows> {
-        match parse_script(
-            payload,
-            param_pool,
-            &self.fixed_rules.read().unwrap(),
-            cur_vld,
-        )? {
-            CozoScript::Single(p) => self.execute_single(cur_vld, p, read_only),
-            CozoScript::Imperative(ps) => self.execute_imperative(cur_vld, &ps, read_only),
-            CozoScript::Sys(op) => self.run_sys_op(op, read_only),
-        }
-    }
+    // fn do_run_script(
+    //     &'s self,
+    //     payload: &str,
+    //     param_pool: &BTreeMap<String, DataValue>,
+    //     cur_vld: ValidityTs,
+    //     read_only: bool,
+    // ) -> Result<NamedRows> {
+    //     match parse_script(
+    //         payload,
+    //         param_pool,
+    //         &self.fixed_rules.read().unwrap(),
+    //         cur_vld,
+    //     )? {
+    //         CozoScript::Single(p) => self.execute_single(cur_vld, p, read_only),
+    //         CozoScript::Imperative(ps) => self.execute_imperative(cur_vld, &ps, read_only),
+    //         CozoScript::Sys(op) => self.run_sys_op(op, read_only),
+    //     }
+    // }
 
     fn execute_single(
         &'s self,
