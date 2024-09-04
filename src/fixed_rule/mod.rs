@@ -63,21 +63,21 @@ impl<'a, 'b> FixedRuleInputRelation<'a, 'b> {
     pub fn arity(&self) -> Result<usize> {
         self.arg_manifest.arity(self.tx, self.stores)
     }
-    /// Ensure the input relation contains tuples of the given minimal length.
-    pub fn ensure_min_len(self, len: usize) -> Result<Self> {
-        #[derive(Error, Diagnostic, Debug)]
-        #[error("Input relation to algorithm has insufficient arity")]
-        #[diagnostic(help("Arity should be at least {0} but is {1}"))]
-        #[diagnostic(code(algo::input_relation_bad_arity))]
-        struct InputRelationArityError(usize, usize, #[label] SourceSpan);
+    // /// Ensure the input relation contains tuples of the given minimal length.
+    // pub fn ensure_min_len(self, len: usize) -> Result<Self> {
+    //     #[derive(Error, Diagnostic, Debug)]
+    //     #[error("Input relation to algorithm has insufficient arity")]
+    //     #[diagnostic(help("Arity should be at least {0} but is {1}"))]
+    //     #[diagnostic(code(algo::input_relation_bad_arity))]
+    //     struct InputRelationArityError(usize, usize, #[label] SourceSpan);
 
-        let arity = self.arg_manifest.arity(self.tx, self.stores)?;
-        ensure!(
-            arity >= len,
-            InputRelationArityError(len, arity, self.arg_manifest.span())
-        );
-        Ok(self)
-    }
+    //     let arity = self.arg_manifest.arity(self.tx, self.stores)?;
+    //     ensure!(
+    //         arity >= len,
+    //         InputRelationArityError(len, arity, self.arg_manifest.span())
+    //     );
+    //     Ok(self)
+    // }
     /// Get the binding map of the input relation
     pub fn get_binding_map(&self, offset: usize) -> BTreeMap<Symbol, usize> {
         self.arg_manifest.get_binding_map(offset)
@@ -94,238 +94,239 @@ impl<'a, 'b> FixedRuleInputRelation<'a, 'b> {
             MagicFixedRuleRuleArg::Stored { name, valid_at, .. } => {
                 let relation = self.tx.get_relation(name, false)?;
                 if let Some(valid_at) = valid_at {
-                    Box::new(relation.skip_scan_all(self.tx, *valid_at))
+                    todo!()
+                    // Box::new(relation.skip_scan_all(self.tx, *valid_at))
                 } else {
                     Box::new(relation.scan_all(self.tx))
                 }
             }
         })
     }
-    /// Iterate the relation with the given single-value prefix
-    pub fn prefix_iter(&self, prefix: &DataValue) -> Result<TupleIter<'_>> {
-        Ok(match self.arg_manifest {
-            MagicFixedRuleRuleArg::InMem { name, .. } => {
-                let store = self.stores.get(name).ok_or_else(|| {
-                    RuleNotFoundError(name.symbol().to_string(), name.symbol().span)
-                })?;
-                let t = vec![prefix.clone()];
-                Box::new(store.prefix_iter(&t).map(|t| Ok(t.into_tuple())))
-            }
-            MagicFixedRuleRuleArg::Stored { name, valid_at, .. } => {
-                let relation = self.tx.get_relation(name, false)?;
-                let t = vec![prefix.clone()];
-                if let Some(valid_at) = valid_at {
-                    Box::new(relation.skip_scan_prefix(self.tx, &t, *valid_at))
-                } else {
-                    Box::new(relation.scan_prefix(self.tx, &t))
-                }
-            }
-        })
-    }
+    // // // /// Iterate the relation with the given single-value prefix
+    // // // pub fn prefix_iter(&self, prefix: &DataValue) -> Result<TupleIter<'_>> {
+    // // //     Ok(match self.arg_manifest {
+    // // //         MagicFixedRuleRuleArg::InMem { name, .. } => {
+    // // //             let store = self.stores.get(name).ok_or_else(|| {
+    // // //                 RuleNotFoundError(name.symbol().to_string(), name.symbol().span)
+    // // //             })?;
+    // // //             let t = vec![prefix.clone()];
+    // // //             Box::new(store.prefix_iter(&t).map(|t| Ok(t.into_tuple())))
+    // // //         }
+    // // //         MagicFixedRuleRuleArg::Stored { name, valid_at, .. } => {
+    // // //             let relation = self.tx.get_relation(name, false)?;
+    // // //             let t = vec![prefix.clone()];
+    // // //             if let Some(valid_at) = valid_at {
+    // // //                 Box::new(relation.skip_scan_prefix(self.tx, &t, *valid_at))
+    // // //             } else {
+    // // //                 Box::new(relation.scan_prefix(self.tx, &t))
+    // // //             }
+    // // //         }
+    // // //     })
+    // // // }
     /// Get the source span of the input relation. Useful for generating informative error messages.
     pub fn span(&self) -> SourceSpan {
         self.arg_manifest.span()
     }
-    /// Convert the input relation into a directed graph.
-    /// If `undirected` is true, then each edge in the input relation is treated as a pair
-    /// of edges, one for each direction.
-    ///
-    /// Returns the graph, the vertices in a vector with the index the same as used in the graph,
-    /// and the inverse vertex mapping.
-    #[cfg(feature = "graph-algo")]
-    pub fn as_directed_graph(
-        &self,
-        undirected: bool,
-    ) -> Result<(
-        DirectedCsrGraph<u32>,
-        Vec<DataValue>,
-        BTreeMap<DataValue, u32>,
-    )> {
-        let mut indices: Vec<DataValue> = vec![];
-        let mut inv_indices: BTreeMap<DataValue, u32> = Default::default();
-        let mut error: Option<Report> = None;
-        let it = self.iter()?.filter_map(|r_tuple| match r_tuple {
-            Ok(tuple) => {
-                let mut tuple = tuple.into_iter();
-                let from = match tuple.next() {
-                    None => {
-                        error = Some(NotAnEdgeError(self.span()).into());
-                        return None;
-                    }
-                    Some(f) => f,
-                };
-                let to = match tuple.next() {
-                    None => {
-                        error = Some(NotAnEdgeError(self.span()).into());
-                        return None;
-                    }
-                    Some(f) => f,
-                };
-                let from_idx = if let Some(idx) = inv_indices.get(&from) {
-                    *idx
-                } else {
-                    let idx = indices.len() as u32;
-                    inv_indices.insert(from.clone(), idx);
-                    indices.push(from.clone());
-                    idx
-                };
-                let to_idx = if let Some(idx) = inv_indices.get(&to) {
-                    *idx
-                } else {
-                    let idx = indices.len() as u32;
-                    inv_indices.insert(to.clone(), idx);
-                    indices.push(to.clone());
-                    idx
-                };
-                Some((from_idx, to_idx))
-            }
-            Err(err) => {
-                error = Some(err);
-                None
-            }
-        });
-        let it = if undirected {
-            Right(it.flat_map(|(f, t)| [(f, t), (t, f)]))
-        } else {
-            Left(it)
-        };
-        let graph: DirectedCsrGraph<u32> = GraphBuilder::new()
-            .csr_layout(CsrLayout::Sorted)
-            .edges(it)
-            .build();
-        if let Some(err) = error {
-            bail!(err)
-        }
-        Ok((graph, indices, inv_indices))
-    }
-    /// Convert the input relation into a directed weighted graph.
-    /// If `undirected` is true, then each edge in the input relation is treated as a pair
-    /// of edges, one for each direction.
-    ///
-    /// Returns the graph, the vertices in a vector with the index the same as used in the graph,
-    /// and the inverse vertex mapping.
-    #[cfg(feature = "graph-algo")]
-    pub fn as_directed_weighted_graph(
-        &self,
-        undirected: bool,
-        allow_negative_weights: bool,
-    ) -> Result<(
-        DirectedCsrGraph<u32, (), f32>,
-        Vec<DataValue>,
-        BTreeMap<DataValue, u32>,
-    )> {
-        let mut indices: Vec<DataValue> = vec![];
-        let mut inv_indices: BTreeMap<DataValue, u32> = Default::default();
-        let mut error: Option<Report> = None;
-        let it = self.iter()?.filter_map(|r_tuple| match r_tuple {
-            Ok(tuple) => {
-                let mut tuple = tuple.into_iter();
-                let from = match tuple.next() {
-                    None => {
-                        error = Some(NotAnEdgeError(self.span()).into());
-                        return None;
-                    }
-                    Some(f) => f,
-                };
-                let to = match tuple.next() {
-                    None => {
-                        error = Some(NotAnEdgeError(self.span()).into());
-                        return None;
-                    }
-                    Some(f) => f,
-                };
-                let from_idx = if let Some(idx) = inv_indices.get(&from) {
-                    *idx
-                } else {
-                    let idx = indices.len() as u32;
-                    inv_indices.insert(from.clone(), idx);
-                    indices.push(from.clone());
-                    idx
-                };
-                let to_idx = if let Some(idx) = inv_indices.get(&to) {
-                    *idx
-                } else {
-                    let idx = indices.len() as u32;
-                    inv_indices.insert(to.clone(), idx);
-                    indices.push(to.clone());
-                    idx
-                };
+    // // // /// Convert the input relation into a directed graph.
+    // // // /// If `undirected` is true, then each edge in the input relation is treated as a pair
+    // // // /// of edges, one for each direction.
+    // // // ///
+    // // // /// Returns the graph, the vertices in a vector with the index the same as used in the graph,
+    // // // /// and the inverse vertex mapping.
+    // // // #[cfg(feature = "graph-algo")]
+    // // // pub fn as_directed_graph(
+    // // //     &self,
+    // // //     undirected: bool,
+    // // // ) -> Result<(
+    // // //     DirectedCsrGraph<u32>,
+    // // //     Vec<DataValue>,
+    // // //     BTreeMap<DataValue, u32>,
+    // // // )> {
+    // // //     let mut indices: Vec<DataValue> = vec![];
+    // // //     let mut inv_indices: BTreeMap<DataValue, u32> = Default::default();
+    // // //     let mut error: Option<Report> = None;
+    // // //     let it = self.iter()?.filter_map(|r_tuple| match r_tuple {
+    // // //         Ok(tuple) => {
+    // // //             let mut tuple = tuple.into_iter();
+    // // //             let from = match tuple.next() {
+    // // //                 None => {
+    // // //                     error = Some(NotAnEdgeError(self.span()).into());
+    // // //                     return None;
+    // // //                 }
+    // // //                 Some(f) => f,
+    // // //             };
+    // // //             let to = match tuple.next() {
+    // // //                 None => {
+    // // //                     error = Some(NotAnEdgeError(self.span()).into());
+    // // //                     return None;
+    // // //                 }
+    // // //                 Some(f) => f,
+    // // //             };
+    // // //             let from_idx = if let Some(idx) = inv_indices.get(&from) {
+    // // //                 *idx
+    // // //             } else {
+    // // //                 let idx = indices.len() as u32;
+    // // //                 inv_indices.insert(from.clone(), idx);
+    // // //                 indices.push(from.clone());
+    // // //                 idx
+    // // //             };
+    // // //             let to_idx = if let Some(idx) = inv_indices.get(&to) {
+    // // //                 *idx
+    // // //             } else {
+    // // //                 let idx = indices.len() as u32;
+    // // //                 inv_indices.insert(to.clone(), idx);
+    // // //                 indices.push(to.clone());
+    // // //                 idx
+    // // //             };
+    // // //             Some((from_idx, to_idx))
+    // // //         }
+    // // //         Err(err) => {
+    // // //             error = Some(err);
+    // // //             None
+    // // //         }
+    // // //     });
+    // // //     let it = if undirected {
+    // // //         Right(it.flat_map(|(f, t)| [(f, t), (t, f)]))
+    // // //     } else {
+    // // //         Left(it)
+    // // //     };
+    // // //     let graph: DirectedCsrGraph<u32> = GraphBuilder::new()
+    // // //         .csr_layout(CsrLayout::Sorted)
+    // // //         .edges(it)
+    // // //         .build();
+    // // //     if let Some(err) = error {
+    // // //         bail!(err)
+    // // //     }
+    // // //     Ok((graph, indices, inv_indices))
+    // // // }
+    // // /// Convert the input relation into a directed weighted graph.
+    // // /// If `undirected` is true, then each edge in the input relation is treated as a pair
+    // // /// of edges, one for each direction.
+    // // ///
+    // // /// Returns the graph, the vertices in a vector with the index the same as used in the graph,
+    // // /// and the inverse vertex mapping.
+    // // #[cfg(feature = "graph-algo")]
+    // // pub fn as_directed_weighted_graph(
+    // //     &self,
+    // //     undirected: bool,
+    // //     allow_negative_weights: bool,
+    // // ) -> Result<(
+    // //     DirectedCsrGraph<u32, (), f32>,
+    // //     Vec<DataValue>,
+    // //     BTreeMap<DataValue, u32>,
+    // // )> {
+    // //     let mut indices: Vec<DataValue> = vec![];
+    // //     let mut inv_indices: BTreeMap<DataValue, u32> = Default::default();
+    // //     let mut error: Option<Report> = None;
+    // //     let it = self.iter()?.filter_map(|r_tuple| match r_tuple {
+    // //         Ok(tuple) => {
+    // //             let mut tuple = tuple.into_iter();
+    // //             let from = match tuple.next() {
+    // //                 None => {
+    // //                     error = Some(NotAnEdgeError(self.span()).into());
+    // //                     return None;
+    // //                 }
+    // //                 Some(f) => f,
+    // //             };
+    // //             let to = match tuple.next() {
+    // //                 None => {
+    // //                     error = Some(NotAnEdgeError(self.span()).into());
+    // //                     return None;
+    // //                 }
+    // //                 Some(f) => f,
+    // //             };
+    // //             let from_idx = if let Some(idx) = inv_indices.get(&from) {
+    // //                 *idx
+    // //             } else {
+    // //                 let idx = indices.len() as u32;
+    // //                 inv_indices.insert(from.clone(), idx);
+    // //                 indices.push(from.clone());
+    // //                 idx
+    // //             };
+    // //             let to_idx = if let Some(idx) = inv_indices.get(&to) {
+    // //                 *idx
+    // //             } else {
+    // //                 let idx = indices.len() as u32;
+    // //                 inv_indices.insert(to.clone(), idx);
+    // //                 indices.push(to.clone());
+    // //                 idx
+    // //             };
 
-                let weight = match tuple.next() {
-                    None => 1.0,
-                    Some(d) => match d.get_float() {
-                        Some(f) => {
-                            if !f.is_finite() {
-                                error = Some(
-                                    BadEdgeWeightError(
-                                        d,
-                                        self.arg_manifest
-                                            .bindings()
-                                            .get(2)
-                                            .map(|s| s.span)
-                                            .unwrap_or_else(|| self.span()),
-                                    )
-                                    .into(),
-                                );
-                                return None;
-                            };
+    // //             let weight = match tuple.next() {
+    // //                 None => 1.0,
+    // //                 Some(d) => match d.get_float() {
+    // //                     Some(f) => {
+    // //                         if !f.is_finite() {
+    // //                             error = Some(
+    // //                                 BadEdgeWeightError(
+    // //                                     d,
+    // //                                     self.arg_manifest
+    // //                                         .bindings()
+    // //                                         .get(2)
+    // //                                         .map(|s| s.span)
+    // //                                         .unwrap_or_else(|| self.span()),
+    // //                                 )
+    // //                                 .into(),
+    // //                             );
+    // //                             return None;
+    // //                         };
 
-                            if f < 0. && !allow_negative_weights {
-                                error = Some(
-                                    BadEdgeWeightError(
-                                        d,
-                                        self.arg_manifest
-                                            .bindings()
-                                            .get(2)
-                                            .map(|s| s.span)
-                                            .unwrap_or_else(|| self.span()),
-                                    )
-                                    .into(),
-                                );
-                                return None;
-                            }
-                            f
-                        }
-                        None => {
-                            error = Some(
-                                BadEdgeWeightError(
-                                    d,
-                                    self.arg_manifest
-                                        .bindings()
-                                        .get(2)
-                                        .map(|s| s.span)
-                                        .unwrap_or_else(|| self.span()),
-                                )
-                                .into(),
-                            );
-                            return None;
-                        }
-                    },
-                };
+    // //                         if f < 0. && !allow_negative_weights {
+    // //                             error = Some(
+    // //                                 BadEdgeWeightError(
+    // //                                     d,
+    // //                                     self.arg_manifest
+    // //                                         .bindings()
+    // //                                         .get(2)
+    // //                                         .map(|s| s.span)
+    // //                                         .unwrap_or_else(|| self.span()),
+    // //                                 )
+    // //                                 .into(),
+    // //                             );
+    // //                             return None;
+    // //                         }
+    // //                         f
+    // //                     }
+    // //                     None => {
+    // //                         error = Some(
+    // //                             BadEdgeWeightError(
+    // //                                 d,
+    // //                                 self.arg_manifest
+    // //                                     .bindings()
+    // //                                     .get(2)
+    // //                                     .map(|s| s.span)
+    // //                                     .unwrap_or_else(|| self.span()),
+    // //                             )
+    // //                             .into(),
+    // //                         );
+    // //                         return None;
+    // //                     }
+    // //                 },
+    // //             };
 
-                Some((from_idx, to_idx, weight as f32))
-            }
-            Err(err) => {
-                error = Some(err);
-                None
-            }
-        });
-        let it = if undirected {
-            Right(it.flat_map(|(f, t, w)| [(f, t, w), (t, f, w)]))
-        } else {
-            Left(it)
-        };
-        let graph: DirectedCsrGraph<u32, (), f32> = GraphBuilder::new()
-            .csr_layout(CsrLayout::Sorted)
-            .edges_with_values(it)
-            .build();
+    // //             Some((from_idx, to_idx, weight as f32))
+    // //         }
+    // //         Err(err) => {
+    // //             error = Some(err);
+    // //             None
+    // //         }
+    // //     });
+    // //     let it = if undirected {
+    // //         Right(it.flat_map(|(f, t, w)| [(f, t, w), (t, f, w)]))
+    // //     } else {
+    // //         Left(it)
+    // //     };
+    // //     let graph: DirectedCsrGraph<u32, (), f32> = GraphBuilder::new()
+    // //         .csr_layout(CsrLayout::Sorted)
+    // //         .edges_with_values(it)
+    // //         .build();
 
-        if let Some(err) = error {
-            bail!(err)
-        }
+    // //     if let Some(err) = error {
+    // //         bail!(err)
+    // //     }
 
-        Ok((graph, indices, inv_indices))
-    }
+    // //     Ok((graph, indices, inv_indices))
+    // // }
 }
 
 impl<'a, 'b> FixedRulePayload<'a, 'b> {
@@ -439,20 +440,20 @@ impl<'a, 'b> FixedRulePayload<'a, 'b> {
             },
         }
     }
-    /// Extract a positive integer option
-    pub fn pos_integer_option(&self, name: &str, default: Option<usize>) -> Result<usize> {
-        let i = self.integer_option(name, default.map(|i| i as i64))?;
-        ensure!(
-            i > 0,
-            WrongFixedRuleOptionError {
-                name: name.to_string(),
-                span: self.option_span(name)?,
-                rule_name: self.manifest.fixed_handle.name.to_string(),
-                help: "a positive integer is required".to_string(),
-            }
-        );
-        Ok(i as usize)
-    }
+    // // /// Extract a positive integer option
+    // // pub fn pos_integer_option(&self, name: &str, default: Option<usize>) -> Result<usize> {
+    // //     let i = self.integer_option(name, default.map(|i| i as i64))?;
+    // //     ensure!(
+    // //         i > 0,
+    // //         WrongFixedRuleOptionError {
+    // //             name: name.to_string(),
+    // //             span: self.option_span(name)?,
+    // //             rule_name: self.manifest.fixed_handle.name.to_string(),
+    // //             help: "a positive integer is required".to_string(),
+    // //         }
+    // //     );
+    // //     Ok(i as usize)
+    // // }
     /// Extract a non-negative integer option
     pub fn non_neg_integer_option(&self, name: &str, default: Option<usize>) -> Result<usize> {
         let i = self.integer_option(name, default.map(|i| i as i64))?;
@@ -702,28 +703,28 @@ pub(crate) struct FixedRuleHandle {
     pub(crate) name: Symbol,
 }
 
-lazy_static! {
-    pub(crate) static ref DEFAULT_FIXED_RULES: BTreeMap<String, Arc<Box<dyn FixedRule>>> = {
-        BTreeMap::from([
-            (
-                "ReorderSort".to_string(),
-                Arc::<Box<dyn FixedRule>>::new(Box::new(ReorderSort)),
-            ),
-            (
-                "JsonReader".to_string(),
-                Arc::<Box<dyn FixedRule>>::new(Box::new(JsonReader)),
-            ),
-            (
-                "CsvReader".to_string(),
-                Arc::<Box<dyn FixedRule>>::new(Box::new(CsvReader)),
-            ),
-            (
-                "Constant".to_string(),
-                Arc::<Box<dyn FixedRule>>::new(Box::new(Constant)),
-            ),
-        ])
-    };
-}
+// // lazy_static! {
+// //     pub(crate) static ref DEFAULT_FIXED_RULES: BTreeMap<String, Arc<Box<dyn FixedRule>>> = {
+// //         BTreeMap::from([
+// //             // // (
+// //             // //     "ReorderSort".to_string(),
+// //             // //     Arc::<Box<dyn FixedRule>>::new(Box::new(ReorderSort)),
+// //             // // ),
+// //             (
+// //                 "JsonReader".to_string(),
+// //                 Arc::<Box<dyn FixedRule>>::new(Box::new(JsonReader)),
+// //             ),
+// //             (
+// //                 "CsvReader".to_string(),
+// //                 Arc::<Box<dyn FixedRule>>::new(Box::new(CsvReader)),
+// //             ),
+// //             (
+// //                 "Constant".to_string(),
+// //                 Arc::<Box<dyn FixedRule>>::new(Box::new(Constant)),
+// //             ),
+// //         ])
+// //     };
+// // }
 
 impl FixedRuleHandle {
     pub(crate) fn new(name: &str, span: SourceSpan) -> Self {
@@ -739,15 +740,15 @@ impl FixedRuleHandle {
 #[diagnostic(help("Edge relation requires tuples of length at least two"))]
 struct NotAnEdgeError(#[label] SourceSpan);
 
-#[derive(Error, Diagnostic, Debug)]
-#[error(
-    "The value {0:?} at the third position in the relation cannot be interpreted as edge weights"
-)]
-#[diagnostic(code(algo::invalid_edge_weight))]
-#[diagnostic(help(
-    "Edge weights must be finite numbers. Some algorithm also requires positivity."
-))]
-struct BadEdgeWeightError(DataValue, #[label] SourceSpan);
+// // #[derive(Error, Diagnostic, Debug)]
+// // #[error(
+// //     "The value {0:?} at the third position in the relation cannot be interpreted as edge weights"
+// // )]
+// // #[diagnostic(code(algo::invalid_edge_weight))]
+// // #[diagnostic(help(
+// //     "Edge weights must be finite numbers. Some algorithm also requires positivity."
+// // ))]
+// // struct BadEdgeWeightError(DataValue, #[label] SourceSpan);
 
 #[derive(Error, Diagnostic, Debug)]
 #[error("The requested rule '{0}' cannot be found")]

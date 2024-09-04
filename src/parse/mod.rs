@@ -18,8 +18,9 @@ use pest::Parser;
 use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
-use crate::data::program::InputProgram;
+use crate::data::program::{InputInlineRulesOrFixed, InputProgram};
 use crate::data::relation::NullableColType;
+use crate::data::symb::Symbol;
 use crate::data::value::{DataValue, ValidityTs};
 use crate::parse::expr::build_expr;
 use crate::parse::imperative::parse_imperative_block;
@@ -292,6 +293,12 @@ pub(crate) fn parse_script(
     Ok(match parsed.as_rule() {
         Rule::query_script => {
             let q = parse_query(parsed.into_inner(), param_pool, fixed_rules, cur_vld)?;
+            println!("xxx295 q= {q:?}");
+            let temp_rules = match &q.prog[&Symbol::new("fibo", SourceSpan(0,0))] {
+                InputInlineRulesOrFixed::Rules { rules } => &rules[1].body[0],
+                InputInlineRulesOrFixed::Fixed { fixed } => todo!(),
+            };
+            println!("xxx296 {:?}\n\n", temp_rules);
             CozoScript::Single(q)
         }
         Rule::imperative_script => {

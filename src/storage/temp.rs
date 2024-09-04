@@ -14,7 +14,7 @@ use miette::Result;
 use crate::data::tuple::Tuple;
 use crate::data::value::ValidityTs;
 use crate::runtime::relation::decode_tuple_from_kv;
-use crate::storage::mem::SkipIterator;
+// use crate::storage::mem::SkipIterator;
 use crate::storage::{Storage, StoreTx};
 
 #[derive(Default, Clone)]
@@ -23,26 +23,26 @@ pub(crate) struct TempStorage;
 impl<'s> Storage<'s> for TempStorage {
     type Tx = TempTx;
 
-    fn storage_kind(&self) -> &'static str {
-        "temp"
-    }
+    // fn storage_kind(&self) -> &'static str {
+    //     "temp"
+    // }
 
-    fn transact(&'s self, _write: bool) -> Result<Self::Tx> {
-        Ok(TempTx {
-            store: Default::default(),
-        })
-    }
+    // // fn transact(&'s self, _write: bool) -> Result<Self::Tx> {
+    // //     Ok(TempTx {
+    // //         store: Default::default(),
+    // //     })
+    // // }
 
-    fn range_compact(&'s self, _lower: &[u8], _upper: &[u8]) -> Result<()> {
-        panic!("range compact called on temp store")
-    }
+    // // fn range_compact(&'s self, _lower: &[u8], _upper: &[u8]) -> Result<()> {
+    // //     panic!("range compact called on temp store")
+    // // }
 
-    fn batch_put<'a>(
-        &'a self,
-        _data: Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>,
-    ) -> Result<()> {
-        panic!("batch put compact called on temp store")
-    }
+    // // fn batch_put<'a>(
+    // //     &'a self,
+    // //     _data: Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>,
+    // // ) -> Result<()> {
+    // //     panic!("batch put compact called on temp store")
+    // // }
 }
 
 pub(crate) struct TempTx {
@@ -95,23 +95,23 @@ impl<'s> StoreTx<'s> for TempTx {
         )
     }
 
-    fn range_skip_scan_tuple<'a>(
-        &'a self,
-        lower: &[u8],
-        upper: &[u8],
-        valid_at: ValidityTs,
-    ) -> Box<dyn Iterator<Item = Result<Tuple>> + 'a> {
-        Box::new(
-            SkipIterator {
-                inner: &self.store,
-                upper: upper.to_vec(),
-                valid_at,
-                next_bound: lower.to_vec(),
-                size_hint: None,
-            }
-            .map(Ok),
-        )
-    }
+    // // fn range_skip_scan_tuple<'a>(
+    // //     &'a self,
+    // //     lower: &[u8],
+    // //     upper: &[u8],
+    // //     valid_at: ValidityTs,
+    // // ) -> Box<dyn Iterator<Item = Result<Tuple>> + 'a> {
+    // //     Box::new(
+    // //         SkipIterator {
+    // //             inner: &self.store,
+    // //             upper: upper.to_vec(),
+    // //             valid_at,
+    // //             next_bound: lower.to_vec(),
+    // //             size_hint: None,
+    // //         }
+    // //         .map(Ok),
+    // //     )
+    // // }
 
     fn range_scan<'a>(
         &'a self,
