@@ -22,7 +22,7 @@ use crate::data::relation::StoredRelationMetadata;
 use crate::data::symb::{Symbol, PROG_ENTRY};
 use crate::data::value::{DataValue, ValidityTs};
 use crate::fixed_rule::{FixedRule, FixedRuleHandle};
-use crate::fts::FtsIndexManifest;
+// use crate::fts::FtsIndexManifest;
 use crate::parse::SourceSpan;
 use crate::query::compile::ContainedRuleMultiplicity;
 use crate::query::logical::{Disjunction, NamedFieldNotFound};
@@ -983,28 +983,28 @@ pub(crate) struct SearchInput {
 //     pub(crate) span: SourceSpan,
 // }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum FtsScoreKind {
-    TfIdf,
-    Tf,
-}
+// // #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+// // pub(crate) enum FtsScoreKind {
+// //     TfIdf,
+// //     Tf,
+// // }
 
-#[derive(Clone, Debug)]
-pub(crate) struct FtsSearch {
-    pub(crate) base_handle: RelationHandle,
-    pub(crate) idx_handle: RelationHandle,
-    pub(crate) manifest: FtsIndexManifest,
-    pub(crate) bindings: Vec<Symbol>,
-    pub(crate) k: usize,
-    // pub(crate) k1: f64,
-    // pub(crate) b: f64,
-    pub(crate) query: Symbol,
-    pub(crate) score_kind: FtsScoreKind,
-    pub(crate) bind_score: Option<Symbol>,
-    // pub(crate) lax_mode: bool,
-    pub(crate) filter: Option<Expr>,
-    pub(crate) span: SourceSpan,
-}
+// // #[derive(Clone, Debug)]
+// // pub(crate) struct FtsSearch {
+// //     pub(crate) base_handle: RelationHandle,
+// //     pub(crate) idx_handle: RelationHandle,
+// //     // pub(crate) manifest: FtsIndexManifest,
+// //     pub(crate) bindings: Vec<Symbol>,
+// //     pub(crate) k: usize,
+// //     // pub(crate) k1: f64,
+// //     // pub(crate) b: f64,
+// //     pub(crate) query: Symbol,
+// //     pub(crate) score_kind: FtsScoreKind,
+// //     pub(crate) bind_score: Option<Symbol>,
+// //     // pub(crate) lax_mode: bool,
+// //     pub(crate) filter: Option<Expr>,
+// //     pub(crate) span: SourceSpan,
+// // }
 
 // impl HnswSearch {
 //     pub(crate) fn all_bindings(&self) -> impl Iterator<Item=&Symbol> {
@@ -1017,11 +1017,11 @@ pub(crate) struct FtsSearch {
 //     }
 // }
 
-impl FtsSearch {
-    pub(crate) fn all_bindings(&self) -> impl Iterator<Item=&Symbol> {
-        self.bindings.iter().chain(self.bind_score.iter())
-    }
-}
+// // impl FtsSearch {
+// //     pub(crate) fn all_bindings(&self) -> impl Iterator<Item=&Symbol> {
+// //         self.bindings.iter().chain(self.bind_score.iter())
+// //     }
+// // }
 
 impl SearchInput {
     // fn normalize_lsh(

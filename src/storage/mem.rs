@@ -26,15 +26,15 @@ use crate::storage::{Storage, StoreTx};
 use crate::utils::swap_option_result;
 use crate::runtime::db::Db;
 
-/// Create a database backed by memory.
-/// This is the fastest storage, but non-persistent.
-/// Supports concurrent readers but only a single writer.
-pub fn new_cozo_mem() -> Result<Db<MemStorage>> {
-    let ret = Db::new(MemStorage::default())?;
+// // /// Create a database backed by memory.
+// // /// This is the fastest storage, but non-persistent.
+// // /// Supports concurrent readers but only a single writer.
+// // pub fn new_cozo_mem() -> Result<Db<MemStorage>> {
+// //     let ret = Db::new(MemStorage::default())?;
 
-    ret.initialize()?;
-    Ok(ret)
-}
+// //     ret.initialize()?;
+// //     Ok(ret)
+// // }
 
 /// The non-persistent storage
 #[derive(Default, Clone)]

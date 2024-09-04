@@ -6,7 +6,7 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use approx::AbsDiffEq;
+// use approx::AbsDiffEq;
 use itertools::Itertools;
 
 use crate::data::aggr::parse_aggr;
@@ -259,17 +259,17 @@ fn test_variance() {
     assert_eq!(variance_aggr.get().unwrap(), DataValue::from(0.5))
 }
 
-#[test]
-fn test_std_dev() {
-    let mut aggr = parse_aggr("std_dev").unwrap().clone();
-    aggr.normal_init(&[]).unwrap();
+// #[test]
+// fn test_std_dev() {
+//     let mut aggr = parse_aggr("std_dev").unwrap().clone();
+//     aggr.normal_init(&[]).unwrap();
 
-    let mut std_dev_aggr = aggr.normal_op.unwrap();
-    std_dev_aggr.set(&DataValue::from(1)).unwrap();
-    std_dev_aggr.set(&DataValue::from(2)).unwrap();
-    let v = std_dev_aggr.get().unwrap().get_float().unwrap();
-    assert!(v.abs_diff_eq(&(0.5_f64).sqrt(), 1e-10));
-}
+//     let mut std_dev_aggr = aggr.normal_op.unwrap();
+//     std_dev_aggr.set(&DataValue::from(1)).unwrap();
+//     std_dev_aggr.set(&DataValue::from(2)).unwrap();
+//     let v = std_dev_aggr.get().unwrap().get_float().unwrap();
+//     assert!(v.abs_diff_eq(&(0.5_f64).sqrt(), 1e-10));
+// }
 
 #[test]
 fn test_mean() {

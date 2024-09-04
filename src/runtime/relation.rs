@@ -24,9 +24,9 @@ use crate::data::relation::{ColType, ColumnDef, NullableColType, StoredRelationM
 use crate::data::symb::Symbol;
 use crate::data::tuple::{decode_tuple_from_key, Tuple, TupleT, ENCODED_KEY_MIN_LEN};
 use crate::data::value::{DataValue, ValidityTs};
-use crate::fts::FtsIndexManifest;
+// use crate::fts::FtsIndexManifest;
 use crate::parse::expr::build_expr;
-use crate::parse::sys::{FtsIndexConfig, HnswIndexConfig, MinHashLshConfig};
+// use crate::parse::sys::{FtsIndexConfig, HnswIndexConfig, MinHashLshConfig};
 use crate::parse::{CozoScriptParser, Rule, SourceSpan};
 use crate::query::compile::IndexPositionUse;
 // use crate::runtime::hnsw::HnswIndexManifest;
@@ -85,11 +85,11 @@ pub(crate) struct RelationHandle {
     pub(crate) indices: BTreeMap<SmartString<LazyCompact>, (RelationHandle, Vec<usize>)>,
     // pub(crate) hnsw_indices:
     //     BTreeMap<SmartString<LazyCompact>, (RelationHandle, HnswIndexManifest)>,
-    pub(crate) fts_indices: BTreeMap<SmartString<LazyCompact>, (RelationHandle, FtsIndexManifest)>,
-    pub(crate) lsh_indices: BTreeMap<
-        SmartString<LazyCompact>,
-        (RelationHandle, RelationHandle),
-    >,
+    // pub(crate) fts_indices: BTreeMap<SmartString<LazyCompact>, (RelationHandle, FtsIndexManifest)>,
+    // pub(crate) lsh_indices: BTreeMap<
+    //     SmartString<LazyCompact>,
+    //     (RelationHandle, RelationHandle),
+    // >,
     pub(crate) description: SmartString<LazyCompact>,
 }
 
@@ -97,14 +97,14 @@ impl RelationHandle {
     pub(crate) fn has_index(&self, index_name: &str) -> bool {
         self.indices.contains_key(index_name)
             // || self.hnsw_indices.contains_key(index_name)
-            || self.fts_indices.contains_key(index_name)
-            || self.lsh_indices.contains_key(index_name)
+            // || self.fts_indices.contains_key(index_name)
+            // || self.lsh_indices.contains_key(index_name)
     }
     pub(crate) fn has_no_index(&self) -> bool {
         self.indices.is_empty()
             // && self.hnsw_indices.is_empty()
-            && self.fts_indices.is_empty()
-            && self.lsh_indices.is_empty()
+            // && self.fts_indices.is_empty()
+            // && self.lsh_indices.is_empty()
     }
 }
 
@@ -618,8 +618,8 @@ impl<'a> SessionTx<'a> {
             is_temp,
             indices: Default::default(),
             // hnsw_indices: Default::default(),
-            fts_indices: Default::default(),
-            lsh_indices: Default::default(),
+            // fts_indices: Default::default(),
+            // lsh_indices: Default::default(),
             description: Default::default(),
         };
 
@@ -1374,16 +1374,16 @@ impl<'a> SessionTx<'a> {
         idx_name: &Symbol,
     ) -> Result<Vec<(Vec<u8>, Vec<u8>)>> {
         let mut rel = self.get_relation(rel_name, true)?;
-        let is_lsh = rel.lsh_indices.contains_key(&idx_name.name);
-        let is_fts = rel.fts_indices.contains_key(&idx_name.name);
-        if is_lsh || is_fts {
-            self.tokenizers.named_cache.write().unwrap().clear();
-            self.tokenizers.hashed_cache.write().unwrap().clear();
-        }
+        // let is_lsh = rel.lsh_indices.contains_key(&idx_name.name);
+        // let is_fts = rel.fts_indices.contains_key(&idx_name.name);
+        // if is_lsh || is_fts {
+        //     self.tokenizers.named_cache.write().unwrap().clear();
+        //     self.tokenizers.hashed_cache.write().unwrap().clear();
+        // }
         if rel.indices.remove(&idx_name.name).is_none()
             // && rel.hnsw_indices.remove(&idx_name.name).is_none()
-            && rel.lsh_indices.remove(&idx_name.name).is_none()
-            && rel.fts_indices.remove(&idx_name.name).is_none()
+            // && rel.lsh_indices.remove(&idx_name.name).is_none()
+            // && rel.fts_indices.remove(&idx_name.name).is_none()
         {
             #[derive(Debug, Error, Diagnostic)]
             #[error("index {0} for relation {1} not found")]
@@ -1395,11 +1395,11 @@ impl<'a> SessionTx<'a> {
 
         let mut to_clean =
             self.destroy_relation(&format!("{}:{}", rel_name.name, idx_name.name))?;
-        if is_lsh {
-            to_clean.extend(
-                self.destroy_relation(&format!("{}:{}:inv", rel_name.name, idx_name.name))?,
-            );
-        }
+        // if is_lsh {
+        //     to_clean.extend(
+        //         self.destroy_relation(&format!("{}:{}:inv", rel_name.name, idx_name.name))?,
+        //     );
+        // }
 
         let new_encoded =
             vec![DataValue::from(&rel_name.name as &str)].encode_as_key(RelationId::SYSTEM);

@@ -19,7 +19,7 @@ use crate::data::program::InputProgram;
 use crate::data::relation::VecElementType;
 use crate::data::symb::Symbol;
 use crate::data::value::{DataValue, ValidityTs};
-use crate::fts::TokenizerConfig;
+// use crate::fts::TokenizerConfig;
 use crate::parse::expr::{build_expr, parse_string};
 use crate::parse::query::parse_query;
 use crate::parse::{ExtractSpan, Pairs, Rule, SourceSpan};
@@ -30,72 +30,72 @@ use crate::fixed_rule::FixedRule;
 #[derive(Debug)]
 pub(crate) enum SysOp {
     Compact,
-    ListColumns(Symbol),
-    ListIndices(Symbol),
-    ListRelations,
-    ListRunning,
+    // ListColumns(Symbol),
+    // ListIndices(Symbol),
+    // ListRelations,
+    // ListRunning,
     ListFixedRules,
     KillRunning(u64),
     Explain(Box<InputProgram>),
-    RemoveRelation(Vec<Symbol>),
-    RenameRelation(Vec<(Symbol, Symbol)>),
+    // RemoveRelation(Vec<Symbol>),
+    // RenameRelation(Vec<(Symbol, Symbol)>),
     ShowTrigger(Symbol),
     SetTriggers(Symbol, Vec<String>, Vec<String>, Vec<String>),
     SetAccessLevel(Vec<Symbol>, AccessLevel),
-    CreateIndex(Symbol, Symbol, Vec<Symbol>),
+    // CreateIndex(Symbol, Symbol, Vec<Symbol>),
     // CreateVectorIndex(HnswIndexConfig),
     // CreateFtsIndex(FtsIndexConfig),
     // CreateMinHashLshIndex(MinHashLshConfig),
-    RemoveIndex(Symbol, Symbol),
+    // RemoveIndex(Symbol, Symbol),
     DescribeRelation(Symbol, SmartString<LazyCompact>)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct FtsIndexConfig {
-    pub(crate) base_relation: SmartString<LazyCompact>,
-    pub(crate) index_name: SmartString<LazyCompact>,
-    pub(crate) extractor: String,
-    pub(crate) tokenizer: TokenizerConfig,
-    pub(crate) filters: Vec<TokenizerConfig>,
-}
+// #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+// pub(crate) struct FtsIndexConfig {
+//     pub(crate) base_relation: SmartString<LazyCompact>,
+//     pub(crate) index_name: SmartString<LazyCompact>,
+//     pub(crate) extractor: String,
+//     // pub(crate) tokenizer: TokenizerConfig,
+//     // pub(crate) filters: Vec<TokenizerConfig>,
+// }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct MinHashLshConfig {
-    pub(crate) base_relation: SmartString<LazyCompact>,
-    pub(crate) index_name: SmartString<LazyCompact>,
-    pub(crate) extractor: String,
-    pub(crate) tokenizer: TokenizerConfig,
-    pub(crate) filters: Vec<TokenizerConfig>,
-    pub(crate) n_gram: usize,
-    pub(crate) n_perm: usize,
-    pub(crate) false_positive_weight: OrderedFloat<f64>,
-    pub(crate) false_negative_weight: OrderedFloat<f64>,
-    pub(crate) target_threshold: OrderedFloat<f64>,
-}
+// #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+// pub(crate) struct MinHashLshConfig {
+//     pub(crate) base_relation: SmartString<LazyCompact>,
+//     pub(crate) index_name: SmartString<LazyCompact>,
+//     pub(crate) extractor: String,
+//     pub(crate) tokenizer: TokenizerConfig,
+//     pub(crate) filters: Vec<TokenizerConfig>,
+//     pub(crate) n_gram: usize,
+//     pub(crate) n_perm: usize,
+//     pub(crate) false_positive_weight: OrderedFloat<f64>,
+//     pub(crate) false_negative_weight: OrderedFloat<f64>,
+//     pub(crate) target_threshold: OrderedFloat<f64>,
+// }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct HnswIndexConfig {
-    pub(crate) base_relation: SmartString<LazyCompact>,
-    pub(crate) index_name: SmartString<LazyCompact>,
-    pub(crate) vec_dim: usize,
-    pub(crate) dtype: VecElementType,
-    pub(crate) vec_fields: Vec<SmartString<LazyCompact>>,
-    pub(crate) distance: HnswDistance,
-    pub(crate) ef_construction: usize,
-    pub(crate) m_neighbours: usize,
-    pub(crate) index_filter: Option<String>,
-    pub(crate) extend_candidates: bool,
-    pub(crate) keep_pruned_connections: bool,
-}
+// #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+// pub(crate) struct HnswIndexConfig {
+//     pub(crate) base_relation: SmartString<LazyCompact>,
+//     pub(crate) index_name: SmartString<LazyCompact>,
+//     pub(crate) vec_dim: usize,
+//     pub(crate) dtype: VecElementType,
+//     pub(crate) vec_fields: Vec<SmartString<LazyCompact>>,
+//     pub(crate) distance: HnswDistance,
+//     pub(crate) ef_construction: usize,
+//     pub(crate) m_neighbours: usize,
+//     pub(crate) index_filter: Option<String>,
+//     pub(crate) extend_candidates: bool,
+//     pub(crate) keep_pruned_connections: bool,
+// }
 
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, serde_derive::Serialize, serde_derive::Deserialize,
-)]
-pub(crate) enum HnswDistance {
-    L2,
-    InnerProduct,
-    Cosine,
-}
+// #[derive(
+//     Debug, Clone, Copy, PartialEq, Eq, Hash, serde_derive::Serialize, serde_derive::Deserialize,
+// )]
+// pub(crate) enum HnswDistance {
+//     L2,
+//     InnerProduct,
+//     Cosine,
+// }
 
 #[derive(Debug, Diagnostic, Error)]
 #[error("Cannot interpret {0} as process ID")]
@@ -111,7 +111,7 @@ pub(crate) fn parse_sys(
     let inner = src.next().unwrap();
     Ok(match inner.as_rule() {
         Rule::compact_op => SysOp::Compact,
-        Rule::running_op => SysOp::ListRunning,
+        // Rule::running_op => SysOp::ListRunning,
         Rule::kill_op => {
             let i_expr = inner.into_inner().next().unwrap();
             let i_val = build_expr(i_expr, param_pool)?;
@@ -140,39 +140,39 @@ pub(crate) fn parse_sys(
             };
             SysOp::DescribeRelation(rel, description)
         }
-        Rule::list_relations_op => SysOp::ListRelations,
-        Rule::remove_relations_op => {
-            let rel = inner
-                .into_inner()
-                .map(|rels_p| Symbol::new(rels_p.as_str(), rels_p.extract_span()))
-                .collect_vec();
+        // Rule::list_relations_op => SysOp::ListRelations,
+        // // Rule::remove_relations_op => {
+        // //     let rel = inner
+        // //         .into_inner()
+        // //         .map(|rels_p| Symbol::new(rels_p.as_str(), rels_p.extract_span()))
+        // //         .collect_vec();
 
-            SysOp::RemoveRelation(rel)
-        }
-        Rule::list_columns_op => {
-            let rels_p = inner.into_inner().next().unwrap();
-            let rel = Symbol::new(rels_p.as_str(), rels_p.extract_span());
-            SysOp::ListColumns(rel)
-        }
-        Rule::list_indices_op => {
-            let rels_p = inner.into_inner().next().unwrap();
-            let rel = Symbol::new(rels_p.as_str(), rels_p.extract_span());
-            SysOp::ListIndices(rel)
-        }
-        Rule::rename_relations_op => {
-            let rename_pairs = inner
-                .into_inner()
-                .map(|pair| {
-                    let mut src = pair.into_inner();
-                    let rels_p = src.next().unwrap();
-                    let rel = Symbol::new(rels_p.as_str(), rels_p.extract_span());
-                    let rels_p = src.next().unwrap();
-                    let new_rel = Symbol::new(rels_p.as_str(), rels_p.extract_span());
-                    (rel, new_rel)
-                })
-                .collect_vec();
-            SysOp::RenameRelation(rename_pairs)
-        }
+        // //     SysOp::RemoveRelation(rel)
+        // // }
+        // Rule::list_columns_op => {
+        //     let rels_p = inner.into_inner().next().unwrap();
+        //     let rel = Symbol::new(rels_p.as_str(), rels_p.extract_span());
+        //     SysOp::ListColumns(rel)
+        // }
+        // Rule::list_indices_op => {
+        //     let rels_p = inner.into_inner().next().unwrap();
+        //     let rel = Symbol::new(rels_p.as_str(), rels_p.extract_span());
+        //     SysOp::ListIndices(rel)
+        // }
+        // // Rule::rename_relations_op => {
+        // //     let rename_pairs = inner
+        // //         .into_inner()
+        // //         .map(|pair| {
+        // //             let mut src = pair.into_inner();
+        // //             let rels_p = src.next().unwrap();
+        // //             let rel = Symbol::new(rels_p.as_str(), rels_p.extract_span());
+        // //             let rels_p = src.next().unwrap();
+        // //             let new_rel = Symbol::new(rels_p.as_str(), rels_p.extract_span());
+        // //             (rel, new_rel)
+        // //         })
+        // //         .collect_vec();
+        // //     SysOp::RenameRelation(rename_pairs)
+        // // }
         Rule::access_level_op => {
             let mut ps = inner.into_inner();
             let access_level = match ps.next().unwrap().as_str() {
@@ -523,7 +523,7 @@ pub(crate) fn parse_sys(
                     let mut vec_dim = 0;
                     let mut dtype = VecElementType::F32;
                     let mut vec_fields = vec![];
-                    let mut distance = HnswDistance::L2;
+                    // let mut distance = HnswDistance::L2;
                     let mut ef_construction = 0;
                     let mut m_neighbours = 0;
                     let mut index_filter = None;
@@ -577,19 +577,19 @@ pub(crate) fn parse_sys(
                                 let fields = build_expr(opt_val, &Default::default())?;
                                 vec_fields = fields.to_var_list()?;
                             }
-                            "distance" | "dist" => {
-                                distance = match opt_val.as_str().trim() {
-                                    "L2" => HnswDistance::L2,
-                                    "IP" => HnswDistance::InnerProduct,
-                                    "Cosine" => HnswDistance::Cosine,
-                                    _ => {
-                                        return Err(miette!(
-                                            "Invalid distance: {}",
-                                            opt_val.as_str()
-                                        ))
-                                    }
-                                }
-                            }
+                            // "distance" | "dist" => {
+                            //     distance = match opt_val.as_str().trim() {
+                            //         "L2" => HnswDistance::L2,
+                            //         "IP" => HnswDistance::InnerProduct,
+                            //         "Cosine" => HnswDistance::Cosine,
+                            //         _ => {
+                            //             return Err(miette!(
+                            //                 "Invalid distance: {}",
+                            //                 opt_val.as_str()
+                            //             ))
+                            //         }
+                            //     }
+                            // }
                             "filter" => {
                                 index_filter = Some(opt_val.as_str().to_string());
                             }
@@ -624,51 +624,51 @@ pub(crate) fn parse_sys(
                     //     keep_pruned_connections,
                     // })
                 }
-                Rule::index_drop => {
-                    let mut inner = inner.into_inner();
-                    let rel = inner.next().unwrap();
-                    let name = inner.next().unwrap();
-                    SysOp::RemoveIndex(
-                        Symbol::new(rel.as_str(), rel.extract_span()),
-                        Symbol::new(name.as_str(), name.extract_span()),
-                    )
-                }
+                // Rule::index_drop => {
+                //     let mut inner = inner.into_inner();
+                //     let rel = inner.next().unwrap();
+                //     let name = inner.next().unwrap();
+                //     SysOp::RemoveIndex(
+                //         Symbol::new(rel.as_str(), rel.extract_span()),
+                //         Symbol::new(name.as_str(), name.extract_span()),
+                //     )
+                // }
                 r => unreachable!("{:?}", r),
             }
         }
         Rule::index_op => {
             let inner = inner.into_inner().next().unwrap();
             match inner.as_rule() {
-                Rule::index_create => {
-                    let span = inner.extract_span();
-                    let mut inner = inner.into_inner();
-                    let rel = inner.next().unwrap();
-                    let name = inner.next().unwrap();
-                    let cols = inner
-                        .map(|p| Symbol::new(p.as_str(), p.extract_span()))
-                        .collect_vec();
+                // // Rule::index_create => {
+                // //     let span = inner.extract_span();
+                // //     let mut inner = inner.into_inner();
+                // //     let rel = inner.next().unwrap();
+                // //     let name = inner.next().unwrap();
+                // //     let cols = inner
+                // //         .map(|p| Symbol::new(p.as_str(), p.extract_span()))
+                // //         .collect_vec();
 
-                    #[derive(Debug, Diagnostic, Error)]
-                    #[error("index must have at least one column specified")]
-                    #[diagnostic(code(parser::empty_index))]
-                    struct EmptyIndex(#[label] SourceSpan);
+                // //     #[derive(Debug, Diagnostic, Error)]
+                // //     #[error("index must have at least one column specified")]
+                // //     #[diagnostic(code(parser::empty_index))]
+                // //     struct EmptyIndex(#[label] SourceSpan);
 
-                    ensure!(!cols.is_empty(), EmptyIndex(span));
-                    SysOp::CreateIndex(
-                        Symbol::new(rel.as_str(), rel.extract_span()),
-                        Symbol::new(name.as_str(), name.extract_span()),
-                        cols,
-                    )
-                }
-                Rule::index_drop => {
-                    let mut inner = inner.into_inner();
-                    let rel = inner.next().unwrap();
-                    let name = inner.next().unwrap();
-                    SysOp::RemoveIndex(
-                        Symbol::new(rel.as_str(), rel.extract_span()),
-                        Symbol::new(name.as_str(), name.extract_span()),
-                    )
-                }
+                // //     ensure!(!cols.is_empty(), EmptyIndex(span));
+                // //     SysOp::CreateIndex(
+                // //         Symbol::new(rel.as_str(), rel.extract_span()),
+                // //         Symbol::new(name.as_str(), name.extract_span()),
+                // //         cols,
+                // //     )
+                // // }
+                // // Rule::index_drop => {
+                // //     let mut inner = inner.into_inner();
+                // //     let rel = inner.next().unwrap();
+                // //     let name = inner.next().unwrap();
+                // //     SysOp::RemoveIndex(
+                // //         Symbol::new(rel.as_str(), rel.extract_span()),
+                // //         Symbol::new(name.as_str(), name.extract_span()),
+                // //     )
+                // // }
                 _ => unreachable!(),
             }
         }

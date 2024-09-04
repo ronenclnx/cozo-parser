@@ -18,7 +18,8 @@ use smartstring::SmartString;
 use thiserror::Error;
 
 use crate::data::expr::{compute_bounds, eval_bytecode, eval_bytecode_pred, Bytecode, Expr};
-use crate::data::program::{FtsSearch, MagicSymbol};
+// use crate::data::program::{FtsSearch, MagicSymbol};
+use crate::data::program::{MagicSymbol};
 use crate::data::relation::{ColType, NullableColType};
 use crate::data::symb::Symbol;
 use crate::data::tuple::{Tuple, TupleIter};

@@ -151,21 +151,21 @@ impl ImperativeStmt {
             | ImperativeStmt::TempSwap { .. } => {}
             ImperativeStmt::SysOp { sysop } => {
                 match &sysop.sysop {
-                    SysOp::RemoveRelation(rels) => {
-                        for rel in rels {
-                            collector.insert(rel.name.clone());
-                        }
-                    }
-                    SysOp::RenameRelation(renames) => {
-                        for (old, new) in renames {
-                            collector.insert(old.name.clone());
-                            collector.insert(new.name.clone());
-                        }
-                    }
-                    SysOp::CreateIndex(symb, subs, _) => {
-                        collector.insert(symb.name.clone());
-                        collector.insert(SmartString::from(format!("{}:{}", symb.name, subs.name)));
-                    }
+                    // // SysOp::RemoveRelation(rels) => {
+                    // //     for rel in rels {
+                    // //         collector.insert(rel.name.clone());
+                    // //     }
+                    // // }
+                    // // SysOp::RenameRelation(renames) => {
+                    // //     for (old, new) in renames {
+                    // //         collector.insert(old.name.clone());
+                    // //         collector.insert(new.name.clone());
+                    // //     }
+                    // // }
+                    // // SysOp::CreateIndex(symb, subs, _) => {
+                    // //     collector.insert(symb.name.clone());
+                    // //     collector.insert(SmartString::from(format!("{}:{}", symb.name, subs.name)));
+                    // // }
                     // SysOp::CreateVectorIndex(m) => {
                     //     collector.insert(m.base_relation.clone());
                     //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
@@ -178,9 +178,9 @@ impl ImperativeStmt {
                     //     collector.insert(m.base_relation.clone());
                     //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
                     // }
-                    SysOp::RemoveIndex(rel, idx) => {
-                        collector.insert(SmartString::from(format!("{}:{}", rel.name, idx.name)));
-                    }
+                    // // SysOp::RemoveIndex(rel, idx) => {
+                    // //     collector.insert(SmartString::from(format!("{}:{}", rel.name, idx.name)));
+                    // // }
                     _ => {}
                 }
             }
