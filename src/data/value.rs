@@ -28,7 +28,7 @@ use smartstring::{LazyCompact, SmartString};
 use uuid::Uuid;
 
 /// UUID value in the database
-#[derive(Clone, Hash, Eq, PartialEq, serde_derive::Deserialize, serde_derive::Serialize)]
+#[derive(Clone, Hash, Eq, PartialEq, serde_derive::Deserialize, serde_derive::Serialize, Debug)]
 pub struct UuidWrapper(pub Uuid);
 
 impl PartialOrd<Self> for UuidWrapper {
@@ -49,7 +49,7 @@ impl Ord for UuidWrapper {
 }
 
 /// A Regex in the database. Used internally in functions.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RegexWrapper(pub Regex);
 
 impl Hash for RegexWrapper {
@@ -122,6 +122,7 @@ PartialOrd,
 serde_derive::Deserialize,
 serde_derive::Serialize,
 Hash,
+Debug,
 )]
 pub struct Validity {
     /// Timestamp, sorted descendingly
@@ -141,7 +142,7 @@ impl From<(i64, bool)> for Validity {
 
 /// A Value in the database
 #[derive(
-Clone, PartialEq, Eq, PartialOrd, Ord, serde_derive::Deserialize, serde_derive::Serialize, Hash,
+Clone, PartialEq, Eq, PartialOrd, Ord, serde_derive::Deserialize, serde_derive::Serialize, Hash
 )]
 pub enum DataValue {
     /// null
@@ -174,7 +175,7 @@ pub enum DataValue {
 }
 
 /// Wrapper for JsonValue
-#[derive(Clone, PartialEq, Eq, serde_derive::Deserialize, serde_derive::Serialize)]
+#[derive(Clone, PartialEq, Eq, serde_derive::Deserialize, serde_derive::Serialize, Debug)]
 pub struct JsonData(pub JsonValue);
 
 impl PartialOrd<Self> for JsonData {

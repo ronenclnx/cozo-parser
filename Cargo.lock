@@ -401,6 +401,7 @@ dependencies = [
  "document-features",
  "either",
  "fast2s",
+ "getrandom 0.2.15",
  "graph",
  "itertools",
  "js-sys",

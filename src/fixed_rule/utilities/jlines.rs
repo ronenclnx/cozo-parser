@@ -29,6 +29,7 @@ use crate::parse::SourceSpan;
 use crate::runtime::db::Poison;
 use crate::runtime::temp_store::RegularTempStore;
 
+#[derive(Debug)]
 pub(crate) struct JsonReader;
 
 impl FixedRule for JsonReader {
@@ -171,6 +172,14 @@ impl FixedRule for JsonReader {
                 span
             )),
         })
+    }
+    
+    fn init_options(
+        &self,
+        _options: &mut BTreeMap<SmartString<LazyCompact>, Expr>,
+        _span: SourceSpan,
+    ) -> Result<()> {
+        Ok(())
     }
 }
 

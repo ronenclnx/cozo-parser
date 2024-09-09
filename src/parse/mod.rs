@@ -294,11 +294,11 @@ pub(crate) fn parse_script(
         Rule::query_script => {
             let q = parse_query(parsed.into_inner(), param_pool, fixed_rules, cur_vld)?;
             println!("xxx295 q= {q:?}");
-            let temp_rules = match &q.prog[&Symbol::new("fibo", SourceSpan(0,0))] {
-                InputInlineRulesOrFixed::Rules { rules } => &rules[1].body[0],
-                InputInlineRulesOrFixed::Fixed { fixed } => todo!(),
-            };
-            println!("xxx296 {:?}\n\n", temp_rules);
+            // let temp_rules = match &q.prog[&Symbol::new("fibo", SourceSpan(0,0))] {
+            //     InputInlineRulesOrFixed::Rules { rules } => &rules[1].body[0],
+            //     InputInlineRulesOrFixed::Fixed { fixed } => todo!(),
+            // };
+            // println!("xxx296 {:?}\n\n", temp_rules);
             CozoScript::Single(q)
         }
         Rule::imperative_script => {

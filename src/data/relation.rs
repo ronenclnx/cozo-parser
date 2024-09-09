@@ -22,7 +22,7 @@ use thiserror::Error;
 
 use crate::data::expr::Expr;
 use crate::data::value::{DataValue, JsonData, UuidWrapper, Validity, ValidityTs, Vector};
-use crate::Num;
+use crate::data::value::Num;
 
 #[derive(Debug, Clone, Eq, PartialEq, serde_derive::Deserialize, serde_derive::Serialize)]
 pub struct NullableColType {

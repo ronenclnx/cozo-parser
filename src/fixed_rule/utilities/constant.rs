@@ -21,6 +21,7 @@ use crate::parse::SourceSpan;
 use crate::runtime::db::Poison;
 use crate::runtime::temp_store::RegularTempStore;
 
+#[derive(Debug)]
 pub(crate) struct Constant;
 
 impl FixedRule for Constant {

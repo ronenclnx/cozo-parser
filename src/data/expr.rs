@@ -218,6 +218,7 @@ impl Display for Expr {
                 write!(f, "{val}")
             }
             Expr::Apply { op, args, .. } => {
+                // write!(f, "mokmok apply").unwrap();
                 let mut writer =
                     f.debug_tuple(op.name.strip_prefix("OP_").unwrap().to_lowercase().as_str());
                 for arg in args.iter() {
@@ -226,6 +227,7 @@ impl Display for Expr {
                 writer.finish()
             }
             Expr::UnboundApply { op, args, .. } => {
+                // write!(f, "mokmok apply").unwrap();
                 let mut writer = f.debug_tuple(op);
                 for arg in args.iter() {
                     writer.field(arg);

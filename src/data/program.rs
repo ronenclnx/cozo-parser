@@ -34,6 +34,8 @@ use crate::runtime::relation::{
 use crate::runtime::temp_store::EpochStore;
 use crate::runtime::transact::SessionTx;
 
+use crate::query::compile::Compiler;
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub(crate) enum QueryAssertion {
     AssertNone(SourceSpan),
@@ -628,7 +630,7 @@ impl InputProgram {
     }
     pub(crate) fn into_normalized_program(
         self,
-        tx: &SessionTx<'_>,
+        tx: &Compiler,
     ) -> Result<(NormalFormProgram, QueryOutOptions)> {
         let mut prog: BTreeMap<Symbol, _> = Default::default();
         for (k, rules_or_fixed) in self.prog {
@@ -1563,16 +1565,16 @@ impl SearchInput {
     pub(crate) fn normalize(
         self,
         gen: &mut TempSymbGen,
-        tx: &SessionTx<'_>,
+        tx: &Compiler,
     ) -> Result<Disjunction> {
-        let base_handle = tx.get_relation(&self.relation, false)?;
-        if base_handle.access_level < AccessLevel::ReadOnly {
-            bail!(InsufficientAccessLevel(
-                base_handle.name.to_string(),
-                "reading rows".to_string(),
-                base_handle.access_level
-            ));
-        }
+        let base_handle = tx.get_relation(&self.relation)?;
+        // if base_handle.access_level < AccessLevel::ReadOnly {
+        //     bail!(InsufficientAccessLevel(
+        //         base_handle.name.to_string(),
+        //         "reading rows".to_string(),
+        //         base_handle.access_level
+        //     ));
+        // }
         // if let Some((idx_handle, manifest)) =
         //     base_handle.hnsw_indices.get(&self.index.name).cloned()
         // {
@@ -1647,6 +1649,7 @@ impl Display for InputAtom {
                 write!(f, "}}")?;
             }
             InputAtom::Predicate { inner } => {
+                // write!(f, "predicate xxx1650 {inner}")?;
                 write!(f, "{inner}")?;
             }
             InputAtom::Negation { inner, .. } => {
@@ -1657,6 +1660,7 @@ impl Display for InputAtom {
                     if i > 0 {
                         write!(f, " and ")?;
                     }
+                    // write!(f, "xxx1660 ({a})")?;
                     write!(f, "({a})")?;
                 }
             }
@@ -1665,6 +1669,7 @@ impl Display for InputAtom {
                     if i > 0 {
                         write!(f, " or ")?;
                     }
+                    // write!(f, "xxx1668 ({a})")?;
                     write!(f, "({a})")?;
                 }
             }

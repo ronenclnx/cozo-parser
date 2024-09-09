@@ -7,6 +7,7 @@
  */
 
 use std::collections::BTreeMap;
+use std::fmt::Debug;
 use std::sync::Arc;
 
 use crossbeam::channel::{bounded, Receiver, Sender};
@@ -536,7 +537,7 @@ impl<'a, 'b> FixedRulePayload<'a, 'b> {
 }
 
 /// Trait for an implementation of an algorithm or a utility
-pub trait FixedRule: Send + Sync {
+pub trait FixedRule: Send + Sync + Debug {
     /// Called to initialize the options given.
     /// Will always be called once, before anything else.
     /// You can mutate the options if you need to.
@@ -577,6 +578,12 @@ pub struct SimpleFixedRule {
             + Sync
             + 'static,
     >,
+}
+
+impl Debug for SimpleFixedRule {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SimpleFixedRule").field("return_arity", &self.return_arity).field("rule", &"TODO: IMPLEMENT THIS").finish()
+    }
 }
 
 impl SimpleFixedRule {
@@ -685,6 +692,14 @@ impl FixedRule for SimpleFixedRule {
             );
             out.put(row);
         }
+        Ok(())
+    }
+    
+    fn init_options(
+        &self,
+        _options: &mut BTreeMap<SmartString<LazyCompact>, Expr>,
+        _span: SourceSpan,
+    ) -> Result<()> {
         Ok(())
     }
 }

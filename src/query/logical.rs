@@ -19,7 +19,9 @@ use crate::data::program::{
 };
 use crate::parse::SourceSpan;
 use crate::query::reorder::UnsafeNegation;
-use crate::runtime::transact::SessionTx;
+
+use super::compile::Compiler;
+// use crate::runtime::transact::SessionTx;
 
 #[derive(Debug)]
 pub(crate) struct Disjunction {
@@ -129,7 +131,7 @@ impl InputAtom {
         })
     }
 
-    pub(crate) fn disjunctive_normal_form(self, tx: &SessionTx<'_>) -> Result<Disjunction> {
+    pub(crate) fn disjunctive_normal_form(self, tx: &Compiler) -> Result<Disjunction> {
         let neg_form = self.negation_normal_form()?;
         let mut gen = TempSymbGen::default();
         neg_form.do_disjunctive_normal_form(&mut gen, tx)
@@ -143,38 +145,37 @@ impl InputAtom {
             span,
         }: InputNamedFieldRelationApplyAtom,
         gen: &mut TempSymbGen,
-        tx: &SessionTx<'_>,
+        tx: &Compiler,
     ) -> Result<InputRelationApplyAtom> {
-        let stored = tx.get_relation(&name, false)?;
-        let fields: BTreeSet<_> = stored
-            .metadata
-            .keys
-            .iter()
-            .chain(stored.metadata.non_keys.iter())
-            .map(|col| &col.name)
-            .collect();
-        for k in args.keys() {
-            ensure!(
-                fields.contains(k),
-                NamedFieldNotFound(name.to_string(), k.to_string(), span)
-            );
-        }
-        let mut new_args = vec![];
-        for col_def in stored
-            .metadata
-            .keys
-            .iter()
-            .chain(stored.metadata.non_keys.iter())
-        {
-            let arg = args.remove(&col_def.name).unwrap_or_else(|| Expr::Binding {
-                var: gen.next_ignored(span),
-                tuple_pos: None,
-            });
-            new_args.push(arg)
-        }
+        let stored = tx.get_relation(&name)?;
+        // let fields: BTreeSet<_> = stored
+        //     .keys
+        //     .iter()
+        //     .chain(stored.metadata.non_keys.iter())
+        //     .map(|col| &col.name)
+        //     .collect();
+        // for k in args.keys() {
+        //     ensure!(
+        //         fields.contains(k),
+        //         NamedFieldNotFound(name.to_string(), k.to_string(), span)
+        //     );
+        // }
+        // let mut new_args = vec![];
+        // for col_def in stored
+        //     .keys
+        //     .iter()
+        //     .chain(stored.metadata.non_keys.iter())
+        // {
+        //     let arg = args.remove(&col_def.name).unwrap_or_else(|| Expr::Binding {
+        //         var: gen.next_ignored(span),
+        //         tuple_pos: None,
+        //     });
+        //     new_args.push(arg)
+        // }
+        todo!("i don't know what this does");
         Ok(InputRelationApplyAtom {
             name,
-            args: new_args,
+            args: vec![], // TODO: new_args
             span,
             valid_at,
         })
@@ -183,7 +184,7 @@ impl InputAtom {
     fn do_disjunctive_normal_form(
         self,
         gen: &mut TempSymbGen,
-        tx: &SessionTx<'_>,
+        tx: &Compiler,
     ) -> Result<Disjunction> {
         // invariants: the input is already in negation normal form
         // the return value is a disjunction of conjunctions, with no nesting

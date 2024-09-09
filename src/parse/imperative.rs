@@ -22,7 +22,9 @@ use crate::parse::{
     ExtractSpan, ImperativeProgram, ImperativeStmt, ImperativeStmtClause, ImperativeSysop, Pair,
     Rule, SourceSpan,
 };
-use crate::{DataValue, FixedRule, ValidityTs};
+// use crate::{FixedRule};
+use crate::data::value::{DataValue, ValidityTs};
+use crate::fixed_rule::FixedRule;
 
 pub(crate) fn parse_imperative_block(
     src: Pair<'_>,
