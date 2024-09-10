@@ -35,7 +35,6 @@ use crate::data::value::DataValue;
 // use crate::fixed_rule::algos::*;
 use crate::fixed_rule::utilities::*;
 use crate::parse::SourceSpan;
-// use crate::runtime::db::Poison;
 use crate::runtime::temp_store::{EpochStore, RegularTempStore};
 use crate::runtime::transact::SessionTx;
 use crate::runtime::db::NamedRows;
@@ -557,15 +556,6 @@ pub trait FixedRule: Send + Sync + Debug {
         rule_head: &[Symbol],
         span: SourceSpan,
     ) -> Result<usize>;
-    // // /// You should implement the logic of your algorithm/utility in this function.
-    // // /// The outputs are written to `out`. You should check `poison` periodically
-    // // /// for user-initiated termination.
-    // fn run(
-    //     &self,
-    //     payload: FixedRulePayload<'_, '_>,
-    //     out: &'_ mut RegularTempStore,
-    //     poison: Poison,
-    // ) -> Result<()>;
 }
 
 /// Simple wrapper for custom fixed rule. You have less control than implementing [FixedRule] directly,
@@ -645,55 +635,6 @@ impl FixedRule for SimpleFixedRule {
         Ok(self.return_arity)
     }
 
-    // fn run(
-    //     &self,
-    //     payload: FixedRulePayload<'_, '_>,
-    //     out: &'_ mut RegularTempStore,
-    //     _poison: Poison,
-    // ) -> Result<()> {
-    //     let options: BTreeMap<_, _> = payload
-    //         .manifest
-    //         .options
-    //         .iter()
-    //         .map(|(k, v)| -> Result<_> {
-    //             let val = v.clone().eval_to_const()?;
-    //             Ok((k.to_string(), val))
-    //         })
-    //         .try_collect()?;
-    //     let input_arity = payload.manifest.rule_args.len();
-    //     let inputs: Vec<_> = (0..input_arity)
-    //         .map(|i| -> Result<_> {
-    //             let input = payload.get_input(i).unwrap();
-    //             let rows: Vec<_> = input.iter()?.try_collect()?;
-    //             let mut headers = input
-    //                 .arg_manifest
-    //                 .bindings()
-    //                 .iter()
-    //                 .map(|s| s.name.to_string())
-    //                 .collect_vec();
-    //             let l = headers.len();
-    //             let m = input.arg_manifest.arity(payload.tx, payload.stores)?;
-    //             for i in l..m {
-    //                 headers.push(format!("_{i}"));
-    //             }
-    //             Ok(NamedRows::new(headers, rows))
-    //         })
-    //         .try_collect()?;
-    //     let results: NamedRows = (self.rule)(inputs, options)?;
-    //     for row in results.rows {
-    //         #[derive(Debug, Error, Diagnostic)]
-    //         #[error("arity mismatch: expect {1}, got {2}")]
-    //         #[diagnostic(code(parser::simple_fixed_rule_arity_mismatch))]
-    //         struct ArityMismatch(#[label] SourceSpan, usize, usize);
-
-    //         ensure!(
-    //             row.len() == self.return_arity,
-    //             ArityMismatch(payload.span(), self.return_arity, row.len())
-    //         );
-    //         out.put(row);
-    //     }
-    //     Ok(())
-    // }
     
     fn init_options(
         &self,

@@ -63,7 +63,6 @@ use crate::fixed_rule::FixedRule;
 
 pub(crate) struct RunningQueryHandle {
     pub(crate) started_at: f64,
-    // pub(crate) poison: Poison,
 }
 
 // // // pub(crate) struct RunningQueryCleanup {
@@ -306,36 +305,3 @@ impl<'s, S: Storage<'s>> Db<S> {
 }
 
 
-// // /// Used for user-initiated termination of running queries
-// // #[derive(Clone, Default)]
-// // pub struct Poison(pub(crate) Arc<AtomicBool>);
-
-// impl Poison {
-    // // /// Will return `Err` if user has initiated termination.
-    // // #[inline(always)]
-    // // pub fn check(&self) -> Result<()> {
-    // //     #[derive(Debug, Error, Diagnostic)]
-    // //     #[error("Running query is killed before completion")]
-    // //     #[diagnostic(code(eval::killed))]
-    // //     #[diagnostic(help("A query may be killed by timeout, or explicit command"))]
-    // //     struct ProcessKilled;
-
-    // //     if self.0.load(Ordering::Relaxed) {
-    // //         bail!(ProcessKilled)
-    // //     }
-    // //     Ok(())
-    // // }
-    // // #[cfg(target_arch = "wasm32")]
-    // // pub(crate) fn set_timeout(&self, _secs: f64) -> Result<()> {
-    // //     bail!("Cannot set timeout when threading is disallowed");
-    // // }
-    // // #[cfg(not(target_arch = "wasm32"))]
-    // // pub(crate) fn set_timeout(&self, secs: f64) -> Result<()> {
-    // //     let pill = self.clone();
-    // //     thread::spawn(move || {
-    // //         thread::sleep(Duration::from_micros((secs * 1000000.) as u64));
-    // //         pill.0.store(true, Ordering::Relaxed);
-    // //     });
-    // //     Ok(())
-    // // }
-// }

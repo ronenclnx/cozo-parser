@@ -13,8 +13,6 @@ use std::fmt::Debug;
 use itertools::Itertools;
 use miette::Result;
 
-// use crate::runtime::db::Poison;
-
 pub(crate) type Graph<T> = BTreeMap<T, Vec<T>>;
 
 pub(crate) fn strongly_connected_components<T>(graph: &Graph<T>) -> Result<Vec<Vec<&T>>>
