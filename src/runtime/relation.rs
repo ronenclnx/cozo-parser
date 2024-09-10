@@ -372,14 +372,14 @@ impl RelationHandle {
     }
 
 
-    pub(crate) fn exists(&self, tx: &SessionTx<'_>, key: &[DataValue]) -> Result<bool> {
-        let key_data = key.encode_as_key(self.id);
-        if self.is_temp {
-            tx.temp_store_tx.exists(&key_data, false)
-        } else {
-            tx.store_tx.exists(&key_data, false)
-        }
-    }
+    // // pub(crate) fn exists(&self, tx: &SessionTx<'_>, key: &[DataValue]) -> Result<bool> {
+    // //     let key_data = key.encode_as_key(self.id);
+    // //     if self.is_temp {
+    // //         tx.temp_store_tx.exists(&key_data, false)
+    // //     } else {
+    // //         tx.store_tx.exists(&key_data, false)
+    // //     }
+    // // }
 
 }
 
@@ -549,50 +549,50 @@ impl<'a> SessionTx<'a> {
 
         Ok(())
     }
-    pub(crate) fn destroy_relation(&mut self, name: &str) -> Result<Vec<(Vec<u8>, Vec<u8>)>> {
-        let is_temp = name.starts_with('_');
-        let mut to_clean = vec![];
+    // // pub(crate) fn destroy_relation(&mut self, name: &str) -> Result<Vec<(Vec<u8>, Vec<u8>)>> {
+    // //     let is_temp = name.starts_with('_');
+    // //     let mut to_clean = vec![];
 
-        // if name.starts_with('_') {
-        //     bail!("Cannot destroy temp relation");
-        // }
-        let store = self.get_relation(name, true)?;
-        if !store.has_no_index() {
-            bail!(
-                "Cannot remove stored relation `{}` with indices attached.",
-                name
-            );
-        }
-        if store.access_level < AccessLevel::Normal {
-            bail!(InsufficientAccessLevel(
-                store.name.to_string(),
-                "relation removal".to_string(),
-                store.access_level
-            ))
-        }
+    // //     // if name.starts_with('_') {
+    // //     //     bail!("Cannot destroy temp relation");
+    // //     // }
+    // //     let store = self.get_relation(name, true)?;
+    // //     if !store.has_no_index() {
+    // //         bail!(
+    // //             "Cannot remove stored relation `{}` with indices attached.",
+    // //             name
+    // //         );
+    // //     }
+    // //     if store.access_level < AccessLevel::Normal {
+    // //         bail!(InsufficientAccessLevel(
+    // //             store.name.to_string(),
+    // //             "relation removal".to_string(),
+    // //             store.access_level
+    // //         ))
+    // //     }
 
-        for k in store.indices.keys() {
-            let more_to_clean = self.destroy_relation(&format!("{name}:{k}"))?;
-            to_clean.extend(more_to_clean);
-        }
+    // //     for k in store.indices.keys() {
+    // //         let more_to_clean = self.destroy_relation(&format!("{name}:{k}"))?;
+    // //         to_clean.extend(more_to_clean);
+    // //     }
 
-        // for k in store.hnsw_indices.keys() {
-        //     let more_to_clean = self.destroy_relation(&format!("{name}:{k}"))?;
-        //     to_clean.extend(more_to_clean);
-        // }
+    // //     // for k in store.hnsw_indices.keys() {
+    // //     //     let more_to_clean = self.destroy_relation(&format!("{name}:{k}"))?;
+    // //     //     to_clean.extend(more_to_clean);
+    // //     // }
 
-        let key = DataValue::from(name);
-        let encoded = vec![key].encode_as_key(RelationId::SYSTEM);
-        if is_temp {
-            self.temp_store_tx.del(&encoded)?;
-        } else {
-            self.store_tx.del(&encoded)?;
-        }
-        let lower_bound = Tuple::default().encode_as_key(store.id);
-        let upper_bound = Tuple::default().encode_as_key(store.id.next());
-        to_clean.push((lower_bound, upper_bound));
-        Ok(to_clean)
-    }
+    // //     let key = DataValue::from(name);
+    // //     let encoded = vec![key].encode_as_key(RelationId::SYSTEM);
+    // //     if is_temp {
+    // //         self.temp_store_tx.del(&encoded)?;
+    // //     } else {
+    // //         self.store_tx.del(&encoded)?;
+    // //     }
+    // //     let lower_bound = Tuple::default().encode_as_key(store.id);
+    // //     let upper_bound = Tuple::default().encode_as_key(store.id.next());
+    // //     to_clean.push((lower_bound, upper_bound));
+    // //     Ok(to_clean)
+    // // }
     // pub(crate) fn set_access_level(&mut self, rel: &Symbol, level: AccessLevel) -> Result<()> {
     //     let mut meta = self.get_relation(rel, true)?;
     //     meta.access_level = level;

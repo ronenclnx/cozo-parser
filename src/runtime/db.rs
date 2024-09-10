@@ -54,7 +54,7 @@ use crate::query::ra::{
 use crate::runtime::relation::{
     extend_tuple_from_v, AccessLevel, InsufficientAccessLevel, RelationHandle, RelationId,
 };
-use crate::runtime::transact::SessionTx;
+// use crate::runtime::transact::SessionTx;
 use crate::storage::temp::TempStorage;
 use crate::storage::Storage;
 use crate::runtime::relation::decode_tuple_from_kv;
@@ -93,28 +93,28 @@ pub struct DbManifest {
 // //     Immutable,
 // // }
 
-/// The database object of Cozo.
-#[derive(Clone)]
-pub struct Db<S> {
-    pub(crate) db: S,
-    temp_db: TempStorage,
-    relation_store_id: Arc<AtomicU64>,
-    pub(crate) queries_count: Arc<AtomicU64>,
-    pub(crate) running_queries: Arc<Mutex<BTreeMap<u64, RunningQueryHandle>>>,
-    pub(crate) fixed_rules: Arc<ShardedLock<BTreeMap<String, Arc<Box<dyn FixedRule>>>>>,
-    // // pub(crate) tokenizers: Arc<TokenizerCache>,
-    #[cfg(not(target_arch = "wasm32"))]
-    // callback_count: Arc<AtomicU32>,
-    #[cfg(not(target_arch = "wasm32"))]
-    // pub(crate) event_callbacks: Arc<ShardedLock<EventCallbackRegistry>>,
-    relation_locks: Arc<ShardedLock<BTreeMap<SmartString<LazyCompact>, Arc<ShardedLock<()>>>>>,
-}
+// // // /// The database object of Cozo.
+// // // #[derive(Clone)]
+// // // pub struct Db<S> {
+// // //     // pub(crate) db: S,
+// // //     // temp_db: TempStorage,
+// // //     // relation_store_id: Arc<AtomicU64>,
+// // //     // pub(crate) queries_count: Arc<AtomicU64>,
+// // //     // pub(crate) running_queries: Arc<Mutex<BTreeMap<u64, RunningQueryHandle>>>,
+// // //     // pub(crate) fixed_rules: Arc<ShardedLock<BTreeMap<String, Arc<Box<dyn FixedRule>>>>>,
+// // //     // // pub(crate) tokenizers: Arc<TokenizerCache>,
+// // //     // #[cfg(not(target_arch = "wasm32"))]
+// // //     // callback_count: Arc<AtomicU32>,
+// // //     // #[cfg(not(target_arch = "wasm32"))]
+// // //     // pub(crate) event_callbacks: Arc<ShardedLock<EventCallbackRegistry>>,
+// // //     // relation_locks: Arc<ShardedLock<BTreeMap<SmartString<LazyCompact>, Arc<ShardedLock<()>>>>>,
+// // // }
 
-impl<S> Debug for Db<S> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Db")
-    }
-}
+// // // impl<S> Debug for Db<S> {
+// // //     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+// // //         write!(f, "Db")
+// // //     }
+// // // }
 
 // // #[derive(Debug, Diagnostic, Error)]
 // // #[error("Initialization of database failed")]
@@ -250,58 +250,58 @@ const OK_STR: &str = "OK";
 pub type Payload = (String, BTreeMap<String, DataValue>);
 
 
-impl<'s, S: Storage<'s>> Db<S> {
+// // // impl<'s, S: Storage<'s>> Db<S> {
 
-    //     let lower = vec![DataValue::from("")].encode_as_key(RelationId::SYSTEM);
-    //     let upper =
-    //         vec![DataValue::from(String::from(LARGEST_UTF_CHAR))].encode_as_key(RelationId::SYSTEM);
-    //     let mut rows: Vec<Vec<JsonValue>> = vec![];
-    //     for kv_res in tx.store_tx.range_scan(&lower, &upper) {
-    //         let (k_slice, v_slice) = kv_res?;
-    //         if upper <= k_slice {
-    //             break;
-    //         }
-    //         let meta = RelationHandle::decode(&v_slice)?;
-    //         let n_keys = meta.metadata.keys.len();
-    //         let n_dependents = meta.metadata.non_keys.len();
-    //         let arity = n_keys + n_dependents;
-    //         let name = meta.name;
-    //         let access_level = if name.contains(':') {
-    //             "index".to_string()
-    //         } else {
-    //             meta.access_level.to_string()
-    //         };
-    //         rows.push(vec![
-    //             json!(name),
-    //             json!(arity),
-    //             json!(access_level),
-    //             json!(n_keys),
-    //             json!(n_dependents),
-    //             json!(meta.put_triggers.len()),
-    //             json!(meta.rm_triggers.len()),
-    //             json!(meta.replace_triggers.len()),
-    //             json!(meta.description),
-    //         ]);
-    //     }
-    //     let rows = rows
-    //         .into_iter()
-    //         .map(|row| row.into_iter().map(DataValue::from).collect_vec())
-    //         .collect_vec();
-    //     Ok(NamedRows::new(
-    //         vec![
-    //             "name".to_string(),
-    //             "arity".to_string(),
-    //             "access_level".to_string(),
-    //             "n_keys".to_string(),
-    //             "n_non_keys".to_string(),
-    //             "n_put_triggers".to_string(),
-    //             "n_rm_triggers".to_string(),
-    //             "n_replace_triggers".to_string(),
-    //             "description".to_string(),
-    //         ],
-    //         rows,
-    //     ))
-    // }
-}
+// // //     //     let lower = vec![DataValue::from("")].encode_as_key(RelationId::SYSTEM);
+// // //     //     let upper =
+// // //     //         vec![DataValue::from(String::from(LARGEST_UTF_CHAR))].encode_as_key(RelationId::SYSTEM);
+// // //     //     let mut rows: Vec<Vec<JsonValue>> = vec![];
+// // //     //     for kv_res in tx.store_tx.range_scan(&lower, &upper) {
+// // //     //         let (k_slice, v_slice) = kv_res?;
+// // //     //         if upper <= k_slice {
+// // //     //             break;
+// // //     //         }
+// // //     //         let meta = RelationHandle::decode(&v_slice)?;
+// // //     //         let n_keys = meta.metadata.keys.len();
+// // //     //         let n_dependents = meta.metadata.non_keys.len();
+// // //     //         let arity = n_keys + n_dependents;
+// // //     //         let name = meta.name;
+// // //     //         let access_level = if name.contains(':') {
+// // //     //             "index".to_string()
+// // //     //         } else {
+// // //     //             meta.access_level.to_string()
+// // //     //         };
+// // //     //         rows.push(vec![
+// // //     //             json!(name),
+// // //     //             json!(arity),
+// // //     //             json!(access_level),
+// // //     //             json!(n_keys),
+// // //     //             json!(n_dependents),
+// // //     //             json!(meta.put_triggers.len()),
+// // //     //             json!(meta.rm_triggers.len()),
+// // //     //             json!(meta.replace_triggers.len()),
+// // //     //             json!(meta.description),
+// // //     //         ]);
+// // //     //     }
+// // //     //     let rows = rows
+// // //     //         .into_iter()
+// // //     //         .map(|row| row.into_iter().map(DataValue::from).collect_vec())
+// // //     //         .collect_vec();
+// // //     //     Ok(NamedRows::new(
+// // //     //         vec![
+// // //     //             "name".to_string(),
+// // //     //             "arity".to_string(),
+// // //     //             "access_level".to_string(),
+// // //     //             "n_keys".to_string(),
+// // //     //             "n_non_keys".to_string(),
+// // //     //             "n_put_triggers".to_string(),
+// // //     //             "n_rm_triggers".to_string(),
+// // //     //             "n_replace_triggers".to_string(),
+// // //     //             "description".to_string(),
+// // //     //         ],
+// // //     //         rows,
+// // //     //     ))
+// // //     // }
+// // // }
 
 

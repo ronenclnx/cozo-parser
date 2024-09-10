@@ -24,8 +24,8 @@ use crate::storage::StoreTx;
 pub struct SessionTx<'a> {
     pub(crate) store_tx: Box<dyn StoreTx<'a> + 'a>,
     pub(crate) temp_store_tx: TempTx,
-    pub(crate) relation_store_id: Arc<AtomicU64>,
-    pub(crate) temp_store_id: AtomicU32,
+    // pub(crate) relation_store_id: Arc<AtomicU64>,
+    // pub(crate) temp_store_id: AtomicU32,
     // pub(crate) tokenizers: Arc<TokenizerCache>,
 }
 

@@ -1059,7 +1059,6 @@ use crate::data::value::ValidityTs;
          &mut self,
          payload: &str,
      ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
-        let params: BTreeMap<String, DataValue> = BTreeMap::new();
         println!("xxx404");
          self.do_compile_script(
              payload,
