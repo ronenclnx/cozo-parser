@@ -35,7 +35,7 @@ use crate::data::value::DataValue;
 // use crate::fixed_rule::algos::*;
 use crate::fixed_rule::utilities::*;
 use crate::parse::SourceSpan;
-use crate::runtime::db::Poison;
+// use crate::runtime::db::Poison;
 use crate::runtime::temp_store::{EpochStore, RegularTempStore};
 use crate::runtime::transact::SessionTx;
 use crate::runtime::db::NamedRows;

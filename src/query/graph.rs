@@ -13,7 +13,7 @@ use std::fmt::Debug;
 use itertools::Itertools;
 use miette::Result;
 
-use crate::runtime::db::Poison;
+// use crate::runtime::db::Poison;
 
 pub(crate) type Graph<T> = BTreeMap<T, Vec<T>>;
 
@@ -36,7 +36,7 @@ where
         })
         .collect_vec();
     Ok(TarjanScc::new(&idx_graph)
-        .run(Poison::default())?
+        .run()?
         .into_iter()
         .map(|vs| vs.into_iter().map(|i| indices[i]).collect_vec())
         .collect_vec())
@@ -150,11 +150,11 @@ impl<'a> TarjanScc<'a> {
             stack: vec![],
         }
     }
-    fn run(mut self, poison: Poison) -> Result<Vec<Vec<usize>>> {
+    fn run(mut self) -> Result<Vec<Vec<usize>>> {
         for i in 0..self.graph.len() {
             if self.ids[i].is_none() {
                 self.dfs(i);
-                poison.check()?;
+                // poison.check()?;
             }
         }
 

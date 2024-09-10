@@ -19,7 +19,7 @@ use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
 use crate::fixed_rule::{CannotDetermineArity, FixedRule, FixedRulePayload};
 use crate::parse::SourceSpan;
-use crate::runtime::db::Poison;
+// use crate::runtime::db::Poison;
 use crate::runtime::temp_store::RegularTempStore;
 
 pub(crate) struct ReorderSort;

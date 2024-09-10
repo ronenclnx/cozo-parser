@@ -10,7 +10,6 @@ pub mod expr;
 pub use compile::Compiler;
 pub use compile::{ColType, NullableColType};
 pub use compile::IndexPositionUse;
-pub use compile::explain_compiled;
 pub use compile::{
     CompiledProgram,
     CompiledRule,

@@ -49,7 +49,6 @@ use parse::SourceSpan;
 use crate::compile::{Compiler};
 use serde_json::json;
 
-use crate::data::json::JsonValue;
 use crate::compile::symb::Symbol;
 
 mod data;
@@ -61,30 +60,9 @@ mod storage;
 mod utils;
 mod translate;
 mod compile;
+mod diagnostics;
 
 
-/// Convert error raised by the database into friendly JSON format
-pub fn format_error_as_json(mut err: Report, source: Option<&str>) -> JsonValue {
-    if err.source_code().is_none() {
-        if let Some(src) = source {
-            err = err.with_source_code(format!("{src} "));
-        }
-    }
-    let mut text_err = String::new();
-    let mut json_err = String::new();
-    TEXT_ERR_HANDLER
-        .render_report(&mut text_err, err.as_ref())
-        .expect("render text error failed");
-    JSON_ERR_HANDLER
-        .render_report(&mut json_err, err.as_ref())
-        .expect("render json error failed");
-    let mut json: serde_json::Value =
-        serde_json::from_str(&json_err).expect("parse rendered json error failed");
-    let map = json.as_object_mut().unwrap();
-    map.insert("ok".to_string(), json!(false));
-    map.insert("display".to_string(), json!(text_err));
-    json
-}
 
 lazy_static! {
     static ref TEXT_ERR_HANDLER: GraphicalReportHandler = miette::GraphicalReportHandler::new()
@@ -171,7 +149,7 @@ pub fn main() {
     println!("\n\nxxx161\n t = {t:?}");
 
 
-    let explain =  compile::explain_compiled(&temp).unwrap();
+    let explain =  diagnostics::explain_compiled(&temp).unwrap();
     println!("\n\nxxx177\n {explain:?}");
 
     let translated = translate::translate_program(&temp[0]);
