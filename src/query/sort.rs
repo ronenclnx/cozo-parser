@@ -12,7 +12,7 @@ use std::collections::BTreeMap;
 use itertools::Itertools;
 use miette::Result;
 
-use crate::data::program::SortDir;
+use crate::compile::program::SortDir;
 use crate::data::symb::Symbol;
 use crate::data::tuple::Tuple;
 use crate::runtime::temp_store::EpochStore;

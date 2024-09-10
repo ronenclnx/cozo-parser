@@ -16,7 +16,7 @@ use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::expr::{Bytecode, Expr};
-use crate::data::program::{FixedRuleApply, InputInlineRulesOrFixed, InputProgram, RelationOp};
+use crate::compile::program::{FixedRuleApply, InputInlineRulesOrFixed, InputProgram, RelationOp};
 use crate::data::relation::{ColumnDef, NullableColType, StoredRelationMetadata};
 use crate::data::symb::Symbol;
 use crate::data::tuple::{Tuple, ENCODED_KEY_MIN_LEN};

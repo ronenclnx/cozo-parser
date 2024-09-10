@@ -43,7 +43,7 @@ use crate::data::value::{DataValue};
 // use crate::fts::TokenizerCache;
 use crate::parse::sys::SysOp;
 use crate::parse::{parse_expressions, parse_script, CozoScript, SourceSpan};
-use crate::query::compile::{CompiledProgram, CompiledRule, CompiledRuleSet};
+use crate::compile::{CompiledProgram, CompiledRule, CompiledRuleSet};
 use crate::query::ra::{
     FilteredRA, InnerJoin, NegJoin, RelAlgebra, ReorderRA,
     StoredRA, StoredWithValidityRA, TempStoreRA, UnificationRA,

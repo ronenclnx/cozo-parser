@@ -18,7 +18,7 @@ use pest::Parser;
 use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
-use crate::data::program::{InputInlineRulesOrFixed, InputProgram};
+use crate::compile::program::{InputInlineRulesOrFixed, InputProgram};
 use crate::data::relation::NullableColType;
 use crate::data::symb::Symbol;
 use crate::data::value::{DataValue, ValidityTs};

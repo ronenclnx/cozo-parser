@@ -46,24 +46,11 @@ use miette::{
     Result, ThemeCharacters, ThemeStyles,
 };
 use parse::SourceSpan;
-use query::compile::{self, Compiler};
+use crate::compile::{Compiler};
 use serde_json::json;
 
-// use data::value::{DataValue, Num, ValidityTs};
-// use fixed_rule::{FixedRule};
-// use runtime::db::Db;
-// use runtime::relation::decode_tuple_from_kv;
-// #[cfg(feature = "storage-sqlite")]
-// use storage::sqlite::{new_cozo_sqlite, SqliteStorage};
-// use storage::{Storage, StoreTx};
-
-// pub use crate::data::expr::Expr;
 use crate::data::json::JsonValue;
 use crate::data::symb::Symbol;
-// pub use crate::data::value::{JsonData, Vector};
-// pub use crate::fixed_rule::SimpleFixedRule;
-// pub use crate::parse::SourceSpan;
-// pub use crate::runtime::callback::CallbackOp;
 
 mod data;
 mod fixed_rule;
@@ -73,7 +60,8 @@ mod query;
 mod runtime;
 mod storage;
 mod utils;
-
+mod translate;
+mod compile;
 
 
 /// Convert error raised by the database into friendly JSON format
@@ -162,10 +150,10 @@ pub fn main() {
 
 
     let s = Symbol{name: "?".into(), span: SourceSpan(0,0) };
-    let s = data::program::MagicSymbol::Muggle { inner: s };
+    let s = compile::program::MagicSymbol::Muggle { inner: s };
     let t = match &temp[0][&s] {
-        query::compile::CompiledRuleSet::Rules(rs) => &rs[0],
-        query::compile::CompiledRuleSet::Fixed(_) => todo!(),
+        compile::CompiledRuleSet::Rules(rs) => &rs[0],
+        compile::CompiledRuleSet::Fixed(_) => todo!(),
     } ;
     {
         // data::program::InputInlineRulesOrFixed::Rules { rules } => &rules[0].body[0],
@@ -174,10 +162,10 @@ pub fn main() {
     println!("\n\nxxx161\n t = {t:?}");
 
     let s = Symbol{name: "mutations".into(), span: SourceSpan(0,0) };
-    let s = data::program::MagicSymbol::Magic { inner: s, adornment: vec![false].into() };
+    let s = compile::program::MagicSymbol::Magic { inner: s, adornment: vec![false].into() };
     let t = match &temp[0][&s] {
-        query::compile::CompiledRuleSet::Rules(rs) => &rs[0],
-        query::compile::CompiledRuleSet::Fixed(_) => todo!(),
+        compile::CompiledRuleSet::Rules(rs) => &rs[0],
+        compile::CompiledRuleSet::Fixed(_) => todo!(),
     } ;
     {
         // data::program::InputInlineRulesOrFixed::Rules { rules } => &rules[0].body[0],
@@ -188,5 +176,9 @@ pub fn main() {
 
     let explain =  compile::explain_compiled(&temp).unwrap();
     println!("\n\nxxx177\n {explain:?}");
+
+    let translated = translate::translate_program(&temp[0]);
+    println!("\n\nxxx181\n {translated:?}");
+
 
 }

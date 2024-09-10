@@ -164,8 +164,6 @@ pub enum DataValue {
     List(Vec<DataValue>),
     /// set, used internally only
     Set(BTreeSet<DataValue>),
-    /// Array, mainly for proximity search
-    Vec(Vector),
     /// Json
     Json(JsonData),
     /// validity,
@@ -252,63 +250,6 @@ impl serde::Serialize for Vector {
     }
 }
 
-impl<'de> serde::Deserialize<'de> for Vector {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
-    {
-        deserializer.deserialize_tuple(2, VectorVisitor)
-    }
-}
-
-struct VectorVisitor;
-
-impl<'de> Visitor<'de> for VectorVisitor {
-    type Value = Vector;
-
-    fn expecting(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("vector representation")
-    }
-    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: SeqAccess<'de>,
-    {
-        let tag: u8 = seq
-            .next_element()?
-            .ok_or_else(|| serde::de::Error::invalid_length(0, &self))?;
-        let bytes: &[u8] = seq
-            .next_element()?
-            .ok_or_else(|| serde::de::Error::invalid_length(1, &self))?;
-        match tag {
-            0u8 => {
-                let len = bytes.len() / std::mem::size_of::<f32>();
-                let mut v = vec![];
-                v.reserve_exact(len);
-                let ptr = v.as_mut_ptr() as *mut u8;
-                unsafe {
-                    std::ptr::copy_nonoverlapping(bytes.as_ptr(), ptr, bytes.len());
-                    v.set_len(len);
-                }
-                Ok(Vector::F32(Array1::from(v)))
-            }
-            1u8 => {
-                let len = bytes.len() / std::mem::size_of::<f64>();
-                let mut v = vec![];
-                v.reserve_exact(len);
-                let ptr = v.as_mut_ptr() as *mut u8;
-                unsafe {
-                    std::ptr::copy_nonoverlapping(bytes.as_ptr(), ptr, bytes.len());
-                    v.set_len(len);
-                }
-                Ok(Vector::F64(Array1::from(v)))
-            }
-            _ => Err(serde::de::Error::invalid_value(
-                serde::de::Unexpected::Unsigned(tag as u64),
-                &self,
-            )),
-        }
-    }
-}
 
 impl Vector {
     /// Get the length of the vector
@@ -630,14 +571,6 @@ impl Display for DataValue {
                 .field("timestamp", &v.timestamp.0)
                 .field("retracted", &v.is_assert)
                 .finish(),
-            DataValue::Vec(a) => match a {
-                Vector::F32(a) => {
-                    write!(f, "vec({:?})", a.to_vec())
-                }
-                Vector::F64(a) => {
-                    write!(f, "vec({:?}, \"F64\")", a.to_vec())
-                }
-            },
             DataValue::Json(j) => {
                 if j.is_object() {
                     write!(f, "{}", j.0)

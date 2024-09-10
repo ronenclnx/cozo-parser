@@ -28,7 +28,7 @@ use crate::data::value::{DataValue, ValidityTs};
 use crate::parse::expr::build_expr;
 // use crate::parse::sys::{FtsIndexConfig, HnswIndexConfig, MinHashLshConfig};
 use crate::parse::{CozoScriptParser, Rule, SourceSpan};
-use crate::query::compile::IndexPositionUse;
+use crate::compile::IndexPositionUse;
 // use crate::runtime::hnsw::HnswIndexManifest;
 // use crate::runtime::minhash_lsh::{HashPermutations, LshParams, MinHashLshIndexManifest, Weights};
 use crate::runtime::transact::SessionTx;

@@ -87,10 +87,6 @@ impl From<DataValue> for JsonValue {
             DataValue::Uuid(u) => {
                 json!(u.0)
             }
-            DataValue::Vec(arr) => match arr {
-                Vector::F32(a) => json!(a.as_slice().unwrap()),
-                Vector::F64(a) => json!(a.as_slice().unwrap()),
-            },
             DataValue::Validity(v) => {
                 json!([v.timestamp.0, v.is_assert])
             }

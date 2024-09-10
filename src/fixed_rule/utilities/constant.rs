@@ -13,7 +13,7 @@ use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::expr::Expr;
-use crate::data::program::WrongFixedRuleOptionError;
+use crate::compile::program::WrongFixedRuleOptionError;
 use crate::data::symb::Symbol;
 use crate::data::value::DataValue;
 use crate::fixed_rule::{FixedRule, FixedRulePayload};
@@ -25,20 +25,20 @@ use crate::runtime::temp_store::RegularTempStore;
 pub(crate) struct Constant;
 
 impl FixedRule for Constant {
-    fn run(
-        &self,
-        payload: FixedRulePayload<'_, '_>,
-        out: &mut RegularTempStore,
-        _poison: Poison,
-    ) -> Result<()> {
-        let data = payload.expr_option("data", None).unwrap();
-        let data = data.get_const().unwrap().get_slice().unwrap();
-        for row in data {
-            let tuple = row.get_slice().unwrap().into();
-            out.put(tuple)
-        }
-        Ok(())
-    }
+    // // fn run(
+    // //     &self,
+    // //     payload: FixedRulePayload<'_, '_>,
+    // //     out: &mut RegularTempStore,
+    // //     _poison: Poison,
+    // // ) -> Result<()> {
+    // //     let data = payload.expr_option("data", None).unwrap();
+    // //     let data = data.get_const().unwrap().get_slice().unwrap();
+    // //     for row in data {
+    // //         let tuple = row.get_slice().unwrap().into();
+    // //         out.put(tuple)
+    // //     }
+    // //     Ok(())
+    // // }
 
     fn arity(
         &self,

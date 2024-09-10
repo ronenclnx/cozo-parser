@@ -13,14 +13,14 @@ use miette::{bail, ensure, Diagnostic, Result, miette};
 use thiserror::Error;
 
 use crate::data::expr::Expr;
-use crate::data::program::{
+use crate::compile::program::{
     InputAtom, InputNamedFieldRelationApplyAtom, InputRelationApplyAtom, InputRuleApplyAtom,
     NormalFormAtom, NormalFormRelationApplyAtom, NormalFormRuleApplyAtom, TempSymbGen, Unification,
 };
 use crate::parse::SourceSpan;
-use crate::query::reorder::UnsafeNegation;
+use crate::compile::reorder::UnsafeNegation;
 
-use super::compile::Compiler;
+use crate::compile::Compiler;
 // use crate::runtime::transact::SessionTx;
 
 #[derive(Debug)]

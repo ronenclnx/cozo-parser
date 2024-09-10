@@ -138,20 +138,6 @@ fn parse_type_inner(pair: Pair<'_>) -> Result<ColType> {
                 len,
             }
         }
-        Rule::vec_type => {
-            let mut inner = pair.into_inner();
-            let eltype = match inner.next().unwrap().as_str() {
-                "F32" | "Float" => VecElementType::F32,
-                "F64" | "Double" => VecElementType::F64,
-                _ => unreachable!()
-            };
-            let len = inner.next().unwrap();
-            let len = len.as_str().replace('_', "").parse::<usize>().into_diagnostic()?;
-            ColType::Vec {
-                eltype,
-                len,
-            }
-        }
         Rule::tuple_type => {
             ColType::Tuple(pair.into_inner().map(parse_nullable_type).try_collect()?)
         }

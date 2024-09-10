@@ -48,27 +48,6 @@ pub(crate) trait MemCmpEncoder: Write {
             DataValue::Null => self.write_u8(NULL_TAG).unwrap(),
             DataValue::Bool(false) => self.write_u8(FALSE_TAG).unwrap(),
             DataValue::Bool(true) => self.write_u8(TRUE_TAG).unwrap(),
-            DataValue::Vec(arr) => {
-                self.write_u8(VEC_TAG).unwrap();
-                match arr {
-                    Vector::F32(a) => {
-                        self.write_u8(VEC_F32).unwrap();
-                        let l = a.len();
-                        self.write_u64::<BigEndian>(l as u64).unwrap();
-                        for el in a {
-                            self.write_f32::<BigEndian>(*el).unwrap();
-                        }
-                    }
-                    Vector::F64(a) => {
-                        self.write_u8(VEC_F64).unwrap();
-                        let l = a.len();
-                        self.write_u64::<BigEndian>(l as u64).unwrap();
-                        for el in a {
-                            self.write_f64::<BigEndian>(*el).unwrap();
-                        }
-                    }
-                }
-            }
             DataValue::Num(n) => {
                 self.write_u8(NUM_TAG).unwrap();
                 self.encode_num(*n);
@@ -335,34 +314,6 @@ impl DataValue {
                 )
             }
             BOT_TAG => (DataValue::Bot, remaining),
-            VEC_TAG => {
-                let (t_tag, remaining) = remaining.split_first().unwrap();
-                let (len_bytes, mut rest) = remaining.split_at(8);
-                let len = BigEndian::read_u64(len_bytes) as usize;
-                match *t_tag {
-                    VEC_F32 => {
-                        let mut res_arr = ndarray::Array1::zeros(len);
-                        for mut row in res_arr.axis_iter_mut(ndarray::Axis(0)) {
-                            let (f_bytes, next_chunk) = rest.split_at(4);
-                            rest = next_chunk;
-                            let f = BigEndian::read_f32(f_bytes);
-                            row.fill(f);
-                        }
-                        (DataValue::Vec(Vector::F32(res_arr)), rest)
-                    }
-                    VEC_F64 => {
-                        let mut res_arr = ndarray::Array1::zeros(len);
-                        for mut row in res_arr.axis_iter_mut(ndarray::Axis(0)) {
-                            let (f_bytes, next_chunk) = rest.split_at(8);
-                            rest = next_chunk;
-                            let f = BigEndian::read_f64(f_bytes);
-                            row.fill(f);
-                        }
-                        (DataValue::Vec(Vector::F64(res_arr)), rest)
-                    }
-                    _ => unreachable!(),
-                }
-            }
             _ => unreachable!("{:?}", bs),
         }
     }

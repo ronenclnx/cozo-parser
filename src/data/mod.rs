@@ -11,7 +11,6 @@ pub(crate) mod expr;
 pub(crate) mod functions;
 pub(crate) mod json;
 pub(crate) mod memcmp;
-pub(crate) mod program;
 pub(crate) mod relation;
 pub(crate) mod symb;
 pub(crate) mod tuple;

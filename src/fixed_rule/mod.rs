@@ -24,7 +24,7 @@ use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::expr::Expr;
-use crate::data::program::{
+use crate::compile::program::{
     FixedRuleOptionNotFoundError, MagicFixedRuleApply, MagicFixedRuleRuleArg, MagicSymbol,
     WrongFixedRuleOptionError,
 };
@@ -84,25 +84,25 @@ impl<'a, 'b> FixedRuleInputRelation<'a, 'b> {
         self.arg_manifest.get_binding_map(offset)
     }
     /// Iterate the input relation
-    pub fn iter(&self) -> Result<TupleIter<'a>> {
-        Ok(match &self.arg_manifest {
-            MagicFixedRuleRuleArg::InMem { name, .. } => {
-                let store = self.stores.get(name).ok_or_else(|| {
-                    RuleNotFoundError(name.symbol().to_string(), name.symbol().span)
-                })?;
-                Box::new(store.all_iter().map(|t| Ok(t.into_tuple())))
-            }
-            MagicFixedRuleRuleArg::Stored { name, valid_at, .. } => {
-                let relation = self.tx.get_relation(name, false)?;
-                if let Some(valid_at) = valid_at {
-                    todo!()
-                    // Box::new(relation.skip_scan_all(self.tx, *valid_at))
-                } else {
-                    Box::new(relation.scan_all(self.tx))
-                }
-            }
-        })
-    }
+    // pub fn iter(&self) -> Result<TupleIter<'a>> {
+    //     Ok(match &self.arg_manifest {
+    //         MagicFixedRuleRuleArg::InMem { name, .. } => {
+    //             let store = self.stores.get(name).ok_or_else(|| {
+    //                 RuleNotFoundError(name.symbol().to_string(), name.symbol().span)
+    //             })?;
+    //             Box::new(store.all_iter().map(|t| Ok(t.into_tuple())))
+    //         }
+    //         MagicFixedRuleRuleArg::Stored { name, valid_at, .. } => {
+    //             let relation = self.tx.get_relation(name, false)?;
+    //             if let Some(valid_at) = valid_at {
+    //                 todo!()
+    //                 // Box::new(relation.skip_scan_all(self.tx, *valid_at))
+    //             } else {
+    //                 Box::new(relation.scan_all(self.tx))
+    //             }
+    //         }
+    //     })
+    // }
     // // // /// Iterate the relation with the given single-value prefix
     // // // pub fn prefix_iter(&self, prefix: &DataValue) -> Result<TupleIter<'_>> {
     // // //     Ok(match self.arg_manifest {
@@ -557,15 +557,15 @@ pub trait FixedRule: Send + Sync + Debug {
         rule_head: &[Symbol],
         span: SourceSpan,
     ) -> Result<usize>;
-    /// You should implement the logic of your algorithm/utility in this function.
-    /// The outputs are written to `out`. You should check `poison` periodically
-    /// for user-initiated termination.
-    fn run(
-        &self,
-        payload: FixedRulePayload<'_, '_>,
-        out: &'_ mut RegularTempStore,
-        poison: Poison,
-    ) -> Result<()>;
+    // // /// You should implement the logic of your algorithm/utility in this function.
+    // // /// The outputs are written to `out`. You should check `poison` periodically
+    // // /// for user-initiated termination.
+    // fn run(
+    //     &self,
+    //     payload: FixedRulePayload<'_, '_>,
+    //     out: &'_ mut RegularTempStore,
+    //     poison: Poison,
+    // ) -> Result<()>;
 }
 
 /// Simple wrapper for custom fixed rule. You have less control than implementing [FixedRule] directly,
@@ -645,55 +645,55 @@ impl FixedRule for SimpleFixedRule {
         Ok(self.return_arity)
     }
 
-    fn run(
-        &self,
-        payload: FixedRulePayload<'_, '_>,
-        out: &'_ mut RegularTempStore,
-        _poison: Poison,
-    ) -> Result<()> {
-        let options: BTreeMap<_, _> = payload
-            .manifest
-            .options
-            .iter()
-            .map(|(k, v)| -> Result<_> {
-                let val = v.clone().eval_to_const()?;
-                Ok((k.to_string(), val))
-            })
-            .try_collect()?;
-        let input_arity = payload.manifest.rule_args.len();
-        let inputs: Vec<_> = (0..input_arity)
-            .map(|i| -> Result<_> {
-                let input = payload.get_input(i).unwrap();
-                let rows: Vec<_> = input.iter()?.try_collect()?;
-                let mut headers = input
-                    .arg_manifest
-                    .bindings()
-                    .iter()
-                    .map(|s| s.name.to_string())
-                    .collect_vec();
-                let l = headers.len();
-                let m = input.arg_manifest.arity(payload.tx, payload.stores)?;
-                for i in l..m {
-                    headers.push(format!("_{i}"));
-                }
-                Ok(NamedRows::new(headers, rows))
-            })
-            .try_collect()?;
-        let results: NamedRows = (self.rule)(inputs, options)?;
-        for row in results.rows {
-            #[derive(Debug, Error, Diagnostic)]
-            #[error("arity mismatch: expect {1}, got {2}")]
-            #[diagnostic(code(parser::simple_fixed_rule_arity_mismatch))]
-            struct ArityMismatch(#[label] SourceSpan, usize, usize);
+    // fn run(
+    //     &self,
+    //     payload: FixedRulePayload<'_, '_>,
+    //     out: &'_ mut RegularTempStore,
+    //     _poison: Poison,
+    // ) -> Result<()> {
+    //     let options: BTreeMap<_, _> = payload
+    //         .manifest
+    //         .options
+    //         .iter()
+    //         .map(|(k, v)| -> Result<_> {
+    //             let val = v.clone().eval_to_const()?;
+    //             Ok((k.to_string(), val))
+    //         })
+    //         .try_collect()?;
+    //     let input_arity = payload.manifest.rule_args.len();
+    //     let inputs: Vec<_> = (0..input_arity)
+    //         .map(|i| -> Result<_> {
+    //             let input = payload.get_input(i).unwrap();
+    //             let rows: Vec<_> = input.iter()?.try_collect()?;
+    //             let mut headers = input
+    //                 .arg_manifest
+    //                 .bindings()
+    //                 .iter()
+    //                 .map(|s| s.name.to_string())
+    //                 .collect_vec();
+    //             let l = headers.len();
+    //             let m = input.arg_manifest.arity(payload.tx, payload.stores)?;
+    //             for i in l..m {
+    //                 headers.push(format!("_{i}"));
+    //             }
+    //             Ok(NamedRows::new(headers, rows))
+    //         })
+    //         .try_collect()?;
+    //     let results: NamedRows = (self.rule)(inputs, options)?;
+    //     for row in results.rows {
+    //         #[derive(Debug, Error, Diagnostic)]
+    //         #[error("arity mismatch: expect {1}, got {2}")]
+    //         #[diagnostic(code(parser::simple_fixed_rule_arity_mismatch))]
+    //         struct ArityMismatch(#[label] SourceSpan, usize, usize);
 
-            ensure!(
-                row.len() == self.return_arity,
-                ArityMismatch(payload.span(), self.return_arity, row.len())
-            );
-            out.put(row);
-        }
-        Ok(())
-    }
+    //         ensure!(
+    //             row.len() == self.return_arity,
+    //             ArityMismatch(payload.span(), self.return_arity, row.len())
+    //         );
+    //         out.put(row);
+    //     }
+    //     Ok(())
+    // }
     
     fn init_options(
         &self,
@@ -765,10 +765,11 @@ struct NotAnEdgeError(#[label] SourceSpan);
 // // ))]
 // // struct BadEdgeWeightError(DataValue, #[label] SourceSpan);
 
-#[derive(Error, Diagnostic, Debug)]
-#[error("The requested rule '{0}' cannot be found")]
-#[diagnostic(code(algo::rule_not_found))]
-struct RuleNotFoundError(String, #[label] SourceSpan);
+// #[derive(Error, Diagnostic, Debug)]
+// #[error("The requested rule '{0}' cannot be found")]
+// #[diagnostic(code(algo::rule_not_found))]
+// pub struct RuleNotFoundError(String, #[label] SourceSpan);
+use crate::compile::fixed_rule::RuleNotFoundError;
 
 #[derive(Error, Diagnostic, Debug)]
 #[error("Invalid reverse scanning of triples")]
@@ -804,23 +805,3 @@ pub(crate) struct BadExprValueError(
 #[diagnostic(code(parser::fixed_rule_not_found))]
 pub(crate) struct FixedRuleNotFoundError(pub(crate) String, #[label] pub(crate) SourceSpan);
 
-impl MagicFixedRuleRuleArg {
-    pub(crate) fn arity(
-        &self,
-        tx: &SessionTx<'_>,
-        stores: &BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<usize> {
-        Ok(match self {
-            MagicFixedRuleRuleArg::InMem { name, .. } => {
-                let store = stores.get(name).ok_or_else(|| {
-                    RuleNotFoundError(name.symbol().to_string(), name.symbol().span)
-                })?;
-                store.arity
-            }
-            MagicFixedRuleRuleArg::Stored { name, .. } => {
-                let handle = tx.get_relation(name, false)?;
-                handle.arity()
-            }
-        })
-    }
-}

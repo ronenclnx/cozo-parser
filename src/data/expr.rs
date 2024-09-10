@@ -874,7 +874,6 @@ pub(crate) fn get_op(name: &str) -> Option<&'static Op> {
         "is_infinite" => &OP_IS_INFINITE,
         "is_nan" => &OP_IS_NAN,
         "is_uuid" => &OP_IS_UUID,
-        "is_vec" => &OP_IS_VEC,
         "length" => &OP_LENGTH,
         "sorted" => &OP_SORTED,
         "reverse" => &OP_REVERSE,
@@ -907,10 +906,6 @@ pub(crate) fn get_op(name: &str) -> Option<&'static Op> {
         "to_int" => &OP_TO_INT,
         "to_float" => &OP_TO_FLOAT,
         "to_string" => &OP_TO_STRING,
-        "l2_dist" => &OP_L2_DIST,
-        "l2_normalize" => &OP_L2_NORMALIZE,
-        "ip_dist" => &OP_IP_DIST,
-        "cos_dist" => &OP_COS_DIST,
         "int_range" => &OP_INT_RANGE,
         "rand_float" => &OP_RAND_FLOAT,
         "rand_bernoulli" => &OP_RAND_BERNOULLI,
@@ -930,8 +925,6 @@ pub(crate) fn get_op(name: &str) -> Option<&'static Op> {
         "now" => &OP_NOW,
         "format_timestamp" => &OP_FORMAT_TIMESTAMP,
         "parse_timestamp" => &OP_PARSE_TIMESTAMP,
-        "vec" => &OP_VEC,
-        "rand_vec" => &OP_RAND_VEC,
         _ => return None,
     })
 }

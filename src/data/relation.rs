@@ -21,7 +21,7 @@ use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::expr::Expr;
-use crate::data::value::{DataValue, JsonData, UuidWrapper, Validity, ValidityTs, Vector};
+use crate::data::value::{DataValue, JsonData, UuidWrapper, Validity, ValidityTs};
 use crate::data::value::Num;
 
 #[derive(Debug, Clone, Eq, PartialEq, serde_derive::Deserialize, serde_derive::Serialize)]
@@ -60,15 +60,6 @@ impl Display for NullableColType {
                 }
                 f.write_str(")")?;
             }
-            ColType::Vec { eltype, len } => {
-                f.write_str("<")?;
-                match eltype {
-                    VecElementType::F32 => f.write_str("F32")?,
-                    VecElementType::F64 => f.write_str("F64")?,
-                }
-                write!(f, ";{len}")?;
-                f.write_str(">")?;
-            }
             ColType::Json => {
                 f.write_str("Json")?;
             }
@@ -92,10 +83,6 @@ pub enum ColType {
     List {
         eltype: Box<NullableColType>,
         len: Option<usize>,
-    },
-    Vec {
-        eltype: VecElementType,
-        len: usize,
     },
     Tuple(Vec<NullableColType>),
     Validity,
@@ -249,74 +236,6 @@ impl NullableColType {
                     bail!(make_err())
                 }
             }
-            ColType::Vec { eltype, len } => match &data {
-                DataValue::List(l) => {
-                    if l.len() != *len {
-                        bail!(BadListLength(self.clone(), l.len()))
-                    }
-                    match eltype {
-                        VecElementType::F32 => {
-                            let mut res_arr = ndarray::Array1::zeros(*len);
-                            for (mut row, el) in
-                                res_arr.axis_iter_mut(ndarray::Axis(0)).zip(l.iter())
-                            {
-                                let f = el.get_float().ok_or_else(make_err)? as f32;
-                                row.fill(f);
-                            }
-                            DataValue::Vec(Vector::F32(res_arr))
-                        }
-                        VecElementType::F64 => {
-                            let mut res_arr = ndarray::Array1::zeros(*len);
-                            for (mut row, el) in
-                                res_arr.axis_iter_mut(ndarray::Axis(0)).zip(l.iter())
-                            {
-                                let f = el.get_float().ok_or_else(make_err)?;
-                                row.fill(f);
-                            }
-                            DataValue::Vec(Vector::F64(res_arr))
-                        }
-                    }
-                }
-                DataValue::Vec(arr) => {
-                    if *eltype != arr.el_type() || *len != arr.len() {
-                        bail!(make_err())
-                    } else {
-                        data
-                    }
-                }
-                DataValue::Str(s) => {
-                    let bytes = STANDARD.decode(s).map_err(|_| make_err())?;
-                    match eltype {
-                        VecElementType::F32 => {
-                            let f32_count = bytes.len() / mem::size_of::<f32>();
-                            if f32_count != *len {
-                                bail!(make_err())
-                            }
-                            let arr = unsafe {
-                                ndarray::ArrayView1::from_shape_ptr(
-                                    ndarray::Dim([f32_count]),
-                                    bytes.as_ptr() as *const f32,
-                                )
-                            };
-                            DataValue::Vec(Vector::F32(arr.to_owned()))
-                        }
-                        VecElementType::F64 => {
-                            let f64_count = bytes.len() / mem::size_of::<f64>();
-                            if f64_count != *len {
-                                bail!(make_err())
-                            }
-                            let arr = unsafe {
-                                ndarray::ArrayView1::from_shape_ptr(
-                                    ndarray::Dim([f64_count]),
-                                    bytes.as_ptr() as *const f64,
-                                )
-                            };
-                            DataValue::Vec(Vector::F64(arr.to_owned()))
-                        }
-                    }
-                }
-                _ => bail!(make_err()),
-            },
             ColType::Tuple(typ) => {
                 if let DataValue::List(l) = data {
                     ensure!(typ.len() == l.len(), BadListLength(self.clone(), l.len()));
@@ -425,22 +344,6 @@ impl NullableColType {
                     let mut arr = Vec::with_capacity(l.len());
                     for el in l {
                         arr.push(self.coerce(el, cur_vld)?);
-                    }
-                    arr.into()
-                }
-                DataValue::Vec(v) => {
-                    let mut arr = Vec::with_capacity(v.len());
-                    match v {
-                        Vector::F32(a) => {
-                            for el in a {
-                                arr.push(json!(el));
-                            }
-                        }
-                        Vector::F64(a) => {
-                            for el in a {
-                                arr.push(json!(el));
-                            }
-                        }
                     }
                     arr.into()
                 }
