@@ -17,7 +17,6 @@ use thiserror::Error;
 
 use crate::data::aggr::Aggregation;
 use crate::compile::expr::Expr;
-use crate::data::functions::current_validity;
 use super::program::{
     FixedRuleArg, InputProgram, MagicAtom, MagicFixedRuleApply, MagicInlineRule, MagicRulesOrFixed, MagicSymbol, RelationOp, StratifiedMagicProgram
 };
@@ -980,22 +979,19 @@ use crate::data::json::JsonValue;
         &mut self,
         payload: &str,
         param_pool: &BTreeMap<String, DataValue>,
-        cur_vld: ValidityTs,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
         match parse_script(
             payload,
             param_pool,
             &BTreeMap::new(),
-            cur_vld,
         )? {
-            CozoScript::Single(p) => self.compile_single(cur_vld, p),
+            CozoScript::Single(p) => self.compile_single(p),
             _ => todo!("it's a bug")
         }
     }
 
     fn compile_single(
         &mut self,
-        cur_vld: ValidityTs,
         p: InputProgram,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>, Report> {
         let mut callback_collector = BTreeMap::new();
@@ -1005,7 +1001,6 @@ use crate::data::json::JsonValue;
 
             res = self.compile_single_program(
                 p,
-                cur_vld,
                 &callback_targets,
                 &mut callback_collector,
             )?;
@@ -1019,12 +1014,11 @@ use crate::data::json::JsonValue;
     pub(crate) fn compile_single_program(
         &mut self,
         p: InputProgram,
-        cur_vld: ValidityTs,
         callback_targets: &BTreeSet<SmartString<LazyCompact>>,
         callback_collector: &mut CallbackCollector,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
         let compiled =
-            self.compile_query(p, cur_vld, callback_targets, callback_collector, true)?;
+            self.compile_query(p, callback_targets, callback_collector, true)?;
         Ok(compiled)
     }
 
@@ -1032,7 +1026,6 @@ use crate::data::json::JsonValue;
     pub(crate) fn compile_query(
         &mut self,
         input_program: InputProgram,
-        cur_vld: ValidityTs,
         callback_targets: &BTreeSet<SmartString<LazyCompact>>,
         callback_collector: &mut CallbackCollector,
         top_level: bool,
@@ -1075,11 +1068,9 @@ use crate::data::json::JsonValue;
      ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
         let params: BTreeMap<String, DataValue> = BTreeMap::new();
         println!("xxx404");
-         let cur_vld = current_validity();
          self.do_compile_script(
              payload,
              &params,
-             cur_vld,
          )
      }
 

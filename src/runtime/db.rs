@@ -32,7 +32,6 @@ use serde_json::json;
 use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
-// use crate::data::functions::current_validity;
 use crate::data::json::JsonValue;
 // use crate::data::program::{InputProgram, QueryAssertion, RelationOp, ReturnMutation};
 // use crate::data::relation::ColumnDef;

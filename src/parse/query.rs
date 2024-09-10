@@ -22,7 +22,7 @@ use thiserror::Error;
 
 use crate::data::aggr::{parse_aggr, Aggregation};
 use crate::compile::expr::Expr;
-use crate::data::functions::{str2vld, MAX_VALIDITY_TS};
+use crate::data::functions::{current_validity, str2vld, MAX_VALIDITY_TS};
 use crate::compile::program::{
     FixedRuleApply, FixedRuleArg, InputAtom, InputInlineRule, InputInlineRulesOrFixed,
     InputNamedFieldRelationApplyAtom, InputProgram, InputRelationApplyAtom, InputRuleApplyAtom,
@@ -107,8 +107,8 @@ pub(crate) fn parse_query(
     src: Pairs<'_>,
     param_pool: &BTreeMap<String, DataValue>,
     fixed_rules: &BTreeMap<String, Arc<Box<dyn FixedRule>>>,
-    cur_vld: ValidityTs,
 ) -> Result<InputProgram> {
+    let cur_vld = current_validity();
     let mut progs: BTreeMap<Symbol, InputInlineRulesOrFixed> = Default::default();
     let mut out_opts: QueryOutOptions = Default::default();
     let mut disable_magic_rewrite = false;
@@ -119,7 +119,7 @@ pub(crate) fn parse_query(
     for pair in src {
         match pair.as_rule() {
             Rule::rule => {
-                let (name, rule) = parse_rule(pair, param_pool, cur_vld)?;
+                let (name, rule) = parse_rule(pair, param_pool)?;
 
                 match progs.entry(name) {
                     Entry::Vacant(e) => {
@@ -534,8 +534,8 @@ pub(crate) fn parse_query(
 fn parse_rule(
     src: Pair<'_>,
     param_pool: &BTreeMap<String, DataValue>,
-    cur_vld: ValidityTs,
 ) -> Result<(Symbol, InputInlineRule)> {
+    let cur_vld = current_validity();
     let span = src.extract_span();
     let mut src = src.into_inner();
     let head = src.next().unwrap();

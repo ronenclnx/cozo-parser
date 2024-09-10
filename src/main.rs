@@ -100,7 +100,6 @@ lazy_static! {
 
 
 use crate::parse::parse_script;
-use crate::data::functions::current_validity;
 /// no documentation
 pub fn main() {
     println!("hello cozo parser experiment");
@@ -129,7 +128,6 @@ pub fn main() {
         ?[x] := mutations[x]
         "##;
 
-    let cur_vld = current_validity();
     // let params: BTreeMap<String, DataValue> = BTreeMap::new();
     let fixed_rules:BTreeMap<String, Arc<Box<dyn FixedRule>>> = BTreeMap::new();
     // let res = parse_script(script, &params, &fixed_rules, cur_vld).unwrap().get_single_program().unwrap();

@@ -106,7 +106,6 @@ pub(crate) fn parse_sys(
     mut src: Pairs<'_>,
     param_pool: &BTreeMap<String, DataValue>,
     algorithms: &BTreeMap<String, Arc<Box<dyn FixedRule>>>,
-    cur_vld: ValidityTs,
 ) -> Result<SysOp> {
     let inner = src.next().unwrap();
     Ok(match inner.as_rule() {
@@ -126,7 +125,6 @@ pub(crate) fn parse_sys(
                 inner.into_inner().next().unwrap().into_inner(),
                 param_pool,
                 algorithms,
-                cur_vld,
             )?;
             SysOp::Explain(Box::new(prog))
         }
@@ -210,7 +208,6 @@ pub(crate) fn parse_sys(
                     script.into_inner(),
                     &Default::default(),
                     algorithms,
-                    cur_vld,
                 )?;
                 match op.as_rule() {
                     Rule::trigger_put => puts.push(script_str.to_string()),

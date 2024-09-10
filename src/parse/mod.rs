@@ -278,7 +278,6 @@ pub(crate) fn parse_script(
     src: &str,
     param_pool: &BTreeMap<String, DataValue>,
     fixed_rules: &BTreeMap<String, Arc<Box<dyn FixedRule>>>,
-    cur_vld: ValidityTs,
 ) -> Result<CozoScript> {
     let parsed = CozoScriptParser::parse(Rule::script, src)
         .map_err(|err| {
@@ -292,7 +291,7 @@ pub(crate) fn parse_script(
         .unwrap();
     Ok(match parsed.as_rule() {
         Rule::query_script => {
-            let q = parse_query(parsed.into_inner(), param_pool, fixed_rules, cur_vld)?;
+            let q = parse_query(parsed.into_inner(), param_pool, fixed_rules)?;
             println!("xxx295 q= {q:?}");
             // let temp_rules = match &q.prog[&Symbol::new("fibo", SourceSpan(0,0))] {
             //     InputInlineRulesOrFixed::Rules { rules } => &rules[1].body[0],
@@ -302,7 +301,7 @@ pub(crate) fn parse_script(
             CozoScript::Single(q)
         }
         Rule::imperative_script => {
-            let p = parse_imperative_block(parsed, param_pool, fixed_rules, cur_vld)?;
+            let p = parse_imperative_block(parsed, param_pool, fixed_rules)?;
             CozoScript::Imperative(p)
         }
 
@@ -310,7 +309,6 @@ pub(crate) fn parse_script(
             parsed.into_inner(),
             param_pool,
             fixed_rules,
-            cur_vld,
         )?),
         _ => unreachable!(),
     })

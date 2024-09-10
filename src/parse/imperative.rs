@@ -16,6 +16,7 @@ use miette::{Diagnostic, Result};
 use smartstring::SmartString;
 use thiserror::Error;
 
+use crate::data::functions::current_validity;
 use crate::parse::query::parse_query;
 use crate::parse::sys::parse_sys;
 use crate::parse::{
@@ -30,8 +31,8 @@ pub(crate) fn parse_imperative_block(
     src: Pair<'_>,
     param_pool: &BTreeMap<String, DataValue>,
     fixed_rules: &BTreeMap<String, Arc<Box<dyn FixedRule>>>,
-    cur_vld: ValidityTs,
 ) -> Result<ImperativeProgram> {
+    let cur_vld = current_validity();
     let mut collected = vec![];
 
     for pair in src.into_inner() {
@@ -97,7 +98,6 @@ fn parse_imperative_stmt(
                             src.next().unwrap().into_inner(),
                             param_pool,
                             fixed_rules,
-                            cur_vld,
                         )?;
                         let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
                         rets.push(Left(ImperativeStmtClause { prog, store_as }))
@@ -119,7 +119,6 @@ fn parse_imperative_stmt(
                         src.next().unwrap().into_inner(),
                         param_pool,
                         fixed_rules,
-                        cur_vld,
                     )?;
                     let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
                     Right(ImperativeStmtClause { prog, store_as })
@@ -154,7 +153,7 @@ fn parse_imperative_stmt(
                 mark = Some(SmartString::from(nxt.as_str()));
                 nxt = inner.next().unwrap();
             }
-            let body = parse_imperative_block(nxt, param_pool, fixed_rules, cur_vld)?;
+            let body = parse_imperative_block(nxt, param_pool, fixed_rules)?;
             ImperativeStmt::Loop { label: mark, body }
         }
         Rule::temp_swap => {
@@ -185,7 +184,6 @@ fn parse_imperative_stmt(
                 src.next().unwrap().into_inner(),
                 param_pool,
                 fixed_rules,
-                cur_vld,
             )?;
             let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
             ImperativeStmt::SysOp {
@@ -198,7 +196,6 @@ fn parse_imperative_stmt(
                 src.next().unwrap().into_inner(),
                 param_pool,
                 fixed_rules,
-                cur_vld,
             )?;
             let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
             ImperativeStmt::Program {
@@ -212,7 +209,6 @@ fn parse_imperative_stmt(
                 src.next().unwrap().into_inner(),
                 param_pool,
                 fixed_rules,
-                cur_vld,
             )?;
             let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
             ImperativeStmt::IgnoreErrorProgram {
