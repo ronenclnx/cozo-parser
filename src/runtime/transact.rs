@@ -17,7 +17,7 @@ use crate::data::value::DataValue;
 // use crate::fts::TokenizerCache;
 // use crate::runtime::callback::{CallbackOp};
 // use crate::runtime::db::NamedRows;
-use crate::runtime::relation::RelationId;
+// use crate::runtime::relation::RelationId;
 use crate::storage::temp::TempTx;
 use crate::storage::StoreTx;
 
@@ -29,15 +29,15 @@ pub struct SessionTx<'a> {
     // pub(crate) tokenizers: Arc<TokenizerCache>,
 }
 
-pub const CURRENT_STORAGE_VERSION: [u8; 1] = [0x00];
+// // pub const CURRENT_STORAGE_VERSION: [u8; 1] = [0x00];
 
-fn storage_version_key() -> Vec<u8> {
-    let storage_version_tuple = vec![DataValue::Null, DataValue::from("STORAGE_VERSION")];
-    storage_version_tuple.encode_as_key(RelationId::SYSTEM)
-}
+// // fn storage_version_key() -> Vec<u8> {
+// //     let storage_version_tuple = vec![DataValue::Null, DataValue::from("STORAGE_VERSION")];
+// //     storage_version_tuple.encode_as_key(RelationId::SYSTEM)
+// // }
 
-const STATUS_STR: &str = "status";
-const OK_STR: &str = "OK";
+// // const STATUS_STR: &str = "status";
+// // const OK_STR: &str = "OK";
 
-impl<'a> SessionTx<'a> {
-}
+// // impl<'a> SessionTx<'a> {
+// // }

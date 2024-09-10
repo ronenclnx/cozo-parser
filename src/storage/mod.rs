@@ -11,7 +11,7 @@ use miette::Result;
 
 use crate::data::tuple::Tuple;
 use crate::data::value::ValidityTs;
-use crate::runtime::relation::decode_tuple_from_kv;
+// use crate::runtime::relation::decode_tuple_from_kv;
 
 // // pub(crate) mod mem;
 // // #[cfg(feature = "storage-rocksdb")]
@@ -27,8 +27,8 @@ pub(crate) mod temp;
 
 /// Swappable storage trait for Cozo's storage engine
 pub trait Storage<'s>: Send + Sync + Clone {
-    /// The associated transaction type used by this engine
-    type Tx: StoreTx<'s>;
+    // // /// The associated transaction type used by this engine
+    // // type Tx: StoreTx<'s>;
 
     // /// Returns a string that identifies the storage kind
     // // fn storage_kind(&self) -> &'static str;
@@ -57,40 +57,40 @@ pub trait StoreTx<'s>: Sync {
     /// the key has not been modified outside the transaction.
     fn get(&self, key: &[u8], for_update: bool) -> Result<Option<Vec<u8>>>;
 
-    /// Get multiple keys. If `for_update` is `true` (only possible in a write transaction),
-    /// then the database needs to guarantee that `commit()` can only succeed if
-    /// the keys have not been modified outside the transaction.
-    fn multi_get(&self, keys: &[Vec<u8>], for_update: bool) -> Result<Vec<Option<Vec<u8>>>> {
-        keys.iter().map(|k| self.get(k, for_update)).collect()
-    }
+    // // // /// Get multiple keys. If `for_update` is `true` (only possible in a write transaction),
+    // // // /// then the database needs to guarantee that `commit()` can only succeed if
+    // // // /// the keys have not been modified outside the transaction.
+    // // // fn multi_get(&self, keys: &[Vec<u8>], for_update: bool) -> Result<Vec<Option<Vec<u8>>>> {
+    // // //     keys.iter().map(|k| self.get(k, for_update)).collect()
+    // // // }
 
     /// Put a key-value pair into the storage. In case of existing key,
     /// the storage engine needs to overwrite the old value.
     fn put(&mut self, key: &[u8], val: &[u8]) -> Result<()>;
 
-    /// Should return true if the engine supports parallel put, false otherwise.
-    fn supports_par_put(&self) -> bool;
+    // // // /// Should return true if the engine supports parallel put, false otherwise.
+    // // // fn supports_par_put(&self) -> bool;
 
-    /// Put a key-value pair into the storage. In case of existing key,
-    /// the storage engine needs to overwrite the old value.
-    /// The difference between this one and `put` is the mutability of self.
-    /// It is OK to always panic if `supports_par_put` returns `false`.
-    fn par_put(&self, _key: &[u8], _val: &[u8]) -> Result<()> {
-        panic!("par_put is not supported")
-    }
+    // // /// Put a key-value pair into the storage. In case of existing key,
+    // // /// the storage engine needs to overwrite the old value.
+    // // /// The difference between this one and `put` is the mutability of self.
+    // // /// It is OK to always panic if `supports_par_put` returns `false`.
+    // // fn par_put(&self, _key: &[u8], _val: &[u8]) -> Result<()> {
+    // //     panic!("par_put is not supported")
+    // // }
 
-    /// Delete a key-value pair from the storage.
-    /// The difference between this one and `del` is the mutability of self.
-    /// It is OK to always panic if `supports_par_put` returns `false`.
-    fn par_del(&self, _key: &[u8]) -> Result<()> {
-        panic!("par_del is not supported")
-    }
+    // // /// Delete a key-value pair from the storage.
+    // // /// The difference between this one and `del` is the mutability of self.
+    // // /// It is OK to always panic if `supports_par_put` returns `false`.
+    // // fn par_del(&self, _key: &[u8]) -> Result<()> {
+    // //     panic!("par_del is not supported")
+    // // }
 
 
-    /// Check if a key exists. If `for_update` is `true` (only possible in a write transaction),
-    /// then the database needs to guarantee that `commit()` can only succeed if
-    /// the key has not been modified outside the transaction.
-    fn exists(&self, key: &[u8], for_update: bool) -> Result<bool>;
+    // // // /// Check if a key exists. If `for_update` is `true` (only possible in a write transaction),
+    // // // /// then the database needs to guarantee that `commit()` can only succeed if
+    // // // /// the key has not been modified outside the transaction.
+    // // // fn exists(&self, key: &[u8], for_update: bool) -> Result<bool>;
 
     // // // /// Commit a transaction. Must return an `Err` if MVCC consistency cannot be guaranteed,
     // // // /// and discard all changes introduced by this transaction.

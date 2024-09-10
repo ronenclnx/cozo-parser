@@ -25,7 +25,7 @@
 //! We created an in-memory database above. There are other persistent options:
 //! see [DbInstance::new]. It is perfectly fine to run multiple storage engines in the same process.
 //!
-#![doc = document_features::document_features!()]
+// #![doc = document_features::document_features!()]
 #![warn(rust_2018_idioms, future_incompatible)]
 #![warn(missing_docs)]
 #![allow(clippy::type_complexity)]
@@ -91,19 +91,18 @@ pub fn main() {
     //     ?[n, x] := fibo[n, x]
     //     "##;
 
-    // let script = r##"
-
-    //     mutations[m] := *mutations[m]
-    //     has_added[m, n] := *has_added[m, n]
-    //     has_target[m, n] := *has_target[m, n]
-    //     is_parent[p,c] := mutations[m], has_added[m, c], has_target[m, p]
-    //     ?[x, y] := is_parent[x, y]
-    //     "##;
-
     let script = r##"
         mutations[m] := *mutations[m]
-        ?[x] := mutations[x]
+        has_added[m, n] := *has_added[m, n]
+        has_target[m, n] := *has_target[m, n]
+        is_parent[p,c] := mutations[m], has_added[m, c], has_target[m, p]
+        ?[x, y] := is_parent[x, y]
         "##;
+
+    // let script = r##"
+    //     mutations[m] := *mutations[m]
+    //     ?[x] := mutations[x]
+    //     "##;
 
     // let params: BTreeMap<String, DataValue> = BTreeMap::new();
     let fixed_rules:BTreeMap<String, Arc<Box<dyn FixedRule>>> = BTreeMap::new();

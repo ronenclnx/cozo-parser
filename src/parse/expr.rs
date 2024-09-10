@@ -12,13 +12,13 @@ use itertools::Itertools;
 use lazy_static::lazy_static;
 use miette::{bail, ensure, Diagnostic, Result};
 use pest::pratt_parser::{Op, PrattParser};
-use smartstring::{LazyCompact, SmartString};
+// use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::compile::expr::{get_op, Bytecode, Expr, NoImplementationError};
 use crate::data::functions::{
-    OP_ADD, OP_AND, OP_COALESCE, OP_CONCAT, OP_DIV, OP_EQ, OP_GE, OP_GT, OP_JSON_OBJECT, OP_LE,
-    OP_LIST, OP_LT, OP_MAYBE_GET, OP_MINUS, OP_MOD, OP_MUL, OP_NEGATE, OP_NEQ, OP_OR, OP_POW,
+    OP_ADD, OP_AND, OP_DIV, OP_EQ, OP_GE, OP_GT, OP_LE,
+    OP_LIST, OP_LT, OP_MINUS, OP_MUL, OP_NEGATE, OP_NEQ, OP_OR,
     OP_SUB,
 };
 use crate::compile::symb::Symbol;
@@ -39,10 +39,8 @@ lazy_static! {
             .op(Op::infix(Rule::op_eq, Left) | Op::infix(Rule::op_ne, Left))
             .op(Op::infix(Rule::op_mod, Left))
             .op(Op::infix(Rule::op_add, Left)
-                | Op::infix(Rule::op_sub, Left)
-                | Op::infix(Rule::op_concat, Left))
+                | Op::infix(Rule::op_sub, Left))
             .op(Op::infix(Rule::op_mul, Left) | Op::infix(Rule::op_div, Left))
-            .op(Op::infix(Rule::op_pow, Right))
             .op(Op::infix(Rule::op_coalesce, Left))
             .op(Op::prefix(Rule::minus))
             .op(Op::prefix(Rule::negate))
@@ -150,19 +148,14 @@ fn build_expr_infix(lhs: Result<Expr>, op: Pair<'_>, rhs: Result<Expr>) -> Resul
         Rule::op_sub => &OP_SUB,
         Rule::op_mul => &OP_MUL,
         Rule::op_div => &OP_DIV,
-        Rule::op_mod => &OP_MOD,
-        Rule::op_pow => &OP_POW,
         Rule::op_eq => &OP_EQ,
         Rule::op_ne => &OP_NEQ,
         Rule::op_gt => &OP_GT,
         Rule::op_ge => &OP_GE,
         Rule::op_lt => &OP_LT,
         Rule::op_le => &OP_LE,
-        Rule::op_concat => &OP_CONCAT,
         Rule::op_or => &OP_OR,
         Rule::op_and => &OP_AND,
-        Rule::op_coalesce => &OP_COALESCE,
-        Rule::op_field_access => &OP_MAYBE_GET,
         _ => unreachable!(),
     };
     let start = args[0].span().0;
@@ -274,23 +267,6 @@ fn build_term(pair: Pair<'_>, param_pool: &BTreeMap<String, DataValue>) -> Resul
             Expr::Apply {
                 op: &OP_LIST,
                 args: collected.into(),
-                span,
-            }
-        }
-        Rule::object => {
-            let mut args = vec![];
-            for p in pair.into_inner() {
-                let mut p = p.into_inner();
-                let k = p.next().unwrap();
-                let v = p.next().unwrap();
-                let k = build_expr(k, param_pool)?;
-                let v = build_expr(v, param_pool)?;
-                args.push(k);
-                args.push(v);
-            }
-            Expr::Apply {
-                op: &OP_JSON_OBJECT,
-                args: args.into(),
                 span,
             }
         }
@@ -428,12 +404,12 @@ pub(crate) fn parse_int(s: &str, radix: u32) -> i64 {
     i64::from_str_radix(&s[2..].replace('_', ""), radix).unwrap()
 }
 
-pub(crate) fn parse_string(pair: Pair<'_>) -> Result<SmartString<LazyCompact>> {
+pub(crate) fn parse_string(pair: Pair<'_>) -> Result<String> {
     match pair.as_rule() {
         Rule::quoted_string => Ok(parse_quoted_string(pair)?),
         Rule::s_quoted_string => Ok(parse_s_quoted_string(pair)?),
         Rule::raw_string => Ok(parse_raw_string(pair)?),
-        Rule::ident => Ok(SmartString::from(pair.as_str())),
+        Rule::ident => Ok(String::from(pair.as_str())),
         t => unreachable!("{:?}", t),
     }
 }
@@ -448,9 +424,9 @@ struct InvalidUtf8Error(u32, #[label] SourceSpan);
 #[diagnostic(code(parser::invalid_escape_seq))]
 struct InvalidEscapeSeqError(String, #[label] SourceSpan);
 
-fn parse_quoted_string(pair: Pair<'_>) -> Result<SmartString<LazyCompact>> {
+fn parse_quoted_string(pair: Pair<'_>) -> Result<String> {
     let pairs = pair.into_inner().next().unwrap().into_inner();
-    let mut ret = SmartString::new();
+    let mut ret = String::new();
     for pair in pairs {
         let s = pair.as_str();
         match s {
@@ -477,9 +453,9 @@ fn parse_quoted_string(pair: Pair<'_>) -> Result<SmartString<LazyCompact>> {
     Ok(ret)
 }
 
-fn parse_s_quoted_string(pair: Pair<'_>) -> Result<SmartString<LazyCompact>> {
+fn parse_s_quoted_string(pair: Pair<'_>) -> Result<String> {
     let pairs = pair.into_inner().next().unwrap().into_inner();
-    let mut ret = SmartString::new();
+    let mut ret = String::new();
     for pair in pairs {
         let s = pair.as_str();
         match s {
@@ -506,8 +482,8 @@ fn parse_s_quoted_string(pair: Pair<'_>) -> Result<SmartString<LazyCompact>> {
     Ok(ret)
 }
 
-fn parse_raw_string(pair: Pair<'_>) -> Result<SmartString<LazyCompact>> {
-    Ok(SmartString::from(
+fn parse_raw_string(pair: Pair<'_>) -> Result<String> {
+    Ok(String::from(
         pair.into_inner().next().unwrap().as_str(),
     ))
 }

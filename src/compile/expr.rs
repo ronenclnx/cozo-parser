@@ -15,7 +15,7 @@ use itertools::Itertools;
 use miette::{bail, miette, Diagnostic, Result};
 use serde::de::{Error, Visitor};
 use serde::{Deserializer, Serializer};
-use smartstring::{LazyCompact, SmartString};
+// use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::functions::*;
@@ -185,7 +185,7 @@ pub enum Expr {
     /// Unbound function application
     UnboundApply {
         /// Op representing the function to apply
-        op: SmartString<LazyCompact>,
+        op: String,
         /// Arguments to the application
         args: Box<[Expr]>,
         /// Source span
@@ -577,31 +577,6 @@ impl Expr {
                     }
                     ValueRange::default()
                 }
-                n if n == OP_STARTS_WITH.name => {
-                    if let Some(symb) = args[0].get_binding() {
-                        if let Some(val) = args[1].get_const() {
-                            if target == symb {
-                                let s = val.get_str().ok_or_else(|| {
-                                    #[derive(Debug, Error, Diagnostic)]
-                                    #[error("Cannot prefix scan with {0:?}")]
-                                    #[diagnostic(code(eval::bad_string_range_scan))]
-                                    #[diagnostic(help("A string argument is required"))]
-                                    struct StrRangeScanError(DataValue, #[label] SourceSpan);
-
-                                    StrRangeScanError(val.clone(), symb.span)
-                                })?;
-                                let lower = DataValue::from(s);
-                                // let lower = DataValue::Str(s.to_string());
-                                let mut upper = SmartString::from(s);
-                                // let mut upper = s.to_string();
-                                upper.push(LARGEST_UTF_CHAR);
-                                let upper = DataValue::Str(upper);
-                                return Ok(ValueRange::new(lower, upper));
-                            }
-                        }
-                    }
-                    ValueRange::default()
-                }
                 _ => ValueRange::default(),
             },
             Expr::UnboundApply { op, span, .. } => {
@@ -637,7 +612,7 @@ impl Expr {
         }
         Ok(())
     }
-    pub(crate) fn to_var_list(&self) -> Result<Vec<SmartString<LazyCompact>>> {
+    pub(crate) fn to_var_list(&self) -> Result<Vec<String>> {
         match self {
             Expr::Apply { op, args, .. } => {
                 if op.name != "OP_LIST" {
@@ -795,49 +770,15 @@ impl Debug for Op {
 
 pub(crate) fn get_op(name: &str) -> Option<&'static Op> {
     Some(match name {
-        "coalesce" => &OP_COALESCE,
         "list" => &OP_LIST,
-        "json" => &OP_JSON,
-        "set_json_path" => &OP_SET_JSON_PATH,
-        "remove_json_path" => &OP_REMOVE_JSON_PATH,
-        "parse_json" => &OP_PARSE_JSON,
-        "dump_json" => &OP_DUMP_JSON,
-        "json_object" => &OP_JSON_OBJECT,
-        "is_json" => &OP_IS_JSON,
-        "json_to_scalar" => &OP_JSON_TO_SCALAR,
         "add" => &OP_ADD,
         "sub" => &OP_SUB,
         "mul" => &OP_MUL,
         "div" => &OP_DIV,
         "minus" => &OP_MINUS,
-        "abs" => &OP_ABS,
-        "signum" => &OP_SIGNUM,
-        "floor" => &OP_FLOOR,
-        "ceil" => &OP_CEIL,
-        "round" => &OP_ROUND,
-        "mod" => &OP_MOD,
-        "max" => &OP_MAX,
+        "mod" => &OP_MOD, "max" => &OP_MAX,
         "min" => &OP_MIN,
-        "pow" => &OP_POW,
         "sqrt" => &OP_SQRT,
-        "exp" => &OP_EXP,
-        "exp2" => &OP_EXP2,
-        "ln" => &OP_LN,
-        "log2" => &OP_LOG2,
-        "log10" => &OP_LOG10,
-        "sin" => &OP_SIN,
-        "cos" => &OP_COS,
-        "tan" => &OP_TAN,
-        "asin" => &OP_ASIN,
-        "acos" => &OP_ACOS,
-        "atan" => &OP_ATAN,
-        "atan2" => &OP_ATAN2,
-        "sinh" => &OP_SINH,
-        "cosh" => &OP_COSH,
-        "tanh" => &OP_TANH,
-        "asinh" => &OP_ASINH,
-        "acosh" => &OP_ACOSH,
-        "atanh" => &OP_ATANH,
         "eq" => &OP_EQ,
         "neq" => &OP_NEQ,
         "gt" => &OP_GT,
@@ -847,81 +788,13 @@ pub(crate) fn get_op(name: &str) -> Option<&'static Op> {
         "or" => &OP_OR,
         "and" => &OP_AND,
         "negate" => &OP_NEGATE,
-        "bit_and" => &OP_BIT_AND,
-        "bit_or" => &OP_BIT_OR,
-        "bit_not" => &OP_BIT_NOT,
-        "bit_xor" => &OP_BIT_XOR,
-        "pack_bits" => &OP_PACK_BITS,
-        "unpack_bits" => &OP_UNPACK_BITS,
-        "concat" => &OP_CONCAT,
-        "str_includes" => &OP_STR_INCLUDES,
-        "lowercase" => &OP_LOWERCASE,
-        "uppercase" => &OP_UPPERCASE,
-        "trim" => &OP_TRIM,
-        "trim_start" => &OP_TRIM_START,
-        "trim_end" => &OP_TRIM_END,
-        "starts_with" => &OP_STARTS_WITH,
-        "ends_with" => &OP_ENDS_WITH,
-        "is_null" => &OP_IS_NULL,
-        "is_int" => &OP_IS_INT,
-        "is_float" => &OP_IS_FLOAT,
-        "is_num" => &OP_IS_NUM,
-        "is_string" => &OP_IS_STRING,
-        "is_list" => &OP_IS_LIST,
-        "is_bytes" => &OP_IS_BYTES,
         "is_in" => &OP_IS_IN,
-        "is_finite" => &OP_IS_FINITE,
-        "is_infinite" => &OP_IS_INFINITE,
-        "is_nan" => &OP_IS_NAN,
         "is_uuid" => &OP_IS_UUID,
-        "length" => &OP_LENGTH,
-        "sorted" => &OP_SORTED,
-        "reverse" => &OP_REVERSE,
-        "append" => &OP_APPEND,
-        "prepend" => &OP_PREPEND,
-        "unicode_normalize" => &OP_UNICODE_NORMALIZE,
-        "haversine" => &OP_HAVERSINE,
-        "haversine_deg_input" => &OP_HAVERSINE_DEG_INPUT,
-        "deg_to_rad" => &OP_DEG_TO_RAD,
-        "rad_to_deg" => &OP_RAD_TO_DEG,
-        "get" => &OP_GET,
-        "maybe_get" => &OP_MAYBE_GET,
-        "chars" => &OP_CHARS,
-        "slice_string" => &OP_SLICE_STRING,
-        "from_substrings" => &OP_FROM_SUBSTRINGS,
-        "slice" => &OP_SLICE,
-        // // "regex_matches" => &OP_REGEX_MATCHES,
-        // // "regex_replace" => &OP_REGEX_REPLACE,
-        // // "regex_replace_all" => &OP_REGEX_REPLACE_ALL,
-        // // "regex_extract" => &OP_REGEX_EXTRACT,
-        // // "regex_extract_first" => &OP_REGEX_EXTRACT_FIRST,
-        "t2s" => &OP_T2S,
-        "encode_base64" => &OP_ENCODE_BASE64,
-        "decode_base64" => &OP_DECODE_BASE64,
-        "first" => &OP_FIRST,
-        "last" => &OP_LAST,
-        "chunks" => &OP_CHUNKS,
-        "chunks_exact" => &OP_CHUNKS_EXACT,
-        "windows" => &OP_WINDOWS,
-        "to_int" => &OP_TO_INT,
-        "to_float" => &OP_TO_FLOAT,
         "to_string" => &OP_TO_STRING,
         "int_range" => &OP_INT_RANGE,
-        "rand_float" => &OP_RAND_FLOAT,
-        "rand_bernoulli" => &OP_RAND_BERNOULLI,
-        "rand_int" => &OP_RAND_INT,
-        "rand_choose" => &OP_RAND_CHOOSE,
-        "assert" => &OP_ASSERT,
-        "union" => &OP_UNION,
-        "intersection" => &OP_INTERSECTION,
-        "difference" => &OP_DIFFERENCE,
         "to_uuid" => &OP_TO_UUID,
-        "to_bool" => &OP_TO_BOOL,
-        "to_unity" => &OP_TO_UNITY,
-        "rand_uuid_v1" => &OP_RAND_UUID_V1,
         "rand_uuid_v4" => &OP_RAND_UUID_V4,
         "uuid_timestamp" => &OP_UUID_TIMESTAMP,
-        "validity" => &OP_VALIDITY,
         "now" => &OP_NOW,
         "format_timestamp" => &OP_FORMAT_TIMESTAMP,
         "parse_timestamp" => &OP_PARSE_TIMESTAMP,

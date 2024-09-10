@@ -12,7 +12,7 @@ use std::io::Write;
 use std::str::FromStr;
 
 use byteorder::{BigEndian, ByteOrder, WriteBytesExt};
-use regex::Regex;
+// use regex::Regex;
 
 use crate::data::value::{
     DataValue, JsonData, Num, UuidWrapper, Validity, ValidityTs,

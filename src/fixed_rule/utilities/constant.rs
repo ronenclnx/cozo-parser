@@ -9,14 +9,14 @@
 use std::collections::BTreeMap;
 
 use miette::{bail, ensure, Diagnostic, Result};
-use smartstring::{LazyCompact, SmartString};
+// use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::compile::expr::Expr;
 use crate::compile::program::WrongFixedRuleOptionError;
 use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
-use crate::fixed_rule::{FixedRule, FixedRulePayload};
+use crate::fixed_rule::{FixedRule};
 use crate::parse::SourceSpan;
 use crate::runtime::temp_store::RegularTempStore;
 
@@ -27,7 +27,7 @@ impl FixedRule for Constant {
 
     fn arity(
         &self,
-        options: &BTreeMap<SmartString<LazyCompact>, Expr>,
+        options: &BTreeMap<String, Expr>,
         rule_head: &[Symbol],
         span: SourceSpan,
     ) -> Result<usize> {
@@ -59,7 +59,7 @@ impl FixedRule for Constant {
 
     fn init_options(
         &self,
-        options: &mut BTreeMap<SmartString<LazyCompact>, Expr>,
+        options: &mut BTreeMap<String, Expr>,
         span: SourceSpan,
     ) -> Result<()> {
         let data = options
@@ -119,7 +119,7 @@ impl FixedRule for Constant {
         }
 
         options.insert(
-            SmartString::from("data"),
+            String::from("data"),
             Expr::Const {
                 val: DataValue::List(tuples),
                 span: Default::default(),

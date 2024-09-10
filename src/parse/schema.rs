@@ -10,7 +10,7 @@ use std::collections::BTreeSet;
 
 use itertools::Itertools;
 use miette::{bail, ensure, Diagnostic, Result, IntoDiagnostic};
-use smartstring::SmartString;
+// use smartstring::SmartString;
 use thiserror::Error;
 
 use crate::data::relation::{ ColType, ColumnDef, NullableColType, StoredRelationMetadata};
@@ -67,7 +67,7 @@ pub(crate) fn parse_schema(
 fn parse_col(pair: Pair<'_>) -> Result<(ColumnDef, Symbol)> {
     let mut src = pair.into_inner();
     let name_p = src.next().unwrap();
-    let name = SmartString::from(name_p.as_str());
+    let name = String::from(name_p.as_str());
     let mut typing = NullableColType {
         coltype: ColType::Any,
         nullable: true,

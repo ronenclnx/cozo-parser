@@ -53,7 +53,7 @@
 // //     // //     meta: &InputRelationHandle,
 // //     // //     headers: &[Symbol],
 // //     // //     cur_vld: ValidityTs,
-// //     // //     callback_targets: &BTreeSet<SmartString<LazyCompact>>,
+// //     // //     callback_targets: &BTreeSet<String>,
 // //     // //     callback_collector: &mut CallbackCollector,
 // //     // //     propagate_triggers: bool,
 // //     // //     force_collect: &str,
@@ -215,7 +215,7 @@
 // //     // // //     res_iter: impl Iterator<Item = Tuple>,
 // //     // // //     headers: &[Symbol],
 // //     // // //     cur_vld: ValidityTs,
-// //     // // //     callback_targets: &BTreeSet<SmartString<LazyCompact>>,
+// //     // // //     callback_targets: &BTreeSet<String>,
 // //     // // //     callback_collector: &mut CallbackCollector,
 // //     // // //     propagate_triggers: bool,
 // //     // // //     to_clear: &mut Vec<(Vec<u8>, Vec<u8>)>,
@@ -376,7 +376,7 @@
 // //     //     &mut self,
 // //     //     rel_handle: &RelationHandle,
 // //     //     stack: &mut Vec<DataValue>,
-// //     //     processors: &BTreeMap<SmartString<LazyCompact>, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
+// //     //     processors: &BTreeMap<String, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
 // //     //     new_kv: &[DataValue],
 // //     // ) -> Result<()> {
 // //     //     for (k, (idx_handle, _)) in rel_handle.fts_indices.iter() {
@@ -390,7 +390,7 @@
 // //     //     &mut self,
 // //     //     rel_handle: &RelationHandle,
 // //     //     stack: &mut Vec<DataValue>,
-// //     //     processors: &BTreeMap<SmartString<LazyCompact>, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
+// //     //     processors: &BTreeMap<String, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
 // //     //     old_kv: &[DataValue],
 // //     // ) -> Result<()> {
 // //     //     for (k, (idx_handle, _)) in rel_handle.fts_indices.iter() {
@@ -404,9 +404,9 @@
 // //     //     &mut self,
 // //     //     rel_handle: &RelationHandle,
 // //     //     stack: &mut Vec<DataValue>,
-// //     //     processors: &BTreeMap<SmartString<LazyCompact>, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
+// //     //     processors: &BTreeMap<String, (Arc<TextAnalyzer>, Vec<Bytecode>)>,
 // //     //     new_kv: &[DataValue],
-// //     //     hash_perms_map: &BTreeMap<SmartString<LazyCompact>, HashPermutations>,
+// //     //     hash_perms_map: &BTreeMap<String, HashPermutations>,
 // //     // ) -> Result<()> {
 // //     //     for (k, (idx_handle, inv_idx_handle, manifest)) in rel_handle.lsh_indices.iter() {
 // //     //         let (tokenizer, extractor) = processors.get(k).unwrap();
@@ -436,7 +436,7 @@
 // //     //     &mut self,
 // //     //     relation_store: &RelationHandle,
 // //     //     stack: &mut Vec<DataValue>,
-// //     //     hnsw_filters: &BTreeMap<SmartString<LazyCompact>, Vec<Bytecode>>,
+// //     //     hnsw_filters: &BTreeMap<String, Vec<Bytecode>>,
 // //     //     new_kv: &[DataValue],
 // //     // ) -> Result<()> {
 // //     //     for (name, (idx_handle, idx_manifest)) in relation_store.hnsw_indices.iter() {
@@ -456,7 +456,7 @@
 // //     // fn make_lsh_hash_perms(
 // //     //     &self,
 // //     //     relation_store: &RelationHandle,
-// //     // ) -> BTreeMap<SmartString<LazyCompact>, HashPermutations> {
+// //     // ) -> BTreeMap<String, HashPermutations> {
 // //     //     let mut perms = BTreeMap::new();
 // //     //     for (name, (_, _, manifest)) in relation_store.lsh_indices.iter() {
 // //     //         perms.insert(name.clone(), manifest.get_hash_perms());
@@ -467,7 +467,7 @@
 // //     // fn make_fts_lsh_processors(
 // //     //     &self,
 // //     //     relation_store: &RelationHandle,
-// //     // ) -> Result<BTreeMap<SmartString<LazyCompact>, (Arc<TextAnalyzer>, Vec<Bytecode>)>> {
+// //     // ) -> Result<BTreeMap<String, (Arc<TextAnalyzer>, Vec<Bytecode>)>> {
 // //     //     let mut processors = BTreeMap::new();
 // //     //     for (name, (_, manifest)) in relation_store.fts_indices.iter() {
 // //     //         let tokenizer = self
@@ -504,7 +504,7 @@
 
 // //     // fn make_hnsw_filters(
 // //     //     relation_store: &RelationHandle,
-// //     // ) -> Result<BTreeMap<SmartString<LazyCompact>, Vec<Bytecode>>> {
+// //     // ) -> Result<BTreeMap<String, Vec<Bytecode>>> {
 // //     //     let mut hnsw_filters = BTreeMap::new();
 // //     //     // for (name, (_, manifest)) in relation_store.hnsw_indices.iter() {
 // //     //     //     if let Some(f_code) = &manifest.index_filter {
@@ -527,7 +527,7 @@
 // //     // // //     res_iter: impl Iterator<Item = Tuple>,
 // //     // // //     headers: &[Symbol],
 // //     // // //     cur_vld: ValidityTs,
-// //     // // //     callback_targets: &BTreeSet<SmartString<LazyCompact>>,
+// //     // // //     callback_targets: &BTreeSet<String>,
 // //     // // //     callback_collector: &mut CallbackCollector,
 // //     // // //     propagate_triggers: bool,
 // //     // // //     to_clear: &mut Vec<(Vec<u8>, Vec<u8>)>,
@@ -674,7 +674,7 @@
 // //     // //     &mut self,
 // //     // //     db: &Db<S>,
 // //     // //     cur_vld: ValidityTs,
-// //     // //     callback_targets: &BTreeSet<SmartString<LazyCompact>>,
+// //     // //     callback_targets: &BTreeSet<String>,
 // //     // //     callback_collector: &mut CallbackCollector,
 // //     // //     propagate_triggers: bool,
 // //     // //     to_clear: &mut Vec<(Vec<u8>, Vec<u8>)>,
@@ -921,7 +921,7 @@
 // //     // //     res_iter: impl Iterator<Item = Tuple>,
 // //     // //     headers: &[Symbol],
 // //     // //     cur_vld: ValidityTs,
-// //     // //     callback_targets: &BTreeSet<SmartString<LazyCompact>>,
+// //     // //     callback_targets: &BTreeSet<String>,
 // //     // //     callback_collector: &mut CallbackCollector,
 // //     // //     propagate_triggers: bool,
 // //     // //     to_clear: &mut Vec<(Vec<u8>, Vec<u8>)>,
@@ -1204,10 +1204,10 @@
 // // // // // //     bindings: Vec<Symbol>,
 // // // // // //     data: Vec<DataValue>,
 // // // // // // ) {
-// // // // // //     let rule_symbol = Symbol::new(SmartString::from(rule_name), Default::default());
+// // // // // //     let rule_symbol = Symbol::new(String::from(rule_name), Default::default());
 // // // // // //     let mut options = BTreeMap::new();
 // // // // // //     options.insert(
-// // // // // //         SmartString::from("data"),
+// // // // // //         String::from("data"),
 // // // // // //         Expr::Const {
 // // // // // //             val: DataValue::List(data),
 // // // // // //             span: Default::default(),

@@ -16,7 +16,7 @@ use miette::{bail, ensure, Diagnostic, IntoDiagnostic, Result};
 use pest::Parser;
 use rmp_serde::Serializer;
 use serde::Serialize;
-use smartstring::{LazyCompact, SmartString};
+// use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::memcmp::MemCmpEncoder;
@@ -32,7 +32,7 @@ use crate::compile::IndexPositionUse;
 // use crate::runtime::hnsw::HnswIndexManifest;
 // use crate::runtime::minhash_lsh::{HashPermutations, LshParams, MinHashLshIndexManifest, Weights};
 use crate::runtime::transact::SessionTx;
-use crate::utils::TempCollector;
+// // use crate::utils::TempCollector;
 use crate::runtime::db::{NamedRows};
 use crate::storage::{StoreTx};
 
@@ -74,7 +74,7 @@ impl RelationId {
 
 #[derive(Clone, PartialEq, serde_derive::Serialize, serde_derive::Deserialize)]
 pub(crate) struct RelationHandle {
-    pub(crate) name: SmartString<LazyCompact>,
+    pub(crate) name: String,
     pub(crate) id: RelationId,
     pub(crate) metadata: StoredRelationMetadata,
     pub(crate) put_triggers: Vec<String>,
@@ -82,15 +82,15 @@ pub(crate) struct RelationHandle {
     pub(crate) replace_triggers: Vec<String>,
     pub(crate) access_level: AccessLevel,
     pub(crate) is_temp: bool,
-    pub(crate) indices: BTreeMap<SmartString<LazyCompact>, (RelationHandle, Vec<usize>)>,
+    pub(crate) indices: BTreeMap<String, (RelationHandle, Vec<usize>)>,
     // pub(crate) hnsw_indices:
-    //     BTreeMap<SmartString<LazyCompact>, (RelationHandle, HnswIndexManifest)>,
-    // pub(crate) fts_indices: BTreeMap<SmartString<LazyCompact>, (RelationHandle, FtsIndexManifest)>,
+    //     BTreeMap<String, (RelationHandle, HnswIndexManifest)>,
+    // pub(crate) fts_indices: BTreeMap<String, (RelationHandle, FtsIndexManifest)>,
     // pub(crate) lsh_indices: BTreeMap<
-    //     SmartString<LazyCompact>,
+    //     String,
     //     (RelationHandle, RelationHandle),
     // >,
-    pub(crate) description: SmartString<LazyCompact>,
+    pub(crate) description: String,
 }
 
 impl RelationHandle {
@@ -164,15 +164,15 @@ impl RelationHandle {
     //     }
     //     ret
     // }
-    pub(crate) fn has_triggers(&self) -> bool {
-        !self.put_triggers.is_empty() || !self.rm_triggers.is_empty()
-    }
-    fn encode_key_prefix(&self, len: usize) -> Vec<u8> {
-        let mut ret = Vec::with_capacity(4 + 4 * len + 10 * len);
-        let prefix_bytes = self.id.0.to_be_bytes();
-        ret.extend(prefix_bytes);
-        ret
-    }
+    // // // pub(crate) fn has_triggers(&self) -> bool {
+    // // //     !self.put_triggers.is_empty() || !self.rm_triggers.is_empty()
+    // // // }
+    // // // fn encode_key_prefix(&self, len: usize) -> Vec<u8> {
+    // // //     let mut ret = Vec::with_capacity(4 + 4 * len + 10 * len);
+    // // //     let prefix_bytes = self.id.0.to_be_bytes();
+    // // //     ret.extend(prefix_bytes);
+    // // //     ret
+    // // // }
     // // pub(crate) fn as_named_rows(&self, tx: &SessionTx<'_>) -> Result<NamedRows> {
     // //     let rows: Vec<_> = self.scan_all(tx).try_collect()?;
     // //     let mut headers = self
@@ -245,56 +245,56 @@ impl RelationHandle {
         }
         chosen
     }
-    pub(crate) fn encode_key_for_store(
-        &self,
-        tuple: &[DataValue],
-        span: SourceSpan,
-    ) -> Result<Vec<u8>> {
-        let len = self.metadata.keys.len();
-        ensure!(
-            tuple.len() >= len,
-            StoredRelArityMismatch {
-                name: self.name.to_string(),
-                expect_arity: self.arity(),
-                actual_arity: tuple.len(),
-                span
-            }
-        );
-        let mut ret = self.encode_key_prefix(len);
-        for val in &tuple[0..len] {
-            ret.encode_datavalue(val);
-        }
-        Ok(ret)
-    }
-    pub(crate) fn encode_partial_key_for_store(&self, tuple: &[DataValue]) -> Vec<u8> {
-        let mut ret = self.encode_key_prefix(tuple.len());
-        for val in tuple {
-            ret.encode_datavalue(val);
-        }
-        ret
-    }
-    pub(crate) fn encode_val_for_store(
-        &self,
-        tuple: &[DataValue],
-        _span: SourceSpan,
-    ) -> Result<Vec<u8>> {
-        let start = self.metadata.keys.len();
-        let len = self.metadata.non_keys.len();
-        let mut ret = self.encode_key_prefix(len);
-        tuple[start..]
-            .serialize(&mut Serializer::new(&mut ret))
-            .unwrap();
-        Ok(ret)
-    }
-    pub(crate) fn encode_val_only_for_store(
-        &self,
-        tuple: &[DataValue],
-        _span: SourceSpan,
-    ) -> Result<Vec<u8>> {
-        let mut ret = self.encode_key_prefix(tuple.len());
-        tuple.serialize(&mut Serializer::new(&mut ret)).unwrap();
-        Ok(ret)
-    }
+    // // pub(crate) fn encode_key_for_store(
+    // //     &self,
+    // //     tuple: &[DataValue],
+    // //     span: SourceSpan,
+    // // ) -> Result<Vec<u8>> {
+    // //     let len = self.metadata.keys.len();
+    // //     ensure!(
+    // //         tuple.len() >= len,
+    // //         StoredRelArityMismatch {
+    // //             name: self.name.to_string(),
+    // //             expect_arity: self.arity(),
+    // //             actual_arity: tuple.len(),
+    // //             span
+    // //         }
+    // //     );
+    // //     let mut ret = self.encode_key_prefix(len);
+    // //     for val in &tuple[0..len] {
+    // //         ret.encode_datavalue(val);
+    // //     }
+    // //     Ok(ret)
+    // // }
+    // pub(crate) fn encode_partial_key_for_store(&self, tuple: &[DataValue]) -> Vec<u8> {
+    //     let mut ret = self.encode_key_prefix(tuple.len());
+    //     for val in tuple {
+    //         ret.encode_datavalue(val);
+    //     }
+    //     ret
+    // }
+    // // // pub(crate) fn encode_val_for_store(
+    // // //     &self,
+    // // //     tuple: &[DataValue],
+    // // //     _span: SourceSpan,
+    // // // ) -> Result<Vec<u8>> {
+    // // //     let start = self.metadata.keys.len();
+    // // //     let len = self.metadata.non_keys.len();
+    // // //     let mut ret = self.encode_key_prefix(len);
+    // // //     tuple[start..]
+    // // //         .serialize(&mut Serializer::new(&mut ret))
+    // // //         .unwrap();
+    // // //     Ok(ret)
+    // // // }
+    // // // pub(crate) fn encode_val_only_for_store(
+    // // //     &self,
+    // // //     tuple: &[DataValue],
+    // // //     _span: SourceSpan,
+    // // // ) -> Result<Vec<u8>> {
+    // // //     let mut ret = self.encode_key_prefix(tuple.len());
+    // // //     tuple.serialize(&mut Serializer::new(&mut ret)).unwrap();
+    // // //     Ok(ret)
+    // // // }
     // // pub(crate) fn ensure_compatible(
     // //     &self,
     // //     inp: &InputRelationHandle,
@@ -356,20 +356,20 @@ impl RelationHandle {
         })?)
     }
 
-    pub(crate) fn get(&self, tx: &SessionTx<'_>, key: &[DataValue]) -> Result<Option<Tuple>> {
-        let key_data = key.encode_as_key(self.id);
-        if self.is_temp {
-            Ok(tx
-                .temp_store_tx
-                .get(&key_data, false)?
-                .map(|val_data| decode_tuple_from_kv(&key_data, &val_data, Some(self.arity()))))
-        } else {
-            Ok(tx
-                .store_tx
-                .get(&key_data, false)?
-                .map(|val_data| decode_tuple_from_kv(&key_data, &val_data, Some(self.arity()))))
-        }
-    }
+    // // // pub(crate) fn get(&self, tx: &SessionTx<'_>, key: &[DataValue]) -> Result<Option<Tuple>> {
+    // // //     let key_data = key.encode_as_key(self.id);
+    // // //     if self.is_temp {
+    // // //         Ok(tx
+    // // //             .temp_store_tx
+    // // //             .get(&key_data, false)?
+    // // //             .map(|val_data| decode_tuple_from_kv(&key_data, &val_data, Some(self.arity()))))
+    // // //     } else {
+    // // //         Ok(tx
+    // // //             .store_tx
+    // // //             .get(&key_data, false)?
+    // // //             .map(|val_data| decode_tuple_from_kv(&key_data, &val_data, Some(self.arity()))))
+    // // //     }
+    // // // }
 
 
     // // pub(crate) fn exists(&self, tx: &SessionTx<'_>, key: &[DataValue]) -> Result<bool> {
@@ -412,15 +412,15 @@ pub(crate) struct IndexAlreadyExists(String, String);
 struct RelNameConflictError(String);
 
 impl<'a> SessionTx<'a> {
-    pub(crate) fn relation_exists(&self, name: &str) -> Result<bool> {
-        let key = DataValue::from(name);
-        let encoded = vec![key].encode_as_key(RelationId::SYSTEM);
-        if name.starts_with('_') {
-            self.temp_store_tx.exists(&encoded, false)
-        } else {
-            self.store_tx.exists(&encoded, false)
-        }
-    }
+    // // pub(crate) fn relation_exists(&self, name: &str) -> Result<bool> {
+    // //     let key = DataValue::from(name);
+    // //     let encoded = vec![key].encode_as_key(RelationId::SYSTEM);
+    // //     if name.starts_with('_') {
+    // //         self.temp_store_tx.exists(&encoded, false)
+    // //     } else {
+    // //         self.store_tx.exists(&encoded, false)
+    // //     }
+    // // }
     // pub(crate) fn set_relation_triggers(
     //     &mut self,
     //     name: &Symbol,
@@ -533,22 +533,22 @@ impl<'a> SessionTx<'a> {
         let metadata = RelationHandle::decode(&found)?;
         Ok(metadata)
     }
-    pub(crate) fn describe_relation(&mut self, name: &str, description: &str) -> Result<()> {
-        let mut meta = self.get_relation(name, true)?;
+    // // // pub(crate) fn describe_relation(&mut self, name: &str, description: &str) -> Result<()> {
+    // // //     let mut meta = self.get_relation(name, true)?;
 
-        meta.description = SmartString::from(description);
-        let name_key = vec![DataValue::Str(meta.name.clone())].encode_as_key(RelationId::SYSTEM);
-        let mut meta_val = vec![];
-        meta.serialize(&mut Serializer::new(&mut meta_val).with_struct_map())
-            .unwrap();
-        if meta.is_temp {
-            self.temp_store_tx.put(&name_key, &meta_val)?;
-        } else {
-            self.store_tx.put(&name_key, &meta_val)?;
-        }
+    // // //     meta.description = String::from(description);
+    // // //     let name_key = vec![DataValue::Str(meta.name.clone())].encode_as_key(RelationId::SYSTEM);
+    // // //     let mut meta_val = vec![];
+    // // //     meta.serialize(&mut Serializer::new(&mut meta_val).with_struct_map())
+    // // //         .unwrap();
+    // // //     if meta.is_temp {
+    // // //         self.temp_store_tx.put(&name_key, &meta_val)?;
+    // // //     } else {
+    // // //         self.store_tx.put(&name_key, &meta_val)?;
+    // // //     }
 
-        Ok(())
-    }
+    // // //     Ok(())
+    // // // }
     // // pub(crate) fn destroy_relation(&mut self, name: &str) -> Result<Vec<(Vec<u8>, Vec<u8>)>> {
     // //     let is_temp = name.starts_with('_');
     // //     let mut to_clean = vec![];
@@ -621,7 +621,7 @@ impl<'a> SessionTx<'a> {
 
     //     let inv_idx_keys = rel_handle.metadata.keys.clone();
     //     let inv_idx_vals = vec![ColumnDef {
-    //         name: SmartString::from("minhash"),
+    //         name: String::from("minhash"),
     //         typing: NullableColType {
     //             coltype: ColType::Bytes,
     //             nullable: false,
@@ -630,7 +630,7 @@ impl<'a> SessionTx<'a> {
     //     }];
 
     //     let mut idx_keys = vec![ColumnDef {
-    //         name: SmartString::from("hash"),
+    //         name: String::from("hash"),
     //         typing: NullableColType {
     //             coltype: ColType::Bytes,
     //             nullable: false,
@@ -751,7 +751,7 @@ impl<'a> SessionTx<'a> {
 
     //     // Build key columns definitions
     //     let mut idx_keys: Vec<ColumnDef> = vec![ColumnDef {
-    //         name: SmartString::from("word"),
+    //         name: String::from("word"),
     //         typing: NullableColType {
     //             coltype: ColType::String,
     //             nullable: false,
@@ -780,22 +780,22 @@ impl<'a> SessionTx<'a> {
 
     //     let non_idx_keys: Vec<ColumnDef> = vec![
     //         ColumnDef {
-    //             name: SmartString::from("offset_from"),
+    //             name: String::from("offset_from"),
     //             typing: col_type.clone(),
     //             default_gen: None,
     //         },
     //         ColumnDef {
-    //             name: SmartString::from("offset_to"),
+    //             name: String::from("offset_to"),
     //             typing: col_type.clone(),
     //             default_gen: None,
     //         },
     //         ColumnDef {
-    //             name: SmartString::from("position"),
+    //             name: String::from("position"),
     //             typing: col_type,
     //             default_gen: None,
     //         },
     //         ColumnDef {
-    //             name: SmartString::from("total_length"),
+    //             name: String::from("total_length"),
     //             typing: NullableColType {
     //                 coltype: ColType::Int,
     //                 nullable: false,
@@ -934,7 +934,7 @@ impl<'a> SessionTx<'a> {
     //     // Build key columns definitions
     //     let mut idx_keys: Vec<ColumnDef> = vec![ColumnDef {
     //         // layer -1 stores the self-loops
-    //         name: SmartString::from("layer"),
+    //         name: String::from("layer"),
     //         typing: NullableColType {
     //             coltype: ColType::Int,
     //             nullable: false,
@@ -945,11 +945,11 @@ impl<'a> SessionTx<'a> {
     //     for prefix in ["fr", "to"] {
     //         for col in rel_handle.metadata.keys.iter() {
     //             let mut col = col.clone();
-    //             col.name = SmartString::from(format!("{}_{}", prefix, col.name));
+    //             col.name = String::from(format!("{}_{}", prefix, col.name));
     //             idx_keys.push(col);
     //         }
     //         idx_keys.push(ColumnDef {
-    //             name: SmartString::from(format!("{}__field", prefix)),
+    //             name: String::from(format!("{}__field", prefix)),
     //             typing: NullableColType {
     //                 coltype: ColType::Int,
     //                 nullable: false,
@@ -957,7 +957,7 @@ impl<'a> SessionTx<'a> {
     //             default_gen: None,
     //         });
     //         idx_keys.push(ColumnDef {
-    //             name: SmartString::from(format!("{}__sub_idx", prefix)),
+    //             name: String::from(format!("{}__sub_idx", prefix)),
     //             typing: NullableColType {
     //                 coltype: ColType::Int,
     //                 nullable: false,
@@ -970,7 +970,7 @@ impl<'a> SessionTx<'a> {
     //     let non_idx_keys = vec![
     //         // For self-loops, stores the number of neighbours
     //         ColumnDef {
-    //             name: SmartString::from("dist"),
+    //             name: String::from("dist"),
     //             typing: NullableColType {
     //                 coltype: ColType::Float,
     //                 nullable: false,
@@ -979,7 +979,7 @@ impl<'a> SessionTx<'a> {
     //         },
     //         // For self-loops, stores a hash of the neighbours, for conflict detection
     //         ColumnDef {
-    //             name: SmartString::from("hash"),
+    //             name: String::from("hash"),
     //             typing: NullableColType {
     //                 coltype: ColType::Bytes,
     //                 nullable: true,
@@ -987,7 +987,7 @@ impl<'a> SessionTx<'a> {
     //             default_gen: None,
     //         },
     //         ColumnDef {
-    //             name: SmartString::from("ignore_link"),
+    //             name: String::from("ignore_link"),
     //             typing: NullableColType {
     //                 coltype: ColType::Bool,
     //                 nullable: false,

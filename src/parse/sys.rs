@@ -11,8 +11,8 @@ use std::sync::Arc;
 
 use itertools::Itertools;
 use miette::{bail, ensure, miette, Diagnostic, Result};
-use ordered_float::OrderedFloat;
-use smartstring::{LazyCompact, SmartString};
+// use ordered_float::OrderedFloat;
+// use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::compile::program::InputProgram;
@@ -47,7 +47,7 @@ pub(crate) enum SysOp {
     // CreateFtsIndex(FtsIndexConfig),
     // CreateMinHashLshIndex(MinHashLshConfig),
     // RemoveIndex(Symbol, Symbol),
-    DescribeRelation(Symbol, SmartString<LazyCompact>)
+    DescribeRelation(Symbol, String)
 }
 
 
@@ -335,8 +335,8 @@ pub(crate) fn parse_sys(
         // //             }
 
         // //             let config = MinHashLshConfig {
-        // //                 base_relation: SmartString::from(rel.as_str()),
-        // //                 index_name: SmartString::from(name.as_str()),
+        // //                 base_relation: String::from(rel.as_str()),
+        // //                 index_name: String::from(name.as_str()),
         // //                 extractor,
         // //                 tokenizer,
         // //                 filters,
@@ -450,8 +450,8 @@ pub(crate) fn parse_sys(
         //                 extractor = format!("if({}, {})", extract_filter, extractor);
         //             }
         //             let config = FtsIndexConfig {
-        //                 base_relation: SmartString::from(rel.as_str()),
-        //                 index_name: SmartString::from(name.as_str()),
+        //                 base_relation: String::from(rel.as_str()),
+        //                 index_name: String::from(name.as_str()),
         //                 extractor,
         //                 tokenizer,
         //                 filters,
@@ -569,8 +569,8 @@ pub(crate) fn parse_sys(
 
                     todo!()
                     // SysOp::CreateVectorIndex(HnswIndexConfig {
-                    //     base_relation: SmartString::from(rel.as_str()),
-                    //     index_name: SmartString::from(name.as_str()),
+                    //     base_relation: String::from(rel.as_str()),
+                    //     index_name: String::from(name.as_str()),
                     //     vec_dim,
                     //     dtype,
                     //     vec_fields,

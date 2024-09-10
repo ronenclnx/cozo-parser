@@ -13,10 +13,10 @@ use std::fmt::{Debug, Formatter};
 use std::iter;
 use std::path::Path;
 #[allow(unused_imports)]
-use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
-#[allow(unused_imports)]
-use std::thread;
+// // use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
+// // use std::sync::{Arc, Mutex};
+// // #[allow(unused_imports)]
+// // use std::thread;
 #[allow(unused_imports)]
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -28,8 +28,8 @@ use itertools::Itertools;
 use miette::Report;
 #[allow(unused_imports)]
 use miette::{bail, ensure, miette, Diagnostic, IntoDiagnostic, Result, WrapErr};
-use serde_json::json;
-use smartstring::{LazyCompact, SmartString};
+// // use serde_json::json;
+// // use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::json::JsonValue;
@@ -51,19 +51,19 @@ use crate::query::ra::{
 // // use crate::runtime::callback::{
 // //     CallbackDeclaration, CallbackOp, EventCallbackRegistry,
 // // };
-use crate::runtime::relation::{
-    extend_tuple_from_v, AccessLevel, InsufficientAccessLevel, RelationHandle, RelationId,
-};
+// // use crate::runtime::relation::{
+// //     // extend_tuple_from_v, AccessLevel, InsufficientAccessLevel, RelationHandle, RelationId,
+// // };
 // use crate::runtime::transact::SessionTx;
 use crate::storage::temp::TempStorage;
 use crate::storage::Storage;
-use crate::runtime::relation::decode_tuple_from_kv;
+// use crate::runtime::relation::decode_tuple_from_kv;
 use crate::compile::symb::{Symbol};
 use crate::fixed_rule::FixedRule;
 
-pub(crate) struct RunningQueryHandle {
-    pub(crate) started_at: f64,
-}
+// // pub(crate) struct RunningQueryHandle {
+// //     pub(crate) started_at: f64,
+// // }
 
 // // // pub(crate) struct RunningQueryCleanup {
 // // //     pub(crate) id: u64,
@@ -79,10 +79,10 @@ pub(crate) struct RunningQueryHandle {
 // // //     }
 // // // }
 
-#[derive(serde_derive::Serialize, serde_derive::Deserialize)]
-pub struct DbManifest {
-    pub storage_version: u64,
-}
+// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+// pub struct DbManifest {
+//     pub storage_version: u64,
+// }
 
 // // /// Whether a script is mutable or immutable.
 // // #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -107,7 +107,7 @@ pub struct DbManifest {
 // // //     // callback_count: Arc<AtomicU32>,
 // // //     // #[cfg(not(target_arch = "wasm32"))]
 // // //     // pub(crate) event_callbacks: Arc<ShardedLock<EventCallbackRegistry>>,
-// // //     // relation_locks: Arc<ShardedLock<BTreeMap<SmartString<LazyCompact>, Arc<ShardedLock<()>>>>>,
+// // //     // relation_locks: Arc<ShardedLock<BTreeMap<String, Arc<ShardedLock<()>>>>>,
 // // // }
 
 // // // impl<S> Debug for Db<S> {

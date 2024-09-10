@@ -34,7 +34,6 @@ use crate::data::value::ValidityTs;
 // use serde_json::{json, Value};
 // use crate::data::json::JsonValue;
 // use crate::query::ra::{InnerJoin, InlineFixedRA};
- use smartstring::{LazyCompact, SmartString};
  
  #[derive(Debug)]
  pub enum CompiledRuleSet {
@@ -903,7 +902,7 @@ use crate::data::value::ValidityTs;
  
  #[derive(Debug, Clone, Eq, PartialEq, serde_derive::Deserialize, serde_derive::Serialize)]
  pub(crate) struct ColumnDef {
-     pub(crate) name: SmartString<LazyCompact>,
+     pub(crate) name: String,
      pub(crate) typing: NullableColType,
      pub(crate) default_gen: Option<Expr>,
  }
@@ -1009,7 +1008,7 @@ use crate::data::value::ValidityTs;
     pub(crate) fn compile_single_program(
         &mut self,
         p: InputProgram,
-        callback_targets: &BTreeSet<SmartString<LazyCompact>>,
+        callback_targets: &BTreeSet<String>,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
         let compiled =
             self.compile_query(p, callback_targets, true)?;
@@ -1020,7 +1019,7 @@ use crate::data::value::ValidityTs;
     pub(crate) fn compile_query(
         &mut self,
         input_program: InputProgram,
-        callback_targets: &BTreeSet<SmartString<LazyCompact>>,
+        callback_targets: &BTreeSet<String>,
         top_level: bool,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
         // cleanups contain stored relations that should be deleted at the end of query
@@ -1059,6 +1058,7 @@ use crate::data::value::ValidityTs;
          &mut self,
          payload: &str,
      ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
+        let params: BTreeMap<String, DataValue> = BTreeMap::new();
         println!("xxx404");
          self.do_compile_script(
              payload,
@@ -1093,7 +1093,7 @@ pub(crate) struct NormalFormInlineRule {
 pub(crate) struct FixedRuleApply {
     pub(crate) fixed_handle: FixedRuleHandle,
     pub(crate) rule_args: Vec<FixedRuleArg>,
-    pub(crate) options: Arc<BTreeMap<SmartString<LazyCompact>, Expr>>,
+    pub(crate) options: Arc<BTreeMap<String, Expr>>,
     pub(crate) head: Vec<Symbol>,
     pub(crate) arity: usize,
     pub(crate) span: SourceSpan,

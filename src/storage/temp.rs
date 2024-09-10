@@ -13,37 +13,37 @@ use miette::Result;
 
 use crate::data::tuple::Tuple;
 use crate::data::value::ValidityTs;
-use crate::runtime::relation::decode_tuple_from_kv;
+// // use crate::runtime::relation::decode_tuple_from_kv;
 // use crate::storage::mem::SkipIterator;
 use crate::storage::{Storage, StoreTx};
 
 #[derive(Default, Clone)]
 pub(crate) struct TempStorage;
 
-impl<'s> Storage<'s> for TempStorage {
-    type Tx = TempTx;
+// // impl<'s> Storage<'s> for TempStorage {
+// //     // // type Tx = TempTx;
 
-    // fn storage_kind(&self) -> &'static str {
-    //     "temp"
-    // }
+// //     // fn storage_kind(&self) -> &'static str {
+// //     //     "temp"
+// //     // }
 
-    // // fn transact(&'s self, _write: bool) -> Result<Self::Tx> {
-    // //     Ok(TempTx {
-    // //         store: Default::default(),
-    // //     })
-    // // }
+// //     // // fn transact(&'s self, _write: bool) -> Result<Self::Tx> {
+// //     // //     Ok(TempTx {
+// //     // //         store: Default::default(),
+// //     // //     })
+// //     // // }
 
-    // // fn range_compact(&'s self, _lower: &[u8], _upper: &[u8]) -> Result<()> {
-    // //     panic!("range compact called on temp store")
-    // // }
+// //     // // fn range_compact(&'s self, _lower: &[u8], _upper: &[u8]) -> Result<()> {
+// //     // //     panic!("range compact called on temp store")
+// //     // // }
 
-    // // fn batch_put<'a>(
-    // //     &'a self,
-    // //     _data: Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>,
-    // // ) -> Result<()> {
-    // //     panic!("batch put compact called on temp store")
-    // // }
-}
+// //     // // fn batch_put<'a>(
+// //     // //     &'a self,
+// //     // //     _data: Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>,
+// //     // // ) -> Result<()> {
+// //     // //     panic!("batch put compact called on temp store")
+// //     // // }
+// // }
 
 pub(crate) struct TempTx {
     store: BTreeMap<Vec<u8>, Vec<u8>>,
@@ -59,15 +59,15 @@ impl<'s> StoreTx<'s> for TempTx {
         Ok(())
     }
 
-    fn supports_par_put(&self) -> bool {
-        false
-    }
+    // // // fn supports_par_put(&self) -> bool {
+    // // //     false
+    // // // }
 
 
 
-    fn exists(&self, key: &[u8], _for_update: bool) -> Result<bool> {
-        Ok(self.store.contains_key(key))
-    }
+    // // fn exists(&self, key: &[u8], _for_update: bool) -> Result<bool> {
+    // //     Ok(self.store.contains_key(key))
+    // // }
 
     // // // fn commit(&mut self) -> Result<()> {
     // // //     Ok(())

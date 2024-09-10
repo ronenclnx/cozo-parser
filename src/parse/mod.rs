@@ -15,7 +15,7 @@ use either::{Either, Left};
 use miette::{bail, Diagnostic, IntoDiagnostic, Result};
 use pest::error::InputLocation;
 use pest::Parser;
-use smartstring::{LazyCompact, SmartString};
+// use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::compile::program::{InputInlineRulesOrFixed, InputProgram};
@@ -52,27 +52,27 @@ pub(crate) enum CozoScript {
 #[derive(Debug)]
 pub(crate) struct ImperativeStmtClause {
     pub(crate) prog: InputProgram,
-    pub(crate) store_as: Option<SmartString<LazyCompact>>,
+    pub(crate) store_as: Option<String>,
 }
 
 #[derive(Debug)]
 pub(crate) struct ImperativeSysop {
     pub(crate) sysop: SysOp,
-    pub(crate) store_as: Option<SmartString<LazyCompact>>,
+    pub(crate) store_as: Option<String>,
 }
 
 #[derive(Debug)]
 pub(crate) enum ImperativeStmt {
     Break {
-        target: Option<SmartString<LazyCompact>>,
+        target: Option<String>,
         span: SourceSpan,
     },
     Continue {
-        target: Option<SmartString<LazyCompact>>,
+        target: Option<String>,
         span: SourceSpan,
     },
     Return {
-        returns: Vec<Either<ImperativeStmtClause, SmartString<LazyCompact>>>,
+        returns: Vec<Either<ImperativeStmtClause, String>>,
     },
     Program {
         prog: ImperativeStmtClause,
@@ -90,25 +90,25 @@ pub(crate) enum ImperativeStmt {
         negated: bool,
     },
     Loop {
-        label: Option<SmartString<LazyCompact>>,
+        label: Option<String>,
         body: ImperativeProgram,
     },
     TempSwap {
-        left: SmartString<LazyCompact>,
-        right: SmartString<LazyCompact>,
+        left: String,
+        right: String,
         // span: SourceSpan,
     },
     TempDebug {
-        temp: SmartString<LazyCompact>,
+        temp: String,
     },
 }
 
-pub(crate) type ImperativeCondition = Either<SmartString<LazyCompact>, ImperativeStmtClause>;
+pub(crate) type ImperativeCondition = Either<String, ImperativeStmtClause>;
 
 pub(crate) type ImperativeProgram = Vec<ImperativeStmt>;
 
 impl ImperativeStmt {
-    // pub(crate) fn needs_write_locks(&self, collector: &mut BTreeSet<SmartString<LazyCompact>>) {
+    // pub(crate) fn needs_write_locks(&self, collector: &mut BTreeSet<String>) {
     //     match self {
     //         ImperativeStmt::Program { prog, .. }
     //         | ImperativeStmt::IgnoreErrorProgram { prog, .. } => {
@@ -164,22 +164,22 @@ impl ImperativeStmt {
     //                 // // }
     //                 // // SysOp::CreateIndex(symb, subs, _) => {
     //                 // //     collector.insert(symb.name.clone());
-    //                 // //     collector.insert(SmartString::from(format!("{}:{}", symb.name, subs.name)));
+    //                 // //     collector.insert(String::from(format!("{}:{}", symb.name, subs.name)));
     //                 // // }
     //                 // SysOp::CreateVectorIndex(m) => {
     //                 //     collector.insert(m.base_relation.clone());
-    //                 //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+    //                 //     collector.insert(String::from(format!("{}:{}", m.base_relation, m.index_name)));
     //                 // }
     //                 // SysOp::CreateFtsIndex(m) => {
     //                 //     collector.insert(m.base_relation.clone());
-    //                 //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+    //                 //     collector.insert(String::from(format!("{}:{}", m.base_relation, m.index_name)));
     //                 // }
     //                 // SysOp::CreateMinHashLshIndex(m) => {
     //                 //     collector.insert(m.base_relation.clone());
-    //                 //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+    //                 //     collector.insert(String::from(format!("{}:{}", m.base_relation, m.index_name)));
     //                 // }
     //                 // // SysOp::RemoveIndex(rel, idx) => {
-    //                 // //     collector.insert(SmartString::from(format!("{}:{}", rel.name, idx.name)));
+    //                 // //     collector.insert(String::from(format!("{}:{}", rel.name, idx.name)));
     //                 // // }
     //                 _ => {}
     //             }

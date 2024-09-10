@@ -17,7 +17,7 @@ use chrono::DateTime;
 use itertools::Itertools;
 use miette::{bail, ensure, Diagnostic, Result};
 use serde_json::json;
-use smartstring::{LazyCompact, SmartString};
+// use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::compile::expr::Expr;
@@ -99,7 +99,7 @@ pub enum ColType {
 
 #[derive(Debug, Clone, Eq, PartialEq, serde_derive::Deserialize, serde_derive::Serialize)]
 pub(crate) struct ColumnDef {
-    pub(crate) name: SmartString<LazyCompact>,
+    pub(crate) name: String,
     pub(crate) typing: NullableColType,
     pub(crate) default_gen: Option<Expr>,
 }

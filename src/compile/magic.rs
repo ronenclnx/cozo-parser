@@ -11,8 +11,8 @@ use std::mem;
 
 use itertools::Itertools;
 use miette::{bail, ensure, Result};
-use smallvec::SmallVec;
-use smartstring::SmartString;
+// use smallvec::SmallVec;
+// use smartstring::SmartString;
 
 use super::program::{
     FixedRuleArg, MagicAtom, MagicFixedRuleApply, MagicFixedRuleRuleArg, MagicInlineRule,
@@ -429,7 +429,7 @@ impl NormalFormProgram {
                                                     .enumerate()
                                                     .map(|(i, col)| match bindings.get(&col.name) {
                                                         None => Symbol::new(
-                                                            SmartString::from(format!("{i}")),
+                                                            String::from(format!("{i}")),
                                                             Default::default(),
                                                         ),
                                                         Some(k) => k.clone(),
@@ -562,7 +562,7 @@ impl NormalFormAtom {
                 if rules_to_rewrite.contains(&rule.name) {
                     // first mark adorned rules
                     // then
-                    let mut adornment = SmallVec::new();
+                    let mut adornment = Vec::new();
                     for arg in rule.args.iter() {
                         adornment.push(!seen_bindings.insert(arg.clone()));
                     }
