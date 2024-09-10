@@ -110,52 +110,52 @@ pub(crate) struct StoredRelationMetadata {
     pub(crate) non_keys: Vec<ColumnDef>,
 }
 
-impl StoredRelationMetadata {
-    pub(crate) fn satisfied_by_required_col(&self, col: &ColumnDef) -> Result<()> {
-        for target in self.keys.iter().chain(self.non_keys.iter()) {
-            if target.name == col.name {
-                return Ok(());
-            }
-        }
-        if col.default_gen.is_none() {
-            #[derive(Debug, Error, Diagnostic)]
-            #[error("required column {0} not provided by input")]
-            #[diagnostic(code(eval::required_col_not_provided))]
-            struct ColumnNotProvided(String);
+// // impl StoredRelationMetadata {
+// //     // // pub(crate) fn satisfied_by_required_col(&self, col: &ColumnDef) -> Result<()> {
+// //     // //     for target in self.keys.iter().chain(self.non_keys.iter()) {
+// //     // //         if target.name == col.name {
+// //     // //             return Ok(());
+// //     // //         }
+// //     // //     }
+// //     // //     if col.default_gen.is_none() {
+// //     // //         #[derive(Debug, Error, Diagnostic)]
+// //     // //         #[error("required column {0} not provided by input")]
+// //     // //         #[diagnostic(code(eval::required_col_not_provided))]
+// //     // //         struct ColumnNotProvided(String);
 
-            bail!(ColumnNotProvided(col.name.to_string()))
-        }
-        Ok(())
-    }
-    pub(crate) fn compatible_with_col(&self, col: &ColumnDef) -> Result<()> {
-        for target in self.keys.iter().chain(self.non_keys.iter()) {
-            if target.name == col.name {
-                #[derive(Debug, Error, Diagnostic)]
-                #[error("requested column {0} has typing {1}, but the requested typing is {2}")]
-                #[diagnostic(code(eval::col_type_mismatch))]
-                struct IncompatibleTyping(String, NullableColType, NullableColType);
-                if (!col.typing.nullable || col.typing.coltype != ColType::Any)
-                    && target.typing != col.typing
-                {
-                    bail!(IncompatibleTyping(
-                        col.name.to_string(),
-                        target.typing.clone(),
-                        col.typing.clone()
-                    ))
-                }
+// //     // //         bail!(ColumnNotProvided(col.name.to_string()))
+// //     // //     }
+// //     // //     Ok(())
+// //     // // }
+// //     // pub(crate) fn compatible_with_col(&self, col: &ColumnDef) -> Result<()> {
+// //     //     for target in self.keys.iter().chain(self.non_keys.iter()) {
+// //     //         if target.name == col.name {
+// //     //             #[derive(Debug, Error, Diagnostic)]
+// //     //             #[error("requested column {0} has typing {1}, but the requested typing is {2}")]
+// //     //             #[diagnostic(code(eval::col_type_mismatch))]
+// //     //             struct IncompatibleTyping(String, NullableColType, NullableColType);
+// //     //             if (!col.typing.nullable || col.typing.coltype != ColType::Any)
+// //     //                 && target.typing != col.typing
+// //     //             {
+// //     //                 bail!(IncompatibleTyping(
+// //     //                     col.name.to_string(),
+// //     //                     target.typing.clone(),
+// //     //                     col.typing.clone()
+// //     //                 ))
+// //     //             }
 
-                return Ok(());
-            }
-        }
+// //     //             return Ok(());
+// //     //         }
+// //     //     }
 
-        #[derive(Debug, Error, Diagnostic)]
-        #[error("required column {0} not found")]
-        #[diagnostic(code(eval::required_col_not_found))]
-        struct ColumnNotFound(String);
+// //     //     #[derive(Debug, Error, Diagnostic)]
+// //     //     #[error("required column {0} not found")]
+// //     //     #[diagnostic(code(eval::required_col_not_found))]
+// //     //     struct ColumnNotFound(String);
 
-        bail!(ColumnNotFound(col.name.to_string()))
-    }
-}
+// //     //     bail!(ColumnNotFound(col.name.to_string()))
+// //     // }
+// // }
 
 impl NullableColType {
     pub(crate) fn coerce(&self, data: DataValue, cur_vld: ValidityTs) -> Result<DataValue> {

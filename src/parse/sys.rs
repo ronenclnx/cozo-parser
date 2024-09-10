@@ -24,7 +24,7 @@ use crate::parse::expr::{build_expr, parse_string};
 use crate::parse::query::parse_query;
 use crate::parse::{ExtractSpan, Pairs, Rule, SourceSpan};
 use crate::runtime::relation::AccessLevel;
-use crate::data::expr::Expr;
+// use crate::data::expr::Expr;
 use crate::fixed_rule::FixedRule;
 
 #[derive(Debug)]

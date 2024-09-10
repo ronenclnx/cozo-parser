@@ -295,27 +295,27 @@ impl RelationHandle {
         tuple.serialize(&mut Serializer::new(&mut ret)).unwrap();
         Ok(ret)
     }
-    pub(crate) fn ensure_compatible(
-        &self,
-        inp: &InputRelationHandle,
-        is_remove_or_update: bool,
-    ) -> Result<()> {
-        let InputRelationHandle { metadata, .. } = inp;
-        // check that every given key is found and compatible
-        for col in metadata.keys.iter().chain(self.metadata.non_keys.iter()) {
-            self.metadata.compatible_with_col(col)?
-        }
-        // check that every key is provided or has default
-        for col in &self.metadata.keys {
-            metadata.satisfied_by_required_col(col)?;
-        }
-        if !is_remove_or_update {
-            for col in &self.metadata.non_keys {
-                metadata.satisfied_by_required_col(col)?;
-            }
-        }
-        Ok(())
-    }
+    // // pub(crate) fn ensure_compatible(
+    // //     &self,
+    // //     inp: &InputRelationHandle,
+    // //     is_remove_or_update: bool,
+    // // ) -> Result<()> {
+    // //     let InputRelationHandle { metadata, .. } = inp;
+    // //     // check that every given key is found and compatible
+    // //     for col in metadata.keys.iter().chain(self.metadata.non_keys.iter()) {
+    // //         self.metadata.compatible_with_col(col)?
+    // //     }
+    // //     // check that every key is provided or has default
+    // //     for col in &self.metadata.keys {
+    // //         metadata.satisfied_by_required_col(col)?;
+    // //     }
+    // //     if !is_remove_or_update {
+    // //         for col in &self.metadata.non_keys {
+    // //             metadata.satisfied_by_required_col(col)?;
+    // //         }
+    // //     }
+    // //     Ok(())
+    // // }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, serde_derive::Serialize, serde_derive::Deserialize)]

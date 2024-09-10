@@ -12,7 +12,7 @@ use itertools::Itertools;
 use miette::{bail, Result};
 use smartstring::{LazyCompact, SmartString};
 
-use crate::data::expr::{eval_bytecode, Expr};
+// use crate::data::expr::{eval_bytecode, Expr};
 use crate::data::functions::OP_LIST;
 use crate::compile::program::WrongFixedRuleOptionError;
 use crate::compile::symb::Symbol;
