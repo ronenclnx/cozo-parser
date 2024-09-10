@@ -16,7 +16,7 @@ use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::compile::program::InputProgram;
-use crate::data::relation::VecElementType;
+// use crate::data::relation::VecElementType;
 use crate::compile::symb::Symbol;
 use crate::data::value::{DataValue, ValidityTs};
 // use crate::fts::TokenizerConfig;
@@ -479,7 +479,7 @@ pub(crate) fn parse_sys(
                     let name = inner.next().unwrap();
                     // options
                     let mut vec_dim = 0;
-                    let mut dtype = VecElementType::F32;
+                    // let mut dtype = VecElementType::F32;
                     let mut vec_fields = vec![];
                     // let mut distance = HnswDistance::L2;
                     let mut ef_construction = 0;
@@ -522,15 +522,15 @@ pub(crate) fn parse_sys(
                                 ensure!(v > 0, "Invalid m_neighbours: {}", v);
                                 m_neighbours = v as usize;
                             }
-                            "dtype" => {
-                                dtype = match opt_val.as_str() {
-                                    "F32" | "Float" => VecElementType::F32,
-                                    "F64" | "Double" => VecElementType::F64,
-                                    _ => {
-                                        return Err(miette!("Invalid dtype: {}", opt_val.as_str()))
-                                    }
-                                }
-                            }
+                            // // "dtype" => {
+                            // //     dtype = match opt_val.as_str() {
+                            // //         "F32" | "Float" => VecElementType::F32,
+                            // //         "F64" | "Double" => VecElementType::F64,
+                            // //         _ => {
+                            // //             return Err(miette!("Invalid dtype: {}", opt_val.as_str()))
+                            // //         }
+                            // //     }
+                            // // }
                             "fields" => {
                                 let fields = build_expr(opt_val, &Default::default())?;
                                 vec_fields = fields.to_var_list()?;

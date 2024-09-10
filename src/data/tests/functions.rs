@@ -12,7 +12,7 @@ use regex::Regex;
 use serde_json::json;
 
 use crate::data::functions::*;
-use crate::data::value::{DataValue, RegexWrapper};
+use crate::data::value::{DataValue};
 // use crate::DbInstance;
 
 #[test]
@@ -709,93 +709,93 @@ fn test_starts_ends_with() {
     );
 }
 
-#[test]
-fn test_regex() {
-    assert_eq!(
-        op_regex_matches(&[
-            DataValue::Str("abcdef".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("c.e").unwrap()))
-        ])
-        .unwrap(),
-        DataValue::from(true)
-    );
+// // #[test]
+// // fn test_regex() {
+// //     assert_eq!(
+// //         op_regex_matches(&[
+// //             DataValue::Str("abcdef".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("c.e").unwrap()))
+// //         ])
+// //         .unwrap(),
+// //         DataValue::from(true)
+// //     );
 
-    assert_eq!(
-        op_regex_matches(&[
-            DataValue::Str("abcdef".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("c.ef$").unwrap()))
-        ])
-        .unwrap(),
-        DataValue::from(true)
-    );
+// //     assert_eq!(
+// //         op_regex_matches(&[
+// //             DataValue::Str("abcdef".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("c.ef$").unwrap()))
+// //         ])
+// //         .unwrap(),
+// //         DataValue::from(true)
+// //     );
 
-    assert_eq!(
-        op_regex_matches(&[
-            DataValue::Str("abcdef".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("c.e$").unwrap()))
-        ])
-        .unwrap(),
-        DataValue::from(false)
-    );
+// //     assert_eq!(
+// //         op_regex_matches(&[
+// //             DataValue::Str("abcdef".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("c.e$").unwrap()))
+// //         ])
+// //         .unwrap(),
+// //         DataValue::from(false)
+// //     );
 
-    assert_eq!(
-        op_regex_replace(&[
-            DataValue::Str("abcdef".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("[be]").unwrap())),
-            DataValue::Str("x".into())
-        ])
-        .unwrap(),
-        DataValue::Str("axcdef".into())
-    );
+// //     assert_eq!(
+// //         op_regex_replace(&[
+// //             DataValue::Str("abcdef".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("[be]").unwrap())),
+// //             DataValue::Str("x".into())
+// //         ])
+// //         .unwrap(),
+// //         DataValue::Str("axcdef".into())
+// //     );
 
-    assert_eq!(
-        op_regex_replace_all(&[
-            DataValue::Str("abcdef".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("[be]").unwrap())),
-            DataValue::Str("x".into())
-        ])
-        .unwrap(),
-        DataValue::Str("axcdxf".into())
-    );
-    assert_eq!(
-        op_regex_extract(&[
-            DataValue::Str("abCDefGH".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("[xayef]|(GH)").unwrap()))
-        ])
-        .unwrap(),
-        DataValue::List(vec![
-            DataValue::Str("a".into()),
-            DataValue::Str("e".into()),
-            DataValue::Str("f".into()),
-            DataValue::Str("GH".into()),
-        ])
-    );
-    assert_eq!(
-        op_regex_extract_first(&[
-            DataValue::Str("abCDefGH".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("[xayef]|(GH)").unwrap()))
-        ])
-        .unwrap(),
-        DataValue::Str("a".into()),
-    );
-    assert_eq!(
-        op_regex_extract(&[
-            DataValue::Str("abCDefGH".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("xyz").unwrap()))
-        ])
-        .unwrap(),
-        DataValue::List(vec![])
-    );
+// //     assert_eq!(
+// //         op_regex_replace_all(&[
+// //             DataValue::Str("abcdef".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("[be]").unwrap())),
+// //             DataValue::Str("x".into())
+// //         ])
+// //         .unwrap(),
+// //         DataValue::Str("axcdxf".into())
+// //     );
+// //     assert_eq!(
+// //         op_regex_extract(&[
+// //             DataValue::Str("abCDefGH".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("[xayef]|(GH)").unwrap()))
+// //         ])
+// //         .unwrap(),
+// //         DataValue::List(vec![
+// //             DataValue::Str("a".into()),
+// //             DataValue::Str("e".into()),
+// //             DataValue::Str("f".into()),
+// //             DataValue::Str("GH".into()),
+// //         ])
+// //     );
+// //     assert_eq!(
+// //         op_regex_extract_first(&[
+// //             DataValue::Str("abCDefGH".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("[xayef]|(GH)").unwrap()))
+// //         ])
+// //         .unwrap(),
+// //         DataValue::Str("a".into()),
+// //     );
+// //     assert_eq!(
+// //         op_regex_extract(&[
+// //             DataValue::Str("abCDefGH".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("xyz").unwrap()))
+// //         ])
+// //         .unwrap(),
+// //         DataValue::List(vec![])
+// //     );
 
-    assert_eq!(
-        op_regex_extract_first(&[
-            DataValue::Str("abCDefGH".into()),
-            DataValue::Regex(RegexWrapper(Regex::new("xyz").unwrap()))
-        ])
-        .unwrap(),
-        DataValue::Null
-    );
-}
+// //     assert_eq!(
+// //         op_regex_extract_first(&[
+// //             DataValue::Str("abCDefGH".into()),
+// //             DataValue::Regex(RegexWrapper(Regex::new("xyz").unwrap()))
+// //         ])
+// //         .unwrap(),
+// //         DataValue::Null
+// //     );
+// // }
 
 #[test]
 fn test_predicates() {

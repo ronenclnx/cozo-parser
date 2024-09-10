@@ -13,7 +13,7 @@ use miette::{bail, ensure, Diagnostic, Result, IntoDiagnostic};
 use smartstring::SmartString;
 use thiserror::Error;
 
-use crate::data::relation::{VecElementType, ColType, ColumnDef, NullableColType, StoredRelationMetadata};
+use crate::data::relation::{ ColType, ColumnDef, NullableColType, StoredRelationMetadata};
 use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
 use crate::parse::expr::{build_expr};

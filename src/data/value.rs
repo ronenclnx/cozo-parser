@@ -16,7 +16,7 @@ use std::hash::{Hash, Hasher};
 use std::ops::Deref;
 
 use crate::data::json::JsonValue;
-use crate::data::relation::VecElementType;
+// use crate::data::relation::VecElementType;
 use ordered_float::OrderedFloat;
 use regex::Regex;
 use serde::de::{SeqAccess, Visitor};
@@ -48,53 +48,53 @@ impl Ord for UuidWrapper {
     }
 }
 
-/// A Regex in the database. Used internally in functions.
-#[derive(Clone, Debug)]
-pub struct RegexWrapper(pub Regex);
+// // /// A Regex in the database. Used internally in functions.
+// // #[derive(Clone, Debug)]
+// // pub struct RegexWrapper(pub Regex);
 
-impl Hash for RegexWrapper {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.0.as_str().hash(state)
-    }
-}
+// // impl Hash for RegexWrapper {
+// //     fn hash<H: Hasher>(&self, state: &mut H) {
+// //         self.0.as_str().hash(state)
+// //     }
+// // }
 
-impl Serialize for RegexWrapper {
-    fn serialize<S>(&self, _serializer: S) -> std::result::Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
-    {
-        panic!("serializing regex");
-    }
-}
+// // impl Serialize for RegexWrapper {
+// //     fn serialize<S>(&self, _serializer: S) -> std::result::Result<S::Ok, S::Error>
+// //         where
+// //             S: serde::Serializer,
+// //     {
+// //         panic!("serializing regex");
+// //     }
+// // }
 
-impl<'de> Deserialize<'de> for RegexWrapper {
-    fn deserialize<D>(_deserializer: D) -> std::result::Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
-    {
-        panic!("deserializing regex");
-    }
-}
+// // impl<'de> Deserialize<'de> for RegexWrapper {
+// //     fn deserialize<D>(_deserializer: D) -> std::result::Result<Self, D::Error>
+// //         where
+// //             D: Deserializer<'de>,
+// //     {
+// //         panic!("deserializing regex");
+// //     }
+// // }
 
-impl PartialEq for RegexWrapper {
-    fn eq(&self, other: &Self) -> bool {
-        self.0.as_str() == other.0.as_str()
-    }
-}
+// // impl PartialEq for RegexWrapper {
+// //     fn eq(&self, other: &Self) -> bool {
+// //         self.0.as_str() == other.0.as_str()
+// //     }
+// // }
 
-impl Eq for RegexWrapper {}
+// // impl Eq for RegexWrapper {}
 
-impl Ord for RegexWrapper {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.0.as_str().cmp(other.0.as_str())
-    }
-}
+// // impl Ord for RegexWrapper {
+// //     fn cmp(&self, other: &Self) -> Ordering {
+// //         self.0.as_str().cmp(other.0.as_str())
+// //     }
+// // }
 
-impl PartialOrd for RegexWrapper {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.0.as_str().partial_cmp(other.0.as_str())
-    }
-}
+// // impl PartialOrd for RegexWrapper {
+// //     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+// //         self.0.as_str().partial_cmp(other.0.as_str())
+// //     }
+// // }
 
 /// Timestamp part of validity
 #[derive(
@@ -158,8 +158,8 @@ pub enum DataValue {
     Bytes(Vec<u8>),
     /// UUID
     Uuid(UuidWrapper),
-    /// Regex, used internally only
-    Regex(RegexWrapper),
+    // // /// Regex, used internally only
+    // // Regex(RegexWrapper),
     /// list
     List(Vec<DataValue>),
     /// set, used internally only
@@ -560,9 +560,9 @@ impl Display for DataValue {
                 let us = u.0.to_string();
                 write!(f, "to_uuid({us:?})")
             }
-            DataValue::Regex(rx) => {
-                write!(f, "regex({:?})", rx.0.as_str())
-            }
+            // // DataValue::Regex(rx) => {
+            // //     write!(f, "regex({:?})", rx.0.as_str())
+            // // }
             DataValue::List(ls) => f.debug_list().entries(ls).finish(),
             DataValue::Set(s) => f.debug_list().entries(s).finish(),
             DataValue::Bot => write!(f, "null"),

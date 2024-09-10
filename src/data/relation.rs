@@ -89,13 +89,13 @@ pub enum ColType {
     Json,
 }
 
-#[derive(
-    Debug, Copy, Clone, Eq, PartialEq, Hash, serde_derive::Deserialize, serde_derive::Serialize,
-)]
-pub enum VecElementType {
-    F32,
-    F64,
-}
+// #[derive(
+//     Debug, Copy, Clone, Eq, PartialEq, Hash, serde_derive::Deserialize, serde_derive::Serialize,
+// )]
+// pub enum VecElementType {
+//     F32,
+//     F64,
+// }
 
 #[derive(Debug, Clone, Eq, PartialEq, serde_derive::Deserialize, serde_derive::Serialize)]
 pub(crate) struct ColumnDef {
@@ -330,9 +330,9 @@ impl NullableColType {
                 DataValue::Uuid(u) => {
                     json!(u.0.as_bytes())
                 }
-                DataValue::Regex(r) => {
-                    json!(r.0.as_str())
-                }
+                // // DataValue::Regex(r) => {
+                // //     json!(r.0.as_str())
+                // // }
                 DataValue::List(l) => {
                     let mut arr = Vec::with_capacity(l.len());
                     for el in l {

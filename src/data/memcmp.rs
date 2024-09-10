@@ -15,7 +15,7 @@ use byteorder::{BigEndian, ByteOrder, WriteBytesExt};
 use regex::Regex;
 
 use crate::data::value::{
-    DataValue, JsonData, Num, RegexWrapper, UuidWrapper, Validity, ValidityTs,
+    DataValue, JsonData, Num, UuidWrapper, Validity, ValidityTs,
 };
 
 const INIT_TAG: u8 = 0x00;
@@ -27,7 +27,7 @@ const NUM_TAG: u8 = 0x05;
 const STR_TAG: u8 = 0x06;
 const BYTES_TAG: u8 = 0x07;
 const UUID_TAG: u8 = 0x08;
-const REGEX_TAG: u8 = 0x09;
+// const REGEX_TAG: u8 = 0x09;
 const LIST_TAG: u8 = 0x0A;
 const SET_TAG: u8 = 0x0B;
 const VLD_TAG: u8 = 0x0C;
@@ -73,11 +73,11 @@ pub(crate) trait MemCmpEncoder: Write {
                 self.write_u32::<BigEndian>(s_l).unwrap();
                 self.write_all(s_rest.as_ref()).unwrap();
             }
-            DataValue::Regex(rx) => {
-                self.write_u8(REGEX_TAG).unwrap();
-                let s = rx.0.as_str().as_bytes();
-                self.encode_bytes(s)
-            }
+            // // DataValue::Regex(rx) => {
+            // //     self.write_u8(REGEX_TAG).unwrap();
+            // //     let s = rx.0.as_str().as_bytes();
+            // //     self.encode_bytes(s)
+            // // }
             DataValue::List(l) => {
                 self.write_u8(LIST_TAG).unwrap();
                 for el in l {
@@ -270,14 +270,14 @@ impl DataValue {
                 let uuid = uuid::Uuid::from_fields(s_l, s_m, s_h, &s_rest);
                 (DataValue::Uuid(UuidWrapper(uuid)), remaining)
             }
-            REGEX_TAG => {
-                let (bytes, remaining) = decode_bytes(remaining);
-                let s = unsafe { String::from_utf8_unchecked(bytes) };
-                (
-                    DataValue::Regex(RegexWrapper(Regex::from_str(&s).unwrap())),
-                    remaining,
-                )
-            }
+            // // REGEX_TAG => {
+            // //     let (bytes, remaining) = decode_bytes(remaining);
+            // //     let s = unsafe { String::from_utf8_unchecked(bytes) };
+            // //     (
+            // //         DataValue::Regex(RegexWrapper(Regex::from_str(&s).unwrap())),
+            // //         remaining,
+            // //     )
+            // // }
             LIST_TAG => {
                 let mut collected = vec![];
                 let mut remaining = remaining;

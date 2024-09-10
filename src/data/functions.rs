@@ -29,9 +29,8 @@ use uuid::v1::Timestamp;
 
 use crate::compile::expr::Op;
 use crate::data::json::JsonValue;
-use crate::data::relation::VecElementType;
 use crate::data::value::{
-    DataValue, JsonData, Num, RegexWrapper, UuidWrapper, Validity, ValidityTs,
+    DataValue, JsonData, Num, UuidWrapper, Validity, ValidityTs,
 };
 
 macro_rules! define_op {
@@ -54,7 +53,7 @@ fn ensure_same_value_type(a: &DataValue, b: &DataValue) -> Result<()> {
             | (Num(_), Num(_))
             | (Str(_), Str(_))
             | (Bytes(_), Bytes(_))
-            | (Regex(_), Regex(_))
+            // | (Regex(_), Regex(_))
             | (List(_), List(_))
             | (Set(_), Set(_))
             | (Bot, Bot)
@@ -222,9 +221,9 @@ fn to_json(d: &DataValue) -> JsonValue {
         DataValue::Uuid(u) => {
             json!(u.0.as_bytes())
         }
-        DataValue::Regex(r) => {
-            json!(r.0.as_str())
-        }
+        // // DataValue::Regex(r) => {
+        // //     json!(r.0.as_str())
+        // // }
         DataValue::List(l) => {
             let mut arr = Vec::with_capacity(l.len());
             for el in l {
@@ -1055,71 +1054,71 @@ pub(crate) fn op_ends_with(args: &[DataValue]) -> Result<DataValue> {
     }
 }
 
-define_op!(OP_REGEX, 1, false);
-pub(crate) fn op_regex(args: &[DataValue]) -> Result<DataValue> {
-    Ok(match &args[0] {
-        r @ DataValue::Regex(_) => r.clone(),
-        DataValue::Str(s) => {
-            DataValue::Regex(RegexWrapper(regex::Regex::new(s).map_err(|err| {
-                miette!("The string cannot be interpreted as regex: {}", err)
-            })?))
-        }
-        _ => bail!("'regex' requires strings"),
-    })
-}
+// define_op!(OP_REGEX, 1, false);
+// pub(crate) fn op_regex(args: &[DataValue]) -> Result<DataValue> {
+//     Ok(match &args[0] {
+//         r @ DataValue::Regex(_) => r.clone(),
+//         DataValue::Str(s) => {
+//             DataValue::Regex(RegexWrapper(regex::Regex::new(s).map_err(|err| {
+//                 miette!("The string cannot be interpreted as regex: {}", err)
+//             })?))
+//         }
+//         _ => bail!("'regex' requires strings"),
+//     })
+// }
 
-define_op!(OP_REGEX_MATCHES, 2, false);
-pub(crate) fn op_regex_matches(args: &[DataValue]) -> Result<DataValue> {
-    match (&args[0], &args[1]) {
-        (DataValue::Str(s), DataValue::Regex(r)) => Ok(DataValue::from(r.0.is_match(s))),
-        _ => bail!("'regex_matches' requires strings"),
-    }
-}
+// // define_op!(OP_REGEX_MATCHES, 2, false);
+// // pub(crate) fn op_regex_matches(args: &[DataValue]) -> Result<DataValue> {
+// //     match (&args[0], &args[1]) {
+// //         (DataValue::Str(s), DataValue::Regex(r)) => Ok(DataValue::from(r.0.is_match(s))),
+// //         _ => bail!("'regex_matches' requires strings"),
+// //     }
+// // }
 
-define_op!(OP_REGEX_REPLACE, 3, false);
-pub(crate) fn op_regex_replace(args: &[DataValue]) -> Result<DataValue> {
-    match (&args[0], &args[1], &args[2]) {
-        (DataValue::Str(s), DataValue::Regex(r), DataValue::Str(rp)) => {
-            Ok(DataValue::Str(r.0.replace(s, rp as &str).into()))
-        }
-        _ => bail!("'regex_replace' requires strings"),
-    }
-}
+// // define_op!(OP_REGEX_REPLACE, 3, false);
+// // pub(crate) fn op_regex_replace(args: &[DataValue]) -> Result<DataValue> {
+// //     match (&args[0], &args[1], &args[2]) {
+// //         (DataValue::Str(s), DataValue::Regex(r), DataValue::Str(rp)) => {
+// //             Ok(DataValue::Str(r.0.replace(s, rp as &str).into()))
+// //         }
+// //         _ => bail!("'regex_replace' requires strings"),
+// //     }
+// // }
 
-define_op!(OP_REGEX_REPLACE_ALL, 3, false);
-pub(crate) fn op_regex_replace_all(args: &[DataValue]) -> Result<DataValue> {
-    match (&args[0], &args[1], &args[2]) {
-        (DataValue::Str(s), DataValue::Regex(r), DataValue::Str(rp)) => {
-            Ok(DataValue::Str(r.0.replace_all(s, rp as &str).into()))
-        }
-        _ => bail!("'regex_replace' requires strings"),
-    }
-}
+// // define_op!(OP_REGEX_REPLACE_ALL, 3, false);
+// // pub(crate) fn op_regex_replace_all(args: &[DataValue]) -> Result<DataValue> {
+// //     match (&args[0], &args[1], &args[2]) {
+// //         (DataValue::Str(s), DataValue::Regex(r), DataValue::Str(rp)) => {
+// //             Ok(DataValue::Str(r.0.replace_all(s, rp as &str).into()))
+// //         }
+// //         _ => bail!("'regex_replace' requires strings"),
+// //     }
+// // }
 
-define_op!(OP_REGEX_EXTRACT, 2, false);
-pub(crate) fn op_regex_extract(args: &[DataValue]) -> Result<DataValue> {
-    match (&args[0], &args[1]) {
-        (DataValue::Str(s), DataValue::Regex(r)) => {
-            let found =
-                r.0.find_iter(s)
-                    .map(|v| DataValue::from(v.as_str()))
-                    .collect_vec();
-            Ok(DataValue::List(found))
-        }
-        _ => bail!("'regex_extract' requires strings"),
-    }
-}
+// // define_op!(OP_REGEX_EXTRACT, 2, false);
+// // pub(crate) fn op_regex_extract(args: &[DataValue]) -> Result<DataValue> {
+// //     match (&args[0], &args[1]) {
+// //         (DataValue::Str(s), DataValue::Regex(r)) => {
+// //             let found =
+// //                 r.0.find_iter(s)
+// //                     .map(|v| DataValue::from(v.as_str()))
+// //                     .collect_vec();
+// //             Ok(DataValue::List(found))
+// //         }
+// //         _ => bail!("'regex_extract' requires strings"),
+// //     }
+// // }
 
-define_op!(OP_REGEX_EXTRACT_FIRST, 2, false);
-pub(crate) fn op_regex_extract_first(args: &[DataValue]) -> Result<DataValue> {
-    match (&args[0], &args[1]) {
-        (DataValue::Str(s), DataValue::Regex(r)) => {
-            let found = r.0.find(s).map(|v| DataValue::from(v.as_str()));
-            Ok(found.unwrap_or(DataValue::Null))
-        }
-        _ => bail!("'regex_extract_first' requires strings"),
-    }
-}
+// // define_op!(OP_REGEX_EXTRACT_FIRST, 2, false);
+// // pub(crate) fn op_regex_extract_first(args: &[DataValue]) -> Result<DataValue> {
+// //     match (&args[0], &args[1]) {
+// //         (DataValue::Str(s), DataValue::Regex(r)) => {
+// //             let found = r.0.find(s).map(|v| DataValue::from(v.as_str()));
+// //             Ok(found.unwrap_or(DataValue::Null))
+// //         }
+// //         _ => bail!("'regex_extract_first' requires strings"),
+// //     }
+// // }
 
 define_op!(OP_T2S, 1, false);
 fn op_t2s(args: &[DataValue]) -> Result<DataValue> {
@@ -1597,7 +1596,7 @@ pub(crate) fn op_to_bool(args: &[DataValue]) -> Result<DataValue> {
         DataValue::Str(s) => !s.is_empty(),
         DataValue::Bytes(b) => !b.is_empty(),
         DataValue::Uuid(u) => !u.0.is_nil(),
-        DataValue::Regex(r) => !r.0.as_str().is_empty(),
+        // DataValue::Regex(r) => !r.0.as_str().is_empty(),
         DataValue::List(l) => !l.is_empty(),
         DataValue::Set(s) => !s.is_empty(),
         DataValue::Validity(vld) => vld.is_assert.0,
@@ -1622,7 +1621,7 @@ pub(crate) fn op_to_unity(args: &[DataValue]) -> Result<DataValue> {
         DataValue::Str(s) => i64::from(!s.is_empty()),
         DataValue::Bytes(b) => i64::from(!b.is_empty()),
         DataValue::Uuid(u) => i64::from(!u.0.is_nil()),
-        DataValue::Regex(r) => i64::from(!r.0.as_str().is_empty()),
+        // DataValue::Regex(r) => i64::from(!r.0.as_str().is_empty()),
         DataValue::List(l) => i64::from(!l.is_empty()),
         DataValue::Set(s) => i64::from(!s.is_empty()),
         DataValue::Validity(vld) => i64::from(vld.is_assert.0),

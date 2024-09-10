@@ -890,11 +890,11 @@ pub(crate) fn get_op(name: &str) -> Option<&'static Op> {
         "slice_string" => &OP_SLICE_STRING,
         "from_substrings" => &OP_FROM_SUBSTRINGS,
         "slice" => &OP_SLICE,
-        "regex_matches" => &OP_REGEX_MATCHES,
-        "regex_replace" => &OP_REGEX_REPLACE,
-        "regex_replace_all" => &OP_REGEX_REPLACE_ALL,
-        "regex_extract" => &OP_REGEX_EXTRACT,
-        "regex_extract_first" => &OP_REGEX_EXTRACT_FIRST,
+        // // "regex_matches" => &OP_REGEX_MATCHES,
+        // // "regex_replace" => &OP_REGEX_REPLACE,
+        // // "regex_replace_all" => &OP_REGEX_REPLACE_ALL,
+        // // "regex_extract" => &OP_REGEX_EXTRACT,
+        // // "regex_extract_first" => &OP_REGEX_EXTRACT_FIRST,
         "t2s" => &OP_T2S,
         "encode_base64" => &OP_ENCODE_BASE64,
         "decode_base64" => &OP_DECODE_BASE64,
@@ -931,12 +931,12 @@ pub(crate) fn get_op(name: &str) -> Option<&'static Op> {
 
 impl Op {
     pub(crate) fn post_process_args(&self, args: &mut [Expr]) {
-        if self.name.starts_with("OP_REGEX_") {
-            args[1] = Expr::Apply {
-                op: &OP_REGEX,
-                args: [args[1].clone()].into(),
-                span: args[1].span(),
-            }
-        }
+        // // if self.name.starts_with("OP_REGEX_") {
+        // //     args[1] = Expr::Apply {
+        // //         op: &OP_REGEX,
+        // //         args: [args[1].clone()].into(),
+        // //         span: args[1].span(),
+        // //     }
+        // // }
     }
 }

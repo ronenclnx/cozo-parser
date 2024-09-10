@@ -81,9 +81,9 @@ impl From<DataValue> for JsonValue {
             DataValue::Set(l) => {
                 JsonValue::Array(l.iter().map(|v| JsonValue::from(v.clone())).collect())
             }
-            DataValue::Regex(r) => {
-                json!(r.0.as_str())
-            }
+            // // DataValue::Regex(r) => {
+            // //     json!(r.0.as_str())
+            // // }
             DataValue::Uuid(u) => {
                 json!(u.0)
             }
