@@ -7,7 +7,6 @@
  */
 
 pub(crate) mod aggr;
-pub(crate) mod expr;
 pub(crate) mod functions;
 pub(crate) mod json;
 pub(crate) mod memcmp;

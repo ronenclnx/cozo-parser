@@ -28,7 +28,7 @@ use crate::parse::query::parse_query;
 use crate::parse::schema::parse_nullable_type;
 use crate::parse::sys::{parse_sys, SysOp};
 use crate::fixed_rule::FixedRule;
-use crate::data::expr::Expr;
+use crate::compile::expr::Expr;
 
 pub(crate) mod expr;
 pub(crate) mod fts;

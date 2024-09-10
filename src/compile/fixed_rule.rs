@@ -23,7 +23,7 @@
  use smartstring::{LazyCompact, SmartString};
  use thiserror::Error;
  
- use crate::data::expr::Expr;
+ use crate::compile::expr::Expr;
  use super::program::{
      FixedRuleOptionNotFoundError, MagicFixedRuleApply, MagicFixedRuleRuleArg, MagicSymbol, WrongFixedRuleOptionError
  };

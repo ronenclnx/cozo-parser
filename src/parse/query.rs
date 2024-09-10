@@ -21,7 +21,7 @@ use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::aggr::{parse_aggr, Aggregation};
-use crate::data::expr::Expr;
+use crate::compile::expr::Expr;
 use crate::data::functions::{str2vld, MAX_VALIDITY_TS};
 use crate::compile::program::{
     FixedRuleApply, FixedRuleArg, InputAtom, InputInlineRule, InputInlineRulesOrFixed,

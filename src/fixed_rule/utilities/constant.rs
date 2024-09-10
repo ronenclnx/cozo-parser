@@ -12,7 +12,7 @@ use miette::{bail, ensure, Diagnostic, Result};
 use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
-use crate::data::expr::Expr;
+use crate::compile::expr::Expr;
 use crate::compile::program::WrongFixedRuleOptionError;
 use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;

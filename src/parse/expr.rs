@@ -15,7 +15,7 @@ use pest::pratt_parser::{Op, PrattParser};
 use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
-use crate::data::expr::{get_op, Bytecode, Expr, NoImplementationError};
+use crate::compile::expr::{get_op, Bytecode, Expr, NoImplementationError};
 use crate::data::functions::{
     OP_ADD, OP_AND, OP_COALESCE, OP_CONCAT, OP_DIV, OP_EQ, OP_GE, OP_GT, OP_JSON_OBJECT, OP_LE,
     OP_LIST, OP_LT, OP_MAYBE_GET, OP_MINUS, OP_MOD, OP_MUL, OP_NEGATE, OP_NEQ, OP_OR, OP_POW,

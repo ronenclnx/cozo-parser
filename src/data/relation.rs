@@ -20,7 +20,7 @@ use serde_json::json;
 use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
-use crate::data::expr::Expr;
+use crate::compile::expr::Expr;
 use crate::data::value::{DataValue, JsonData, UuidWrapper, Validity, ValidityTs};
 use crate::data::value::Num;
 

@@ -86,14 +86,14 @@ pub struct DbManifest {
     pub storage_version: u64,
 }
 
-/// Whether a script is mutable or immutable.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum ScriptMutability {
-    /// The script is mutable.
-    Mutable,
-    /// The script is immutable.
-    Immutable,
-}
+// // /// Whether a script is mutable or immutable.
+// // #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+// // pub enum ScriptMutability {
+// //     /// The script is mutable.
+// //     Mutable,
+// //     /// The script is immutable.
+// //     Immutable,
+// // }
 
 /// The database object of Cozo.
 #[derive(Clone)]

@@ -12,7 +12,7 @@ use itertools::Itertools;
 use miette::{bail, ensure, Diagnostic, Result, miette};
 use thiserror::Error;
 
-use crate::data::expr::Expr;
+use crate::compile::expr::Expr;
 use crate::compile::program::{
     InputAtom, InputNamedFieldRelationApplyAtom, InputRelationApplyAtom, InputRuleApplyAtom,
     NormalFormAtom, NormalFormRelationApplyAtom, NormalFormRuleApplyAtom, TempSymbGen, Unification,

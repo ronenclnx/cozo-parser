@@ -16,7 +16,7 @@ use miette::{bail, ensure, Context, Diagnostic, Error, IntoDiagnostic, Result};
 use thiserror::Error;
 
 use crate::data::aggr::Aggregation;
-use crate::data::expr::Expr;
+use crate::compile::expr::Expr;
 use crate::data::functions::current_validity;
 use super::program::{
     FixedRuleArg, InputProgram, MagicAtom, MagicFixedRuleApply, MagicInlineRule, MagicRulesOrFixed, MagicSymbol, RelationOp, StratifiedMagicProgram

@@ -19,7 +19,7 @@ use smartstring::{LazyCompact, SmartString};
 use thiserror::Error;
 
 use crate::data::aggr::Aggregation;
-use crate::data::expr::Expr;
+use crate::compile::expr::Expr;
 use crate::data::relation::StoredRelationMetadata;
 use crate::compile::symb::{Symbol, PROG_ENTRY};
 use crate::data::value::{DataValue, ValidityTs};

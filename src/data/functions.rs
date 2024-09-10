@@ -27,7 +27,7 @@ use smartstring::SmartString;
 use unicode_normalization::UnicodeNormalization;
 use uuid::v1::Timestamp;
 
-use crate::data::expr::Op;
+use crate::compile::expr::Op;
 use crate::data::json::JsonValue;
 use crate::data::relation::VecElementType;
 use crate::data::value::{
