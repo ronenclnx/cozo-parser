@@ -21,7 +21,7 @@ use thiserror::Error;
 use crate::data::aggr::Aggregation;
 use crate::data::expr::Expr;
 use crate::data::relation::StoredRelationMetadata;
-use crate::data::symb::{Symbol, PROG_ENTRY};
+use crate::compile::symb::{Symbol, PROG_ENTRY};
 use crate::data::value::{DataValue, ValidityTs};
 use crate::fixed_rule::{FixedRule, FixedRuleHandle};
 // use crate::fts::FtsIndexManifest;
@@ -561,17 +561,17 @@ struct EntryHeadNotExplicitlyDefinedError(#[label] SourceSpan);
 pub(crate) struct NoEntryError;
 
 impl InputProgram {
-    pub(crate) fn needs_write_lock(&self) -> Option<SmartString<LazyCompact>> {
-        if let Some((h, _, _)) = &self.out_opts.store_relation {
-            if !h.name.name.starts_with('_') {
-                Some(h.name.name.clone())
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
+    // pub(crate) fn needs_write_lock(&self) -> Option<SmartString<LazyCompact>> {
+    //     if let Some((h, _, _)) = &self.out_opts.store_relation {
+    //         if !h.name.name.starts_with('_') {
+    //             Some(h.name.name.clone())
+    //         } else {
+    //             None
+    //         }
+    //     } else {
+    //         None
+    //     }
+    // }
 
     pub(crate) fn get_entry_arity(&self) -> Result<usize> {
         if let Some(entry) = self.prog.get(&Symbol::new(PROG_ENTRY, SourceSpan(0, 0))) {

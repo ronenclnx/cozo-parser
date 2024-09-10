@@ -20,7 +20,7 @@ use thiserror::Error;
 
 use crate::compile::program::{InputInlineRulesOrFixed, InputProgram};
 use crate::data::relation::NullableColType;
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::value::{DataValue, ValidityTs};
 use crate::parse::expr::build_expr;
 use crate::parse::imperative::parse_imperative_block;
@@ -109,84 +109,84 @@ pub(crate) type ImperativeCondition = Either<SmartString<LazyCompact>, Imperativ
 pub(crate) type ImperativeProgram = Vec<ImperativeStmt>;
 
 impl ImperativeStmt {
-    pub(crate) fn needs_write_locks(&self, collector: &mut BTreeSet<SmartString<LazyCompact>>) {
-        match self {
-            ImperativeStmt::Program { prog, .. }
-            | ImperativeStmt::IgnoreErrorProgram { prog, .. } => {
-                if let Some(name) = prog.prog.needs_write_lock() {
-                    collector.insert(name);
-                }
-            }
-            ImperativeStmt::Return { returns, .. } => {
-                for ret in returns {
-                    if let Left(prog) = ret {
-                        if let Some(name) = prog.prog.needs_write_lock() {
-                            collector.insert(name);
-                        }
-                    }
-                }
-            }
-            ImperativeStmt::If {
-                condition,
-                then_branch,
-                else_branch,
-                ..
-            } => {
-                if let ImperativeCondition::Right(prog) = condition {
-                    if let Some(name) = prog.prog.needs_write_lock() {
-                        collector.insert(name);
-                    }
-                }
-                for prog in then_branch.iter().chain(else_branch.iter()) {
-                    prog.needs_write_locks(collector);
-                }
-            }
-            ImperativeStmt::Loop { body, .. } => {
-                for prog in body {
-                    prog.needs_write_locks(collector);
-                }
-            }
-            ImperativeStmt::TempDebug { .. }
-            | ImperativeStmt::Break { .. }
-            | ImperativeStmt::Continue { .. }
-            | ImperativeStmt::TempSwap { .. } => {}
-            ImperativeStmt::SysOp { sysop } => {
-                match &sysop.sysop {
-                    // // SysOp::RemoveRelation(rels) => {
-                    // //     for rel in rels {
-                    // //         collector.insert(rel.name.clone());
-                    // //     }
-                    // // }
-                    // // SysOp::RenameRelation(renames) => {
-                    // //     for (old, new) in renames {
-                    // //         collector.insert(old.name.clone());
-                    // //         collector.insert(new.name.clone());
-                    // //     }
-                    // // }
-                    // // SysOp::CreateIndex(symb, subs, _) => {
-                    // //     collector.insert(symb.name.clone());
-                    // //     collector.insert(SmartString::from(format!("{}:{}", symb.name, subs.name)));
-                    // // }
-                    // SysOp::CreateVectorIndex(m) => {
-                    //     collector.insert(m.base_relation.clone());
-                    //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
-                    // }
-                    // SysOp::CreateFtsIndex(m) => {
-                    //     collector.insert(m.base_relation.clone());
-                    //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
-                    // }
-                    // SysOp::CreateMinHashLshIndex(m) => {
-                    //     collector.insert(m.base_relation.clone());
-                    //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
-                    // }
-                    // // SysOp::RemoveIndex(rel, idx) => {
-                    // //     collector.insert(SmartString::from(format!("{}:{}", rel.name, idx.name)));
-                    // // }
-                    _ => {}
-                }
-            }
-        }
-    }
+    // pub(crate) fn needs_write_locks(&self, collector: &mut BTreeSet<SmartString<LazyCompact>>) {
+    //     match self {
+    //         ImperativeStmt::Program { prog, .. }
+    //         | ImperativeStmt::IgnoreErrorProgram { prog, .. } => {
+    //             if let Some(name) = prog.prog.needs_write_lock() {
+    //                 collector.insert(name);
+    //             }
+    //         }
+    //         ImperativeStmt::Return { returns, .. } => {
+    //             for ret in returns {
+    //                 if let Left(prog) = ret {
+    //                     if let Some(name) = prog.prog.needs_write_lock() {
+    //                         collector.insert(name);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         ImperativeStmt::If {
+    //             condition,
+    //             then_branch,
+    //             else_branch,
+    //             ..
+    //         } => {
+    //             if let ImperativeCondition::Right(prog) = condition {
+    //                 if let Some(name) = prog.prog.needs_write_lock() {
+    //                     collector.insert(name);
+    //                 }
+    //             }
+    //             for prog in then_branch.iter().chain(else_branch.iter()) {
+    //                 prog.needs_write_locks(collector);
+    //             }
+    //         }
+    //         ImperativeStmt::Loop { body, .. } => {
+    //             for prog in body {
+    //                 prog.needs_write_locks(collector);
+    //             }
+    //         }
+    //         ImperativeStmt::TempDebug { .. }
+    //         | ImperativeStmt::Break { .. }
+    //         | ImperativeStmt::Continue { .. }
+    //         | ImperativeStmt::TempSwap { .. } => {}
+    //         ImperativeStmt::SysOp { sysop } => {
+    //             match &sysop.sysop {
+    //                 // // SysOp::RemoveRelation(rels) => {
+    //                 // //     for rel in rels {
+    //                 // //         collector.insert(rel.name.clone());
+    //                 // //     }
+    //                 // // }
+    //                 // // SysOp::RenameRelation(renames) => {
+    //                 // //     for (old, new) in renames {
+    //                 // //         collector.insert(old.name.clone());
+    //                 // //         collector.insert(new.name.clone());
+    //                 // //     }
+    //                 // // }
+    //                 // // SysOp::CreateIndex(symb, subs, _) => {
+    //                 // //     collector.insert(symb.name.clone());
+    //                 // //     collector.insert(SmartString::from(format!("{}:{}", symb.name, subs.name)));
+    //                 // // }
+    //                 // SysOp::CreateVectorIndex(m) => {
+    //                 //     collector.insert(m.base_relation.clone());
+    //                 //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+    //                 // }
+    //                 // SysOp::CreateFtsIndex(m) => {
+    //                 //     collector.insert(m.base_relation.clone());
+    //                 //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+    //                 // }
+    //                 // SysOp::CreateMinHashLshIndex(m) => {
+    //                 //     collector.insert(m.base_relation.clone());
+    //                 //     collector.insert(SmartString::from(format!("{}:{}", m.base_relation, m.index_name)));
+    //                 // }
+    //                 // // SysOp::RemoveIndex(rel, idx) => {
+    //                 // //     collector.insert(SmartString::from(format!("{}:{}", rel.name, idx.name)));
+    //                 // // }
+    //                 _ => {}
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 impl CozoScript {

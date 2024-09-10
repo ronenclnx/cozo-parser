@@ -17,7 +17,7 @@
 
 // use crate::data::program::RelationOp;
 // use crate::data::relation::{ColType, ColumnDef, NullableColType, StoredRelationMetadata};
-// use crate::data::symb::Symbol;
+// use crate::compile::symb::Symbol;
 // use crate::parse::{ImperativeCondition, ImperativeProgram, ImperativeStmt, SourceSpan};
 // use crate::runtime::callback::CallbackCollector;
 // use crate::runtime::db::{seconds_since_the_epoch, RunningQueryCleanup, RunningQueryHandle};

@@ -17,7 +17,7 @@ use thiserror::Error;
 
 use crate::compile::program::InputProgram;
 use crate::data::relation::VecElementType;
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::value::{DataValue, ValidityTs};
 // use crate::fts::TokenizerConfig;
 use crate::parse::expr::{build_expr, parse_string};

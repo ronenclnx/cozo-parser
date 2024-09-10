@@ -14,7 +14,7 @@ use thiserror::Error;
 
 use crate::data::expr::Expr;
 use crate::compile::program::WrongFixedRuleOptionError;
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
 use crate::fixed_rule::{FixedRule, FixedRulePayload};
 use crate::parse::SourceSpan;

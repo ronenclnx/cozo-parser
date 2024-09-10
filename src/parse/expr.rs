@@ -21,7 +21,7 @@ use crate::data::functions::{
     OP_LIST, OP_LT, OP_MAYBE_GET, OP_MINUS, OP_MOD, OP_MUL, OP_NEGATE, OP_NEQ, OP_OR, OP_POW,
     OP_SUB,
 };
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
 use crate::parse::{ExtractSpan, Pair, Rule, SourceSpan};
 

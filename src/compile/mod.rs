@@ -4,6 +4,7 @@ pub mod stratify;
 pub mod reorder;
 pub mod magic;
 pub mod fixed_rule;
+pub mod symb;
 
 pub use compile::Compiler;
 pub use compile::{ColType, NullableColType};

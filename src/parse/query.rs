@@ -29,7 +29,7 @@ use crate::compile::program::{
     QueryAssertion, QueryOutOptions, RelationOp, ReturnMutation, SearchInput, SortDir, Unification,
 };
 use crate::data::relation::{ColType, ColumnDef, NullableColType, StoredRelationMetadata};
-use crate::data::symb::{Symbol, PROG_ENTRY};
+use crate::compile::symb::{Symbol, PROG_ENTRY};
 use crate::data::value::{DataValue, ValidityTs};
 use crate::fixed_rule::utilities::constant::Constant;
 use crate::fixed_rule::{FixedRuleHandle, FixedRuleNotFoundError};

@@ -16,7 +16,7 @@
 // use crate::data::functions::{op_to_float, op_to_uuid, TERMINAL_VALIDITY};
 // use crate::data::program::{FixedRuleOptionNotFoundError, WrongFixedRuleOptionError};
 // use crate::data::relation::{ColType, NullableColType};
-// use crate::data::symb::Symbol;
+// use crate::compile::symb::Symbol;
 // use crate::data::value::DataValue;
 // #[cfg(feature = "requests")]
 // use crate::fixed_rule::utilities::jlines::get_file_content_from_url;

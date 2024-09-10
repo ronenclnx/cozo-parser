@@ -17,7 +17,7 @@ use super::program::{
     FixedRuleArg, MagicSymbol, NormalFormAtom, NormalFormProgram, NormalFormRulesOrFixed,
     StratifiedNormalFormProgram,
 };
-use crate::data::symb::{Symbol, PROG_ENTRY};
+use crate::compile::symb::{Symbol, PROG_ENTRY};
 use crate::parse::SourceSpan;
 use crate::query::graph::{
     generalized_kahn, reachable_components, strongly_connected_components, Graph, StratifiedGraph,

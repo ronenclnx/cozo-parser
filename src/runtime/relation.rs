@@ -21,7 +21,7 @@ use thiserror::Error;
 
 use crate::data::memcmp::MemCmpEncoder;
 use crate::data::relation::{ColType, ColumnDef, NullableColType, StoredRelationMetadata};
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::tuple::{decode_tuple_from_key, Tuple, TupleT, ENCODED_KEY_MIN_LEN};
 use crate::data::value::{DataValue, ValidityTs};
 // use crate::fts::FtsIndexManifest;
@@ -151,19 +151,19 @@ struct StoredRelArityMismatch {
 }
 
 impl RelationHandle {
-    pub(crate) fn raw_binding_map(&self) -> BTreeMap<Symbol, usize> {
-        let mut ret = BTreeMap::new();
-        for (i, col) in self.metadata.keys.iter().enumerate() {
-            ret.insert(Symbol::new(col.name.clone(), Default::default()), i);
-        }
-        for (i, col) in self.metadata.non_keys.iter().enumerate() {
-            ret.insert(
-                Symbol::new(col.name.clone(), Default::default()),
-                i + self.metadata.keys.len(),
-            );
-        }
-        ret
-    }
+    // pub(crate) fn raw_binding_map(&self) -> BTreeMap<Symbol, usize> {
+    //     let mut ret = BTreeMap::new();
+    //     for (i, col) in self.metadata.keys.iter().enumerate() {
+    //         ret.insert(Symbol::new(col.name.clone(), Default::default()), i);
+    //     }
+    //     for (i, col) in self.metadata.non_keys.iter().enumerate() {
+    //         ret.insert(
+    //             Symbol::new(col.name.clone(), Default::default()),
+    //             i + self.metadata.keys.len(),
+    //         );
+    //     }
+    //     ret
+    // }
     pub(crate) fn has_triggers(&self) -> bool {
         !self.put_triggers.is_empty() || !self.rm_triggers.is_empty()
     }
@@ -551,97 +551,97 @@ impl<'a> SessionTx<'a> {
             self.store_tx.exists(&encoded, false)
         }
     }
-    pub(crate) fn set_relation_triggers(
-        &mut self,
-        name: &Symbol,
-        puts: &[String],
-        rms: &[String],
-        replaces: &[String],
-    ) -> Result<()> {
-        if name.name.starts_with('_') {
-            bail!("Cannot set triggers for temp store")
-        }
-        let mut original = self.get_relation(name, true)?;
-        if original.access_level < AccessLevel::Protected {
-            bail!(InsufficientAccessLevel(
-                original.name.to_string(),
-                "set triggers".to_string(),
-                original.access_level
-            ))
-        }
-        original.put_triggers = puts.to_vec();
-        original.rm_triggers = rms.to_vec();
-        original.replace_triggers = replaces.to_vec();
+    // pub(crate) fn set_relation_triggers(
+    //     &mut self,
+    //     name: &Symbol,
+    //     puts: &[String],
+    //     rms: &[String],
+    //     replaces: &[String],
+    // ) -> Result<()> {
+    //     if name.name.starts_with('_') {
+    //         bail!("Cannot set triggers for temp store")
+    //     }
+    //     let mut original = self.get_relation(name, true)?;
+    //     if original.access_level < AccessLevel::Protected {
+    //         bail!(InsufficientAccessLevel(
+    //             original.name.to_string(),
+    //             "set triggers".to_string(),
+    //             original.access_level
+    //         ))
+    //     }
+    //     original.put_triggers = puts.to_vec();
+    //     original.rm_triggers = rms.to_vec();
+    //     original.replace_triggers = replaces.to_vec();
 
-        let name_key =
-            vec![DataValue::Str(original.name.clone())].encode_as_key(RelationId::SYSTEM);
+    //     let name_key =
+    //         vec![DataValue::Str(original.name.clone())].encode_as_key(RelationId::SYSTEM);
 
-        let mut meta_val = vec![];
-        original
-            .serialize(&mut Serializer::new(&mut meta_val).with_struct_map())
-            .unwrap();
-        self.store_tx.put(&name_key, &meta_val)?;
+    //     let mut meta_val = vec![];
+    //     original
+    //         .serialize(&mut Serializer::new(&mut meta_val).with_struct_map())
+    //         .unwrap();
+    //     self.store_tx.put(&name_key, &meta_val)?;
 
-        Ok(())
-    }
-    pub(crate) fn create_relation(
-        &mut self,
-        input_meta: InputRelationHandle,
-    ) -> Result<RelationHandle> {
-        let key = DataValue::Str(input_meta.name.name.clone());
-        let encoded = vec![key].encode_as_key(RelationId::SYSTEM);
+    //     Ok(())
+    // }
+    // pub(crate) fn create_relation(
+    //     &mut self,
+    //     input_meta: InputRelationHandle,
+    // ) -> Result<RelationHandle> {
+    //     let key = DataValue::Str(input_meta.name.name.clone());
+    //     let encoded = vec![key].encode_as_key(RelationId::SYSTEM);
 
-        let is_temp = input_meta.name.is_temp_store_name();
+    //     let is_temp = input_meta.name.is_temp_store_name();
 
-        if is_temp {
-            if self.store_tx.exists(&encoded, true)? {
-                bail!(RelNameConflictError(input_meta.name.to_string()))
-            };
-        } else if self.temp_store_tx.exists(&encoded, true)? {
-            bail!(RelNameConflictError(input_meta.name.to_string()))
-        }
+    //     if is_temp {
+    //         if self.store_tx.exists(&encoded, true)? {
+    //             bail!(RelNameConflictError(input_meta.name.to_string()))
+    //         };
+    //     } else if self.temp_store_tx.exists(&encoded, true)? {
+    //         bail!(RelNameConflictError(input_meta.name.to_string()))
+    //     }
 
-        let metadata = input_meta.metadata.clone();
-        let last_id = if is_temp {
-            self.temp_store_id.fetch_add(1, Ordering::Relaxed) as u64
-        } else {
-            self.relation_store_id.fetch_add(1, Ordering::SeqCst)
-        };
-        let meta = RelationHandle {
-            name: input_meta.name.name,
-            id: RelationId::new(last_id + 1),
-            metadata,
-            put_triggers: vec![],
-            rm_triggers: vec![],
-            replace_triggers: vec![],
-            access_level: AccessLevel::Normal,
-            is_temp,
-            indices: Default::default(),
-            // hnsw_indices: Default::default(),
-            // fts_indices: Default::default(),
-            // lsh_indices: Default::default(),
-            description: Default::default(),
-        };
+    //     let metadata = input_meta.metadata.clone();
+    //     let last_id = if is_temp {
+    //         self.temp_store_id.fetch_add(1, Ordering::Relaxed) as u64
+    //     } else {
+    //         self.relation_store_id.fetch_add(1, Ordering::SeqCst)
+    //     };
+    //     let meta = RelationHandle {
+    //         name: input_meta.name.name,
+    //         id: RelationId::new(last_id + 1),
+    //         metadata,
+    //         put_triggers: vec![],
+    //         rm_triggers: vec![],
+    //         replace_triggers: vec![],
+    //         access_level: AccessLevel::Normal,
+    //         is_temp,
+    //         indices: Default::default(),
+    //         // hnsw_indices: Default::default(),
+    //         // fts_indices: Default::default(),
+    //         // lsh_indices: Default::default(),
+    //         description: Default::default(),
+    //     };
 
-        let name_key = vec![DataValue::Str(meta.name.clone())].encode_as_key(RelationId::SYSTEM);
-        let mut meta_val = vec![];
-        meta.serialize(&mut Serializer::new(&mut meta_val).with_struct_map())
-            .unwrap();
-        let tuple = vec![DataValue::Null];
-        let t_encoded = tuple.encode_as_key(RelationId::SYSTEM);
+    //     let name_key = vec![DataValue::Str(meta.name.clone())].encode_as_key(RelationId::SYSTEM);
+    //     let mut meta_val = vec![];
+    //     meta.serialize(&mut Serializer::new(&mut meta_val).with_struct_map())
+    //         .unwrap();
+    //     let tuple = vec![DataValue::Null];
+    //     let t_encoded = tuple.encode_as_key(RelationId::SYSTEM);
 
-        if is_temp {
-            self.temp_store_tx.put(&encoded, &meta.id.raw_encode())?;
-            self.temp_store_tx.put(&name_key, &meta_val)?;
-            self.temp_store_tx.put(&t_encoded, &meta.id.raw_encode())?;
-        } else {
-            self.store_tx.put(&encoded, &meta.id.raw_encode())?;
-            self.store_tx.put(&name_key, &meta_val)?;
-            self.store_tx.put(&t_encoded, &meta.id.raw_encode())?;
-        }
+    //     if is_temp {
+    //         self.temp_store_tx.put(&encoded, &meta.id.raw_encode())?;
+    //         self.temp_store_tx.put(&name_key, &meta_val)?;
+    //         self.temp_store_tx.put(&t_encoded, &meta.id.raw_encode())?;
+    //     } else {
+    //         self.store_tx.put(&encoded, &meta.id.raw_encode())?;
+    //         self.store_tx.put(&name_key, &meta_val)?;
+    //         self.store_tx.put(&t_encoded, &meta.id.raw_encode())?;
+    //     }
 
-        Ok(meta)
-    }
+    //     Ok(meta)
+    // }
     pub(crate) fn get_relation(&self, name: &str, lock: bool) -> Result<RelationHandle> {
         #[derive(Error, Diagnostic, Debug)]
         #[error("Cannot find requested stored relation '{0}'")]
@@ -723,19 +723,19 @@ impl<'a> SessionTx<'a> {
         to_clean.push((lower_bound, upper_bound));
         Ok(to_clean)
     }
-    pub(crate) fn set_access_level(&mut self, rel: &Symbol, level: AccessLevel) -> Result<()> {
-        let mut meta = self.get_relation(rel, true)?;
-        meta.access_level = level;
+    // pub(crate) fn set_access_level(&mut self, rel: &Symbol, level: AccessLevel) -> Result<()> {
+    //     let mut meta = self.get_relation(rel, true)?;
+    //     meta.access_level = level;
 
-        let name_key = vec![DataValue::Str(meta.name.clone())].encode_as_key(RelationId::SYSTEM);
+    //     let name_key = vec![DataValue::Str(meta.name.clone())].encode_as_key(RelationId::SYSTEM);
 
-        let mut meta_val = vec![];
-        meta.serialize(&mut Serializer::new(&mut meta_val).with_struct_map())
-            .unwrap();
-        self.store_tx.put(&name_key, &meta_val)?;
+    //     let mut meta_val = vec![];
+    //     meta.serialize(&mut Serializer::new(&mut meta_val).with_struct_map())
+    //         .unwrap();
+    //     self.store_tx.put(&name_key, &meta_val)?;
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     // pub(crate) fn create_minhash_lsh_index(&mut self, config: &MinHashLshConfig) -> Result<()> {
     //     // Get relation handle
@@ -1201,34 +1201,34 @@ impl<'a> SessionTx<'a> {
     //     Ok(())
     // }
 
-    fn write_idx_relation(
-        &mut self,
-        base_name: &str,
-        idx_name: &str,
-        idx_keys: Vec<ColumnDef>,
-        non_idx_keys: Vec<ColumnDef>,
-    ) -> Result<RelationHandle> {
-        let key_bindings = idx_keys
-            .iter()
-            .map(|col| Symbol::new(col.name.clone(), Default::default()))
-            .collect();
-        let dep_bindings = non_idx_keys
-            .iter()
-            .map(|col| Symbol::new(col.name.clone(), Default::default()))
-            .collect();
-        let idx_handle = InputRelationHandle {
-            name: Symbol::new(format!("{}:{}", base_name, idx_name), Default::default()),
-            metadata: StoredRelationMetadata {
-                keys: idx_keys,
-                non_keys: non_idx_keys,
-            },
-            key_bindings,
-            dep_bindings,
-            span: Default::default(),
-        };
-        let idx_handle = self.create_relation(idx_handle)?;
-        Ok(idx_handle)
-    }
+    // // fn write_idx_relation(
+    // //     &mut self,
+    // //     base_name: &str,
+    // //     idx_name: &str,
+    // //     idx_keys: Vec<ColumnDef>,
+    // //     non_idx_keys: Vec<ColumnDef>,
+    // // ) -> Result<RelationHandle> {
+    // //     let key_bindings = idx_keys
+    // //         .iter()
+    // //         .map(|col| Symbol::new(col.name.clone(), Default::default()))
+    // //         .collect();
+    // //     let dep_bindings = non_idx_keys
+    // //         .iter()
+    // //         .map(|col| Symbol::new(col.name.clone(), Default::default()))
+    // //         .collect();
+    // //     let idx_handle = InputRelationHandle {
+    // //         name: Symbol::new(format!("{}:{}", base_name, idx_name), Default::default()),
+    // //         metadata: StoredRelationMetadata {
+    // //             keys: idx_keys,
+    // //             non_keys: non_idx_keys,
+    // //         },
+    // //         key_bindings,
+    // //         dep_bindings,
+    // //         span: Default::default(),
+    // //     };
+    // //     let idx_handle = self.create_relation(idx_handle)?;
+    // //     Ok(idx_handle)
+    // // }
 
     // pub(crate) fn create_index(
     //     &mut self,
@@ -1368,100 +1368,100 @@ impl<'a> SessionTx<'a> {
     //     Ok(())
     // }
 
-    pub(crate) fn remove_index(
-        &mut self,
-        rel_name: &Symbol,
-        idx_name: &Symbol,
-    ) -> Result<Vec<(Vec<u8>, Vec<u8>)>> {
-        let mut rel = self.get_relation(rel_name, true)?;
-        // let is_lsh = rel.lsh_indices.contains_key(&idx_name.name);
-        // let is_fts = rel.fts_indices.contains_key(&idx_name.name);
-        // if is_lsh || is_fts {
-        //     self.tokenizers.named_cache.write().unwrap().clear();
-        //     self.tokenizers.hashed_cache.write().unwrap().clear();
-        // }
-        if rel.indices.remove(&idx_name.name).is_none()
-            // && rel.hnsw_indices.remove(&idx_name.name).is_none()
-            // && rel.lsh_indices.remove(&idx_name.name).is_none()
-            // && rel.fts_indices.remove(&idx_name.name).is_none()
-        {
-            #[derive(Debug, Error, Diagnostic)]
-            #[error("index {0} for relation {1} not found")]
-            #[diagnostic(code(tx::idx_not_found))]
-            pub(crate) struct IndexNotFound(String, String);
+    // pub(crate) fn remove_index(
+    //     &mut self,
+    //     rel_name: &Symbol,
+    //     idx_name: &Symbol,
+    // ) -> Result<Vec<(Vec<u8>, Vec<u8>)>> {
+    //     let mut rel = self.get_relation(rel_name, true)?;
+    //     // let is_lsh = rel.lsh_indices.contains_key(&idx_name.name);
+    //     // let is_fts = rel.fts_indices.contains_key(&idx_name.name);
+    //     // if is_lsh || is_fts {
+    //     //     self.tokenizers.named_cache.write().unwrap().clear();
+    //     //     self.tokenizers.hashed_cache.write().unwrap().clear();
+    //     // }
+    //     if rel.indices.remove(&idx_name.name).is_none()
+    //         // && rel.hnsw_indices.remove(&idx_name.name).is_none()
+    //         // && rel.lsh_indices.remove(&idx_name.name).is_none()
+    //         // && rel.fts_indices.remove(&idx_name.name).is_none()
+    //     {
+    //         #[derive(Debug, Error, Diagnostic)]
+    //         #[error("index {0} for relation {1} not found")]
+    //         #[diagnostic(code(tx::idx_not_found))]
+    //         pub(crate) struct IndexNotFound(String, String);
 
-            bail!(IndexNotFound(idx_name.to_string(), rel_name.to_string()));
-        }
+    //         bail!(IndexNotFound(idx_name.to_string(), rel_name.to_string()));
+    //     }
 
-        let mut to_clean =
-            self.destroy_relation(&format!("{}:{}", rel_name.name, idx_name.name))?;
-        // if is_lsh {
-        //     to_clean.extend(
-        //         self.destroy_relation(&format!("{}:{}:inv", rel_name.name, idx_name.name))?,
-        //     );
-        // }
+    //     let mut to_clean =
+    //         self.destroy_relation(&format!("{}:{}", rel_name.name, idx_name.name))?;
+    //     // if is_lsh {
+    //     //     to_clean.extend(
+    //     //         self.destroy_relation(&format!("{}:{}:inv", rel_name.name, idx_name.name))?,
+    //     //     );
+    //     // }
 
-        let new_encoded =
-            vec![DataValue::from(&rel_name.name as &str)].encode_as_key(RelationId::SYSTEM);
-        let mut meta_val = vec![];
-        rel.serialize(&mut Serializer::new(&mut meta_val)).unwrap();
-        self.store_tx.put(&new_encoded, &meta_val)?;
+    //     let new_encoded =
+    //         vec![DataValue::from(&rel_name.name as &str)].encode_as_key(RelationId::SYSTEM);
+    //     let mut meta_val = vec![];
+    //     rel.serialize(&mut Serializer::new(&mut meta_val)).unwrap();
+    //     self.store_tx.put(&new_encoded, &meta_val)?;
 
-        Ok(to_clean)
-    }
+    //     Ok(to_clean)
+    // }
 
-    pub(crate) fn rename_relation(&mut self, old: &Symbol, new: &Symbol) -> Result<()> {
-        if old.name.starts_with('_') || new.name.starts_with('_') {
-            bail!("Bad name given");
-        }
-        let new_key = DataValue::Str(new.name.clone());
-        let new_encoded = vec![new_key].encode_as_key(RelationId::SYSTEM);
+    // // pub(crate) fn rename_relation(&mut self, old: &Symbol, new: &Symbol) -> Result<()> {
+    // //     if old.name.starts_with('_') || new.name.starts_with('_') {
+    // //         bail!("Bad name given");
+    // //     }
+    // //     let new_key = DataValue::Str(new.name.clone());
+    // //     let new_encoded = vec![new_key].encode_as_key(RelationId::SYSTEM);
 
-        if self.store_tx.exists(&new_encoded, true)? {
-            bail!(RelNameConflictError(new.name.to_string()))
-        };
+    // //     if self.store_tx.exists(&new_encoded, true)? {
+    // //         bail!(RelNameConflictError(new.name.to_string()))
+    // //     };
 
-        let old_key = DataValue::Str(old.name.clone());
-        let old_encoded = vec![old_key].encode_as_key(RelationId::SYSTEM);
+    // //     let old_key = DataValue::Str(old.name.clone());
+    // //     let old_encoded = vec![old_key].encode_as_key(RelationId::SYSTEM);
 
-        let mut rel = self.get_relation(old, true)?;
-        if rel.access_level < AccessLevel::Normal {
-            bail!(InsufficientAccessLevel(
-                rel.name.to_string(),
-                "renaming relation".to_string(),
-                rel.access_level
-            ));
-        }
-        rel.name = new.name.clone();
+    // //     let mut rel = self.get_relation(old, true)?;
+    // //     if rel.access_level < AccessLevel::Normal {
+    // //         bail!(InsufficientAccessLevel(
+    // //             rel.name.to_string(),
+    // //             "renaming relation".to_string(),
+    // //             rel.access_level
+    // //         ));
+    // //     }
+    // //     rel.name = new.name.clone();
 
-        let mut meta_val = vec![];
-        rel.serialize(&mut Serializer::new(&mut meta_val)).unwrap();
-        self.store_tx.del(&old_encoded)?;
-        self.store_tx.put(&new_encoded, &meta_val)?;
+    // //     let mut meta_val = vec![];
+    // //     rel.serialize(&mut Serializer::new(&mut meta_val)).unwrap();
+    // //     self.store_tx.del(&old_encoded)?;
+    // //     self.store_tx.put(&new_encoded, &meta_val)?;
 
-        Ok(())
-    }
-    pub(crate) fn rename_temp_relation(&mut self, old: Symbol, new: Symbol) -> Result<()> {
-        let new_key = DataValue::Str(new.name.clone());
-        let new_encoded = vec![new_key].encode_as_key(RelationId::SYSTEM);
+    // //     Ok(())
+    // // }
+    // pub(crate) fn rename_temp_relation(&mut self, old: Symbol, new: Symbol) -> Result<()> {
+    //     let new_key = DataValue::Str(new.name.clone());
+    //     let new_encoded = vec![new_key].encode_as_key(RelationId::SYSTEM);
 
-        if self.temp_store_tx.exists(&new_encoded, true)? {
-            bail!(RelNameConflictError(new.name.to_string()))
-        };
+    //     if self.temp_store_tx.exists(&new_encoded, true)? {
+    //         bail!(RelNameConflictError(new.name.to_string()))
+    //     };
 
-        let old_key = DataValue::Str(old.name.clone());
-        let old_encoded = vec![old_key].encode_as_key(RelationId::SYSTEM);
+    //     let old_key = DataValue::Str(old.name.clone());
+    //     let old_encoded = vec![old_key].encode_as_key(RelationId::SYSTEM);
 
-        let mut rel = self.get_relation(&old, true)?;
-        rel.name = new.name;
+    //     let mut rel = self.get_relation(&old, true)?;
+    //     rel.name = new.name;
 
-        let mut meta_val = vec![];
-        rel.serialize(&mut Serializer::new(&mut meta_val)).unwrap();
-        self.temp_store_tx.del(&old_encoded)?;
-        self.temp_store_tx.put(&new_encoded, &meta_val)?;
+    //     let mut meta_val = vec![];
+    //     rel.serialize(&mut Serializer::new(&mut meta_val)).unwrap();
+    //     self.temp_store_tx.del(&old_encoded)?;
+    //     self.temp_store_tx.put(&new_encoded, &meta_val)?;
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 }
 
 #[derive(Debug, Error, Diagnostic)]

@@ -21,7 +21,7 @@ use crate::data::functions::current_validity;
 use super::program::{
     FixedRuleArg, InputProgram, MagicAtom, MagicFixedRuleApply, MagicInlineRule, MagicRulesOrFixed, MagicSymbol, RelationOp, StratifiedMagicProgram
 };
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
 use crate::fixed_rule::{FixedRule, FixedRuleHandle};
 use crate::parse::{parse_script, CozoScript, SourceSpan};

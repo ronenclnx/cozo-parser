@@ -21,7 +21,7 @@ use super::program::{
     StratifiedMagicProgram, StratifiedNormalFormProgram,
 };
 use crate::compile::{ColType, NullableColType};
-use crate::data::symb::{Symbol, PROG_ENTRY};
+use crate::compile::symb::{Symbol, PROG_ENTRY};
 use crate::parse::SourceSpan;
 use crate::query::logical::NamedFieldNotFound;
 use crate::query::ra::InvalidTimeTravelScanning;

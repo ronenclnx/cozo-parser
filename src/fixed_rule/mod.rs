@@ -28,7 +28,7 @@ use crate::compile::program::{
     FixedRuleOptionNotFoundError, MagicFixedRuleApply, MagicFixedRuleRuleArg, MagicSymbol,
     WrongFixedRuleOptionError,
 };
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::tuple::TupleIter;
 use crate::data::value::DataValue;
 #[cfg(feature = "graph-algo")]

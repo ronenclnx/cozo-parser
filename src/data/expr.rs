@@ -20,7 +20,7 @@ use thiserror::Error;
 
 use crate::data::functions::*;
 use crate::data::relation::NullableColType;
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::value::{DataValue, LARGEST_UTF_CHAR};
 use crate::parse::expr::expr2bytecode;
 use crate::parse::SourceSpan;

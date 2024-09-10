@@ -50,7 +50,7 @@ use crate::compile::{Compiler};
 use serde_json::json;
 
 use crate::data::json::JsonValue;
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 
 mod data;
 mod fixed_rule;

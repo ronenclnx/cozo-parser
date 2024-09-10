@@ -21,7 +21,7 @@ use crate::data::expr::{compute_bounds, eval_bytecode, eval_bytecode_pred, Bytec
 // use crate::data::program::{FtsSearch, MagicSymbol};
 use crate::compile::program::{MagicSymbol};
 use crate::data::relation::{ColType, NullableColType};
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::tuple::{Tuple, TupleIter};
 use crate::data::value::{DataValue, ValidityTs};
 use crate::parse::SourceSpan;

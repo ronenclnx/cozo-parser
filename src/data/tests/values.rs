@@ -10,7 +10,7 @@
 use std::collections::{BTreeMap, HashMap};
 use std::mem::size_of;
 
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
 
 #[test]

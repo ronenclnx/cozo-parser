@@ -14,7 +14,7 @@ use smartstring::SmartString;
 use thiserror::Error;
 
 use crate::data::relation::{VecElementType, ColType, ColumnDef, NullableColType, StoredRelationMetadata};
-use crate::data::symb::Symbol;
+use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
 use crate::parse::expr::{build_expr};
 use crate::parse::{ExtractSpan, Pair, Rule, SourceSpan};

@@ -12,7 +12,7 @@
 // use smartstring::{LazyCompact, SmartString};
 
 // use crate::data::expr::Expr;
-// use crate::data::symb::Symbol;
+// use crate::compile::symb::Symbol;
 // use crate::data::value::DataValue;
 // use crate::fixed_rule::{CannotDetermineArity, FixedRule, FixedRulePayload};
 // use crate::parse::SourceSpan;
