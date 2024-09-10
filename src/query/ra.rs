@@ -122,60 +122,60 @@ impl UnificationRA {
         Ok(())
     }
 
-    fn iter<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        delta_rule: Option<&MagicSymbol>,
-        stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<TupleIter<'a>> {
-        let mut bindings = self.parent.bindings_after_eliminate();
-        bindings.push(self.binding.clone());
-        let eliminate_indices = get_eliminate_indices(&bindings, &self.to_eliminate);
-        let mut stack = vec![];
-        Ok(if self.is_multi {
-            let it = self
-                .parent
-                .iter(tx, delta_rule, stores)?
-                .map_ok(move |tuple| -> Result<Vec<Tuple>> {
-                    let result_list = eval_bytecode(&self.expr_bytecode, &tuple, &mut stack)?;
-                    let result_list = result_list.get_slice().ok_or_else(|| {
-                        #[derive(Debug, Error, Diagnostic)]
-                        #[error("Invalid spread unification")]
-                        #[diagnostic(code(eval::invalid_spread_unif))]
-                        #[diagnostic(help("Spread unification requires a list at the right"))]
-                        struct BadSpreadUnification(#[label] SourceSpan);
+    // // fn iter<'a>(
+    // //     &'a self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     delta_rule: Option<&MagicSymbol>,
+    // //     stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+    // // ) -> Result<TupleIter<'a>> {
+    // //     let mut bindings = self.parent.bindings_after_eliminate();
+    // //     bindings.push(self.binding.clone());
+    // //     let eliminate_indices = get_eliminate_indices(&bindings, &self.to_eliminate);
+    // //     let mut stack = vec![];
+    // //     Ok(if self.is_multi {
+    // //         let it = self
+    // //             .parent
+    // //             .iter(tx, delta_rule, stores)?
+    // //             .map_ok(move |tuple| -> Result<Vec<Tuple>> {
+    // //                 let result_list = eval_bytecode(&self.expr_bytecode, &tuple, &mut stack)?;
+    // //                 let result_list = result_list.get_slice().ok_or_else(|| {
+    // //                     #[derive(Debug, Error, Diagnostic)]
+    // //                     #[error("Invalid spread unification")]
+    // //                     #[diagnostic(code(eval::invalid_spread_unif))]
+    // //                     #[diagnostic(help("Spread unification requires a list at the right"))]
+    // //                     struct BadSpreadUnification(#[label] SourceSpan);
 
-                        BadSpreadUnification(self.span)
-                    })?;
-                    let mut coll = vec![];
-                    for result in result_list {
-                        let mut ret = tuple.clone();
-                        ret.push(result.clone());
-                        let ret = ret;
-                        let ret = eliminate_from_tuple(ret, &eliminate_indices);
-                        coll.push(ret);
-                    }
-                    Ok(coll)
-                })
-                .map(flatten_err)
-                .flatten_ok();
-            Box::new(it)
-        } else {
-            Box::new(
-                self.parent
-                    .iter(tx, delta_rule, stores)?
-                    .map_ok(move |tuple| -> Result<Tuple> {
-                        let result = eval_bytecode(&self.expr_bytecode, &tuple, &mut stack)?;
-                        let mut ret = tuple;
-                        ret.push(result);
-                        let ret = ret;
-                        let ret = eliminate_from_tuple(ret, &eliminate_indices);
-                        Ok(ret)
-                    })
-                    .map(flatten_err),
-            )
-        })
-    }
+    // //                     BadSpreadUnification(self.span)
+    // //                 })?;
+    // //                 let mut coll = vec![];
+    // //                 for result in result_list {
+    // //                     let mut ret = tuple.clone();
+    // //                     ret.push(result.clone());
+    // //                     let ret = ret;
+    // //                     let ret = eliminate_from_tuple(ret, &eliminate_indices);
+    // //                     coll.push(ret);
+    // //                 }
+    // //                 Ok(coll)
+    // //             })
+    // //             .map(flatten_err)
+    // //             .flatten_ok();
+    // //         Box::new(it)
+    // //     } else {
+    // //         Box::new(
+    // //             self.parent
+    // //                 .iter(tx, delta_rule, stores)?
+    // //                 .map_ok(move |tuple| -> Result<Tuple> {
+    // //                     let result = eval_bytecode(&self.expr_bytecode, &tuple, &mut stack)?;
+    // //                     let mut ret = tuple;
+    // //                     ret.push(result);
+    // //                     let ret = ret;
+    // //                     let ret = eliminate_from_tuple(ret, &eliminate_indices);
+    // //                     Ok(ret)
+    // //                 })
+    // //                 .map(flatten_err),
+    // //         )
+    // //     })
+    // // }
 }
 
 pub(crate) struct FilteredRA {
@@ -215,34 +215,34 @@ impl FilteredRA {
         }
         Ok(())
     }
-    fn iter<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        delta_rule: Option<&MagicSymbol>,
-        stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<TupleIter<'a>> {
-        let bindings = self.parent.bindings_after_eliminate();
-        let eliminate_indices = get_eliminate_indices(&bindings, &self.to_eliminate);
-        let mut stack = vec![];
-        Ok(Box::new(
-            self.parent
-                .iter(tx, delta_rule, stores)?
-                .filter_map(move |tuple| match tuple {
-                    Ok(t) => {
-                        for (p, span) in self.filters_bytecodes.iter() {
-                            match eval_bytecode_pred(p, &t, &mut stack, *span) {
-                                Ok(false) => return None,
-                                Err(e) => return Some(Err(e)),
-                                Ok(true) => {}
-                            }
-                        }
-                        let t = eliminate_from_tuple(t, &eliminate_indices);
-                        Some(Ok(t))
-                    }
-                    Err(e) => Some(Err(e)),
-                }),
-        ))
-    }
+    // // fn iter<'a>(
+    // //     &'a self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     delta_rule: Option<&MagicSymbol>,
+    // //     stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+    // // ) -> Result<TupleIter<'a>> {
+    // //     let bindings = self.parent.bindings_after_eliminate();
+    // //     let eliminate_indices = get_eliminate_indices(&bindings, &self.to_eliminate);
+    // //     let mut stack = vec![];
+    // //     Ok(Box::new(
+    // //         self.parent
+    // //             .iter(tx, delta_rule, stores)?
+    // //             .filter_map(move |tuple| match tuple {
+    // //                 Ok(t) => {
+    // //                     for (p, span) in self.filters_bytecodes.iter() {
+    // //                         match eval_bytecode_pred(p, &t, &mut stack, *span) {
+    // //                             Ok(false) => return None,
+    // //                             Err(e) => return Some(Err(e)),
+    // //                             Ok(true) => {}
+    // //                         }
+    // //                     }
+    // //                     let t = eliminate_from_tuple(t, &eliminate_indices);
+    // //                     Some(Ok(t))
+    // //                 }
+    // //                 Err(e) => Some(Err(e)),
+    // //             }),
+    // //     ))
+    // // }
 }
 
 struct BindingFormatter(Vec<Symbol>);
@@ -700,40 +700,40 @@ impl ReorderRA {
     fn bindings(&self) -> Vec<Symbol> {
         self.new_order.clone()
     }
-    fn iter<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        delta_rule: Option<&MagicSymbol>,
-        stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<TupleIter<'a>> {
-        let old_order = self.relation.bindings_after_eliminate();
-        let old_order_indices: BTreeMap<_, _> = old_order
-            .into_iter()
-            .enumerate()
-            .map(|(k, v)| (v, k))
-            .collect();
-        let reorder_indices = self
-            .new_order
-            .iter()
-            .map(|k| {
-                *old_order_indices
-                    .get(k)
-                    .expect("program logic error: reorder indices mismatch")
-            })
-            .collect_vec();
-        Ok(Box::new(
-            self.relation
-                .iter(tx, delta_rule, stores)?
-                .map_ok(move |tuple| {
-                    let old = tuple;
-                    let new = reorder_indices
-                        .iter()
-                        .map(|i| old[*i].clone())
-                        .collect_vec();
-                    new
-                }),
-        ))
-    }
+    // // fn iter<'a>(
+    // //     &'a self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     delta_rule: Option<&MagicSymbol>,
+    // //     stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+    // // ) -> Result<TupleIter<'a>> {
+    // //     let old_order = self.relation.bindings_after_eliminate();
+    // //     let old_order_indices: BTreeMap<_, _> = old_order
+    // //         .into_iter()
+    // //         .enumerate()
+    // //         .map(|(k, v)| (v, k))
+    // //         .collect();
+    // //     let reorder_indices = self
+    // //         .new_order
+    // //         .iter()
+    // //         .map(|k| {
+    // //             *old_order_indices
+    // //                 .get(k)
+    // //                 .expect("program logic error: reorder indices mismatch")
+    // //         })
+    // //         .collect_vec();
+    // //     Ok(Box::new(
+    // //         self.relation
+    // //             .iter(tx, delta_rule, stores)?
+    // //             .map_ok(move |tuple| {
+    // //                 let old = tuple;
+    // //                 let new = reorder_indices
+    // //                     .iter()
+    // //                     .map(|i| old[*i].clone())
+    // //                     .collect_vec();
+    // //                 new
+    // //             }),
+    // //     ))
+    // // }
 }
 
 #[derive(Debug)]
@@ -1306,207 +1306,207 @@ impl StoredRA {
         })
     }
 
-    fn prefix_join<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        left_iter: TupleIter<'a>,
-        (left_join_indices, right_join_indices): (Vec<usize>, Vec<usize>),
-        eliminate_indices: BTreeSet<usize>,
-    ) -> Result<TupleIter<'a>> {
-        let mut right_invert_indices = right_join_indices.iter().enumerate().collect_vec();
-        right_invert_indices.sort_by_key(|(_, b)| **b);
-        let left_to_prefix_indices = right_invert_indices
-            .into_iter()
-            .map(|(a, _)| left_join_indices[a])
-            .collect_vec();
+    // // fn prefix_join<'a>(
+    // //     &'a self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     left_iter: TupleIter<'a>,
+    // //     (left_join_indices, right_join_indices): (Vec<usize>, Vec<usize>),
+    // //     eliminate_indices: BTreeSet<usize>,
+    // // ) -> Result<TupleIter<'a>> {
+    // //     let mut right_invert_indices = right_join_indices.iter().enumerate().collect_vec();
+    // //     right_invert_indices.sort_by_key(|(_, b)| **b);
+    // //     let left_to_prefix_indices = right_invert_indices
+    // //         .into_iter()
+    // //         .map(|(a, _)| left_join_indices[a])
+    // //         .collect_vec();
 
-        let key_len = self.storage.metadata.keys.len();
-        if left_to_prefix_indices.len() >= key_len {
-            return self.point_lookup_join(
-                tx,
-                left_iter,
-                key_len,
-                left_to_prefix_indices,
-                eliminate_indices,
-                left_join_indices,
-                right_join_indices,
-            );
-        }
+    // //     let key_len = self.storage.metadata.keys.len();
+    // //     if left_to_prefix_indices.len() >= key_len {
+    // //         return self.point_lookup_join(
+    // //             tx,
+    // //             left_iter,
+    // //             key_len,
+    // //             left_to_prefix_indices,
+    // //             eliminate_indices,
+    // //             left_join_indices,
+    // //             right_join_indices,
+    // //         );
+    // //     }
 
-        let mut skip_range_check = false;
-        // In some cases, maybe we can stop as soon as we get one result?
-        let it = left_iter
-            .map_ok(move |tuple| {
-                let prefix = left_to_prefix_indices
-                    .iter()
-                    .map(|i| tuple[*i].clone())
-                    .collect_vec();
-                let mut stack = vec![];
+    // //     let mut skip_range_check = false;
+    // //     // In some cases, maybe we can stop as soon as we get one result?
+    // //     let it = left_iter
+    // //         .map_ok(move |tuple| {
+    // //             let prefix = left_to_prefix_indices
+    // //                 .iter()
+    // //                 .map(|i| tuple[*i].clone())
+    // //                 .collect_vec();
+    // //             let mut stack = vec![];
 
-                if !skip_range_check && !self.filters.is_empty() {
-                    let other_bindings = &self.bindings[right_join_indices.len()..];
-                    let (l_bound, u_bound) = match compute_bounds(&self.filters, other_bindings) {
-                        Ok(b) => b,
-                        _ => (vec![], vec![]),
-                    };
-                    if !l_bound.iter().all(|v| *v == DataValue::Null)
-                        || !u_bound.iter().all(|v| *v == DataValue::Bot)
-                    {
-                        return Left(
-                            self.storage
-                                .scan_bounded_prefix(tx, &prefix, &l_bound, &u_bound)
-                                .map(move |res_found| -> Result<Option<Tuple>> {
-                                    let found = res_found?;
-                                    for (p, span) in self.filters_bytecodes.iter() {
-                                        if !eval_bytecode_pred(p, &found, &mut stack, *span)? {
-                                            return Ok(None);
-                                        }
-                                    }
-                                    let mut ret = tuple.clone();
-                                    ret.extend(found);
-                                    Ok(Some(ret))
-                                })
-                                .filter_map(swap_option_result),
-                        );
-                    }
-                }
-                skip_range_check = true;
-                Right(
-                    self.storage
-                        .scan_prefix(tx, &prefix)
-                        .map(move |res_found| -> Result<Option<Tuple>> {
-                            let found = res_found?;
-                            for (p, span) in self.filters_bytecodes.iter() {
-                                if !eval_bytecode_pred(p, &found, &mut stack, *span)? {
-                                    return Ok(None);
-                                }
-                            }
-                            let mut ret = tuple.clone();
-                            ret.extend(found);
-                            Ok(Some(ret))
-                        })
-                        .filter_map(swap_option_result),
-                )
-            })
-            .flatten_ok()
-            .map(flatten_err);
-        Ok(if eliminate_indices.is_empty() {
-            Box::new(it)
-        } else {
-            Box::new(it.map_ok(move |t| eliminate_from_tuple(t, &eliminate_indices)))
-        })
-    }
+    // //             if !skip_range_check && !self.filters.is_empty() {
+    // //                 let other_bindings = &self.bindings[right_join_indices.len()..];
+    // //                 let (l_bound, u_bound) = match compute_bounds(&self.filters, other_bindings) {
+    // //                     Ok(b) => b,
+    // //                     _ => (vec![], vec![]),
+    // //                 };
+    // //                 if !l_bound.iter().all(|v| *v == DataValue::Null)
+    // //                     || !u_bound.iter().all(|v| *v == DataValue::Bot)
+    // //                 {
+    // //                     return Left(
+    // //                         self.storage
+    // //                             .scan_bounded_prefix(tx, &prefix, &l_bound, &u_bound)
+    // //                             .map(move |res_found| -> Result<Option<Tuple>> {
+    // //                                 let found = res_found?;
+    // //                                 for (p, span) in self.filters_bytecodes.iter() {
+    // //                                     if !eval_bytecode_pred(p, &found, &mut stack, *span)? {
+    // //                                         return Ok(None);
+    // //                                     }
+    // //                                 }
+    // //                                 let mut ret = tuple.clone();
+    // //                                 ret.extend(found);
+    // //                                 Ok(Some(ret))
+    // //                             })
+    // //                             .filter_map(swap_option_result),
+    // //                     );
+    // //                 }
+    // //             }
+    // //             skip_range_check = true;
+    // //             Right(
+    // //                 self.storage
+    // //                     .scan_prefix(tx, &prefix)
+    // //                     .map(move |res_found| -> Result<Option<Tuple>> {
+    // //                         let found = res_found?;
+    // //                         for (p, span) in self.filters_bytecodes.iter() {
+    // //                             if !eval_bytecode_pred(p, &found, &mut stack, *span)? {
+    // //                                 return Ok(None);
+    // //                             }
+    // //                         }
+    // //                         let mut ret = tuple.clone();
+    // //                         ret.extend(found);
+    // //                         Ok(Some(ret))
+    // //                     })
+    // //                     .filter_map(swap_option_result),
+    // //             )
+    // //         })
+    // //         .flatten_ok()
+    // //         .map(flatten_err);
+    // //     Ok(if eliminate_indices.is_empty() {
+    // //         Box::new(it)
+    // //     } else {
+    // //         Box::new(it.map_ok(move |t| eliminate_from_tuple(t, &eliminate_indices)))
+    // //     })
+    // // }
 
-    fn neg_join<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        left_iter: TupleIter<'a>,
-        (left_join_indices, right_join_indices): (Vec<usize>, Vec<usize>),
-        eliminate_indices: BTreeSet<usize>,
-    ) -> Result<TupleIter<'a>> {
-        debug_assert!(!right_join_indices.is_empty());
-        let mut right_invert_indices = right_join_indices.iter().enumerate().collect_vec();
-        right_invert_indices.sort_by_key(|(_, b)| **b);
-        let mut left_to_prefix_indices = vec![];
-        for (ord, (idx, ord_sorted)) in right_invert_indices.iter().enumerate() {
-            if ord != **ord_sorted {
-                break;
-            }
-            left_to_prefix_indices.push(left_join_indices[*idx]);
-        }
+    // // fn neg_join<'a>(
+    // //     &'a self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     left_iter: TupleIter<'a>,
+    // //     (left_join_indices, right_join_indices): (Vec<usize>, Vec<usize>),
+    // //     eliminate_indices: BTreeSet<usize>,
+    // // ) -> Result<TupleIter<'a>> {
+    // //     debug_assert!(!right_join_indices.is_empty());
+    // //     let mut right_invert_indices = right_join_indices.iter().enumerate().collect_vec();
+    // //     right_invert_indices.sort_by_key(|(_, b)| **b);
+    // //     let mut left_to_prefix_indices = vec![];
+    // //     for (ord, (idx, ord_sorted)) in right_invert_indices.iter().enumerate() {
+    // //         if ord != **ord_sorted {
+    // //             break;
+    // //         }
+    // //         left_to_prefix_indices.push(left_join_indices[*idx]);
+    // //     }
 
-        if join_is_prefix(&right_join_indices) {
-            Ok(Box::new(
-                left_iter
-                    .map_ok(move |tuple| -> Result<Option<Tuple>> {
-                        let prefix = left_to_prefix_indices
-                            .iter()
-                            .map(|i| tuple[*i].clone())
-                            .collect_vec();
+    // //     if join_is_prefix(&right_join_indices) {
+    // //         Ok(Box::new(
+    // //             left_iter
+    // //                 .map_ok(move |tuple| -> Result<Option<Tuple>> {
+    // //                     let prefix = left_to_prefix_indices
+    // //                         .iter()
+    // //                         .map(|i| tuple[*i].clone())
+    // //                         .collect_vec();
 
-                        'outer: for found in self.storage.scan_prefix(tx, &prefix) {
-                            let found = found?;
-                            for (left_idx, right_idx) in
-                                left_join_indices.iter().zip(right_join_indices.iter())
-                            {
-                                if tuple[*left_idx] != found[*right_idx] {
-                                    continue 'outer;
-                                }
-                            }
-                            return Ok(None);
-                        }
+    // //                     'outer: for found in self.storage.scan_prefix(tx, &prefix) {
+    // //                         let found = found?;
+    // //                         for (left_idx, right_idx) in
+    // //                             left_join_indices.iter().zip(right_join_indices.iter())
+    // //                         {
+    // //                             if tuple[*left_idx] != found[*right_idx] {
+    // //                                 continue 'outer;
+    // //                             }
+    // //                         }
+    // //                         return Ok(None);
+    // //                     }
 
-                        Ok(Some(if !eliminate_indices.is_empty() {
-                            tuple
-                                .into_iter()
-                                .enumerate()
-                                .filter_map(|(i, v)| {
-                                    if eliminate_indices.contains(&i) {
-                                        None
-                                    } else {
-                                        Some(v)
-                                    }
-                                })
-                                .collect_vec()
-                        } else {
-                            tuple
-                        }))
-                    })
-                    .map(flatten_err)
-                    .filter_map(invert_option_err),
-            ))
-        } else {
-            let mut right_join_vals = BTreeSet::new();
+    // //                     Ok(Some(if !eliminate_indices.is_empty() {
+    // //                         tuple
+    // //                             .into_iter()
+    // //                             .enumerate()
+    // //                             .filter_map(|(i, v)| {
+    // //                                 if eliminate_indices.contains(&i) {
+    // //                                     None
+    // //                                 } else {
+    // //                                     Some(v)
+    // //                                 }
+    // //                             })
+    // //                             .collect_vec()
+    // //                     } else {
+    // //                         tuple
+    // //                     }))
+    // //                 })
+    // //                 .map(flatten_err)
+    // //                 .filter_map(invert_option_err),
+    // //         ))
+    // //     } else {
+    // //         let mut right_join_vals = BTreeSet::new();
 
-            for tuple in self.storage.scan_all(tx) {
-                let tuple = tuple?;
-                let to_join: Box<[DataValue]> = right_join_indices
-                    .iter()
-                    .map(|i| tuple[*i].clone())
-                    .collect();
-                right_join_vals.insert(to_join);
-            }
-            Ok(Box::new(
-                left_iter
-                    .map_ok(move |tuple| -> Result<Option<Tuple>> {
-                        let left_join_vals: Box<[DataValue]> = left_join_indices
-                            .iter()
-                            .map(|i| tuple[*i].clone())
-                            .collect();
-                        if right_join_vals.contains(&left_join_vals) {
-                            return Ok(None);
-                        }
+    // //         for tuple in self.storage.scan_all(tx) {
+    // //             let tuple = tuple?;
+    // //             let to_join: Box<[DataValue]> = right_join_indices
+    // //                 .iter()
+    // //                 .map(|i| tuple[*i].clone())
+    // //                 .collect();
+    // //             right_join_vals.insert(to_join);
+    // //         }
+    // //         Ok(Box::new(
+    // //             left_iter
+    // //                 .map_ok(move |tuple| -> Result<Option<Tuple>> {
+    // //                     let left_join_vals: Box<[DataValue]> = left_join_indices
+    // //                         .iter()
+    // //                         .map(|i| tuple[*i].clone())
+    // //                         .collect();
+    // //                     if right_join_vals.contains(&left_join_vals) {
+    // //                         return Ok(None);
+    // //                     }
 
-                        Ok(Some(if !eliminate_indices.is_empty() {
-                            tuple
-                                .into_iter()
-                                .enumerate()
-                                .filter_map(|(i, v)| {
-                                    if eliminate_indices.contains(&i) {
-                                        None
-                                    } else {
-                                        Some(v)
-                                    }
-                                })
-                                .collect_vec()
-                        } else {
-                            tuple
-                        }))
-                    })
-                    .map(flatten_err)
-                    .filter_map(invert_option_err),
-            ))
-        }
-    }
+    // //                     Ok(Some(if !eliminate_indices.is_empty() {
+    // //                         tuple
+    // //                             .into_iter()
+    // //                             .enumerate()
+    // //                             .filter_map(|(i, v)| {
+    // //                                 if eliminate_indices.contains(&i) {
+    // //                                     None
+    // //                                 } else {
+    // //                                     Some(v)
+    // //                                 }
+    // //                             })
+    // //                             .collect_vec()
+    // //                     } else {
+    // //                         tuple
+    // //                     }))
+    // //                 })
+    // //                 .map(flatten_err)
+    // //                 .filter_map(invert_option_err),
+    // //         ))
+    // //     }
+    // // }
 
-    fn iter<'a>(&'a self, tx: &'a SessionTx<'_>) -> Result<TupleIter<'a>> {
-        let it = self.storage.scan_all(tx);
-        Ok(if self.filters.is_empty() {
-            Box::new(it)
-        } else {
-            Box::new(filter_iter(self.filters_bytecodes.clone(), it))
-        })
-    }
+    // // fn iter<'a>(&'a self, tx: &'a SessionTx<'_>) -> Result<TupleIter<'a>> {
+    // //     let it = self.storage.scan_all(tx);
+    // //     Ok(if self.filters.is_empty() {
+    // //         Box::new(it)
+    // //     } else {
+    // //         Box::new(filter_iter(self.filters_bytecodes.clone(), it))
+    // //     })
+    // // }
 }
 
 fn join_is_prefix(right_join_indices: &[usize]) -> bool {
@@ -1899,27 +1899,27 @@ impl RelAlgebra {
             // }
         }
     }
-    pub(crate) fn iter<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        delta_rule: Option<&MagicSymbol>,
-        stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<TupleIter<'a>> {
-        match self {
-            RelAlgebra::Fixed(f) => Ok(Box::new(f.data.iter().map(|t| Ok(t.clone())))),
-            RelAlgebra::TempStore(r) => r.iter(delta_rule, stores),
-            RelAlgebra::Stored(v) => v.iter(tx),
-            // RelAlgebra::StoredWithValidity(v) => v.iter(tx),
-            RelAlgebra::Join(j) => j.iter(tx, delta_rule, stores),
-            RelAlgebra::Reorder(r) => r.iter(tx, delta_rule, stores),
-            RelAlgebra::Filter(r) => r.iter(tx, delta_rule, stores),
-            RelAlgebra::NegJoin(r) => r.iter(tx, delta_rule, stores),
-            RelAlgebra::Unification(r) => r.iter(tx, delta_rule, stores),
-            // RelAlgebra::HnswSearch(r) => r.iter(tx, delta_rule, stores),
-            // RelAlgebra::FtsSearch(r) => r.iter(tx, delta_rule, stores),
-            // RelAlgebra::LshSearch(r) => r.iter(tx, delta_rule, stores),
-        }
-    }
+    // // pub(crate) fn iter<'a>(
+    // //     &'a self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     delta_rule: Option<&MagicSymbol>,
+    // //     stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+    // // ) -> Result<TupleIter<'a>> {
+    // //     match self {
+    // //         RelAlgebra::Fixed(f) => Ok(Box::new(f.data.iter().map(|t| Ok(t.clone())))),
+    // //         RelAlgebra::TempStore(r) => r.iter(delta_rule, stores),
+    // //         // // RelAlgebra::Stored(v) => v.iter(tx),
+    // //         // RelAlgebra::StoredWithValidity(v) => v.iter(tx),
+    // //         RelAlgebra::Join(j) => j.iter(tx, delta_rule, stores),
+    // //         RelAlgebra::Reorder(r) => r.iter(tx, delta_rule, stores),
+    // //         RelAlgebra::Filter(r) => r.iter(tx, delta_rule, stores),
+    // //         RelAlgebra::NegJoin(r) => r.iter(tx, delta_rule, stores),
+    // //         RelAlgebra::Unification(r) => r.iter(tx, delta_rule, stores),
+    // //         // RelAlgebra::HnswSearch(r) => r.iter(tx, delta_rule, stores),
+    // //         // RelAlgebra::FtsSearch(r) => r.iter(tx, delta_rule, stores),
+    // //         // RelAlgebra::LshSearch(r) => r.iter(tx, delta_rule, stores),
+    // //     }
+    // // }
 }
 
 #[derive(Debug)]
@@ -1981,50 +1981,50 @@ impl NegJoin {
         }
     }
 
-    pub(crate) fn iter<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        delta_rule: Option<&MagicSymbol>,
-        stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<TupleIter<'a>> {
-        let bindings = self.left.bindings_after_eliminate();
-        let eliminate_indices = get_eliminate_indices(&bindings, &self.to_eliminate);
-        match &self.right {
-            RelAlgebra::TempStore(r) => {
-                let join_indices = self
-                    .joiner
-                    .join_indices(
-                        &self.left.bindings_after_eliminate(),
-                        &self.right.bindings_after_eliminate(),
-                    )
-                    .unwrap();
-                r.neg_join(
-                    self.left.iter(tx, delta_rule, stores)?,
-                    join_indices,
-                    eliminate_indices,
-                    stores,
-                )
-            }
-            RelAlgebra::Stored(v) => {
-                let join_indices = self
-                    .joiner
-                    .join_indices(
-                        &self.left.bindings_after_eliminate(),
-                        &self.right.bindings_after_eliminate(),
-                    )
-                    .unwrap();
-                v.neg_join(
-                    tx,
-                    self.left.iter(tx, delta_rule, stores)?,
-                    join_indices,
-                    eliminate_indices,
-                )
-            }
-            _ => {
-                unreachable!()
-            }
-        }
-    }
+    // // pub(crate) fn iter<'a>(
+    // //     &'a self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     delta_rule: Option<&MagicSymbol>,
+    // //     stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+    // // ) -> Result<TupleIter<'a>> {
+    // //     let bindings = self.left.bindings_after_eliminate();
+    // //     let eliminate_indices = get_eliminate_indices(&bindings, &self.to_eliminate);
+    // //     match &self.right {
+    // //         RelAlgebra::TempStore(r) => {
+    // //             let join_indices = self
+    // //                 .joiner
+    // //                 .join_indices(
+    // //                     &self.left.bindings_after_eliminate(),
+    // //                     &self.right.bindings_after_eliminate(),
+    // //                 )
+    // //                 .unwrap();
+    // //             r.neg_join(
+    // //                 self.left.iter(tx, delta_rule, stores)?,
+    // //                 join_indices,
+    // //                 eliminate_indices,
+    // //                 stores,
+    // //             )
+    // //         }
+    // //         RelAlgebra::Stored(v) => {
+    // //             let join_indices = self
+    // //                 .joiner
+    // //                 .join_indices(
+    // //                     &self.left.bindings_after_eliminate(),
+    // //                     &self.right.bindings_after_eliminate(),
+    // //                 )
+    // //                 .unwrap();
+    // //             v.neg_join(
+    // //                 tx,
+    // //                 self.left.iter(tx, delta_rule, stores)?,
+    // //                 join_indices,
+    // //                 eliminate_indices,
+    // //             )
+    // //         }
+    // //         _ => {
+    // //             unreachable!()
+    // //         }
+    // //     }
+    // // }
 }
 
 #[derive(Debug)]
@@ -2125,170 +2125,170 @@ impl InnerJoin {
             }
         }
     }
-    pub(crate) fn iter<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        delta_rule: Option<&MagicSymbol>,
-        stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<TupleIter<'a>> {
-        let bindings = self.bindings();
-        let eliminate_indices = get_eliminate_indices(&bindings, &self.to_eliminate);
-        match &self.right {
-            RelAlgebra::Fixed(f) => {
-                let join_indices = self
-                    .joiner
-                    .join_indices(
-                        &self.left.bindings_after_eliminate(),
-                        &self.right.bindings_after_eliminate(),
-                    )
-                    .unwrap();
-                f.join(
-                    self.left.iter(tx, delta_rule, stores)?,
-                    join_indices,
-                    eliminate_indices,
-                )
-            }
-            RelAlgebra::TempStore(r) => {
-                let join_indices = self
-                    .joiner
-                    .join_indices(
-                        &self.left.bindings_after_eliminate(),
-                        &self.right.bindings_after_eliminate(),
-                    )
-                    .unwrap();
-                if join_is_prefix(&join_indices.1) {
-                    r.prefix_join(
-                        self.left.iter(tx, delta_rule, stores)?,
-                        join_indices,
-                        eliminate_indices,
-                        delta_rule,
-                        stores,
-                    )
-                } else {
-                    self.materialized_join(tx, eliminate_indices, delta_rule, stores)
-                }
-            }
-            RelAlgebra::Stored(r) => {
-                let join_indices = self
-                    .joiner
-                    .join_indices(
-                        &self.left.bindings_after_eliminate(),
-                        &self.right.bindings_after_eliminate(),
-                    )
-                    .unwrap();
-                if join_is_prefix(&join_indices.1) {
-                    r.prefix_join(
-                        tx,
-                        self.left.iter(tx, delta_rule, stores)?,
-                        join_indices,
-                        eliminate_indices,
-                    )
-                } else {
-                    self.materialized_join(tx, eliminate_indices, delta_rule, stores)
-                }
-            }
-            // // RelAlgebra::StoredWithValidity(r) => {
-            // //     let join_indices = self
-            // //         .joiner
-            // //         .join_indices(
-            // //             &self.left.bindings_after_eliminate(),
-            // //             &self.right.bindings_after_eliminate(),
-            // //         )
-            // //         .unwrap();
-            // //     if join_is_prefix(&join_indices.1) {
-            // //         r.prefix_join(
-            // //             tx,
-            // //             self.left.iter(tx, delta_rule, stores)?,
-            // //             join_indices,
-            // //             eliminate_indices,
-            // //         )
-            // //     } else {
-            // //         self.materialized_join(tx, eliminate_indices, delta_rule, stores)
-            // //     }
-            // // }
-            RelAlgebra::Join(_)
-            | RelAlgebra::Filter(_)
-            | RelAlgebra::Unification(_)
-            // | RelAlgebra::HnswSearch(_)
-            // | RelAlgebra::FtsSearch(_)
-            => {
-                self.materialized_join(tx, eliminate_indices, delta_rule, stores)
-            }
-            RelAlgebra::Reorder(_) => {
-                panic!("joining on reordered")
-            }
-            RelAlgebra::NegJoin(_) => {
-                panic!("joining on NegJoin")
-            }
-        }
-    }
-    fn materialized_join<'a>(
-        &'a self,
-        tx: &'a SessionTx<'_>,
-        eliminate_indices: BTreeSet<usize>,
-        delta_rule: Option<&MagicSymbol>,
-        stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    ) -> Result<TupleIter<'a>> {
-        debug!("using materialized join");
-        let right_bindings = self.right.bindings_after_eliminate();
-        let (left_join_indices, right_join_indices) = self
-            .joiner
-            .join_indices(&self.left.bindings_after_eliminate(), &right_bindings)
-            .unwrap();
+    // // pub(crate) fn iter<'a>(
+    // //     &'a self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     delta_rule: Option<&MagicSymbol>,
+    // //     stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+    // // ) -> Result<TupleIter<'a>> {
+    // //     let bindings = self.bindings();
+    // //     let eliminate_indices = get_eliminate_indices(&bindings, &self.to_eliminate);
+    // //     match &self.right {
+    // //         RelAlgebra::Fixed(f) => {
+    // //             let join_indices = self
+    // //                 .joiner
+    // //                 .join_indices(
+    // //                     &self.left.bindings_after_eliminate(),
+    // //                     &self.right.bindings_after_eliminate(),
+    // //                 )
+    // //                 .unwrap();
+    // //             f.join(
+    // //                 self.left.iter(tx, delta_rule, stores)?,
+    // //                 join_indices,
+    // //                 eliminate_indices,
+    // //             )
+    // //         }
+    // //         RelAlgebra::TempStore(r) => {
+    // //             let join_indices = self
+    // //                 .joiner
+    // //                 .join_indices(
+    // //                     &self.left.bindings_after_eliminate(),
+    // //                     &self.right.bindings_after_eliminate(),
+    // //                 )
+    // //                 .unwrap();
+    // //             if join_is_prefix(&join_indices.1) {
+    // //                 r.prefix_join(
+    // //                     self.left.iter(tx, delta_rule, stores)?,
+    // //                     join_indices,
+    // //                     eliminate_indices,
+    // //                     delta_rule,
+    // //                     stores,
+    // //                 )
+    // //             } else {
+    // //                 self.materialized_join(tx, eliminate_indices, delta_rule, stores)
+    // //             }
+    // //         }
+    // //         RelAlgebra::Stored(r) => {
+    // //             let join_indices = self
+    // //                 .joiner
+    // //                 .join_indices(
+    // //                     &self.left.bindings_after_eliminate(),
+    // //                     &self.right.bindings_after_eliminate(),
+    // //                 )
+    // //                 .unwrap();
+    // //             if join_is_prefix(&join_indices.1) {
+    // //                 r.prefix_join(
+    // //                     tx,
+    // //                     self.left.iter(tx, delta_rule, stores)?,
+    // //                     join_indices,
+    // //                     eliminate_indices,
+    // //                 )
+    // //             } else {
+    // //                 self.materialized_join(tx, eliminate_indices, delta_rule, stores)
+    // //             }
+    // //         }
+    // //         // // RelAlgebra::StoredWithValidity(r) => {
+    // //         // //     let join_indices = self
+    // //         // //         .joiner
+    // //         // //         .join_indices(
+    // //         // //             &self.left.bindings_after_eliminate(),
+    // //         // //             &self.right.bindings_after_eliminate(),
+    // //         // //         )
+    // //         // //         .unwrap();
+    // //         // //     if join_is_prefix(&join_indices.1) {
+    // //         // //         r.prefix_join(
+    // //         // //             tx,
+    // //         // //             self.left.iter(tx, delta_rule, stores)?,
+    // //         // //             join_indices,
+    // //         // //             eliminate_indices,
+    // //         // //         )
+    // //         // //     } else {
+    // //         // //         self.materialized_join(tx, eliminate_indices, delta_rule, stores)
+    // //         // //     }
+    // //         // // }
+    // //         RelAlgebra::Join(_)
+    // //         | RelAlgebra::Filter(_)
+    // //         | RelAlgebra::Unification(_)
+    // //         // | RelAlgebra::HnswSearch(_)
+    // //         // | RelAlgebra::FtsSearch(_)
+    // //         => {
+    // //             self.materialized_join(tx, eliminate_indices, delta_rule, stores)
+    // //         }
+    // //         RelAlgebra::Reorder(_) => {
+    // //             panic!("joining on reordered")
+    // //         }
+    // //         RelAlgebra::NegJoin(_) => {
+    // //             panic!("joining on NegJoin")
+    // //         }
+    // //     }
+    // // }
+    // fn materialized_join<'a>(
+    //     &'a self,
+    //     tx: &'a SessionTx<'_>,
+    //     eliminate_indices: BTreeSet<usize>,
+    //     delta_rule: Option<&MagicSymbol>,
+    //     stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+    // ) -> Result<TupleIter<'a>> {
+    //     debug!("using materialized join");
+    //     let right_bindings = self.right.bindings_after_eliminate();
+    //     let (left_join_indices, right_join_indices) = self
+    //         .joiner
+    //         .join_indices(&self.left.bindings_after_eliminate(), &right_bindings)
+    //         .unwrap();
 
-        let mut left_iter = self.left.iter(tx, delta_rule, stores)?;
-        let left_cache = match left_iter.next() {
-            None => return Ok(Box::new(iter::empty())),
-            Some(Err(err)) => return Err(err),
-            Some(Ok(data)) => data,
-        };
+    //     let mut left_iter = self.left.iter(tx, delta_rule, stores)?;
+    //     let left_cache = match left_iter.next() {
+    //         None => return Ok(Box::new(iter::empty())),
+    //         Some(Err(err)) => return Err(err),
+    //         Some(Ok(data)) => data,
+    //     };
 
-        let right_join_indices_set = BTreeSet::from_iter(right_join_indices.iter().cloned());
-        let mut right_store_indices = right_join_indices;
-        for i in 0..right_bindings.len() {
-            if !right_join_indices_set.contains(&i) {
-                right_store_indices.push(i)
-            }
-        }
+    //     let right_join_indices_set = BTreeSet::from_iter(right_join_indices.iter().cloned());
+    //     let mut right_store_indices = right_join_indices;
+    //     for i in 0..right_bindings.len() {
+    //         if !right_join_indices_set.contains(&i) {
+    //             right_store_indices.push(i)
+    //         }
+    //     }
 
-        let right_invert_indices = right_store_indices
-            .iter()
-            .enumerate()
-            .sorted_by_key(|(_, b)| **b)
-            .map(|(a, _)| a)
-            .collect_vec();
-        let cached_data = {
-            let mut cache = BTreeSet::new();
-            for item in self.right.iter(tx, delta_rule, stores)? {
-                match item {
-                    Ok(tuple) => {
-                        let stored_tuple = right_store_indices
-                            .iter()
-                            .map(|i| tuple[*i].clone())
-                            .collect_vec();
-                        cache.insert(stored_tuple);
-                    }
-                    Err(e) => return Err(e),
-                }
-            }
-            cache.into_iter().collect_vec()
-        };
+    //     let right_invert_indices = right_store_indices
+    //         .iter()
+    //         .enumerate()
+    //         .sorted_by_key(|(_, b)| **b)
+    //         .map(|(a, _)| a)
+    //         .collect_vec();
+    //     let cached_data = {
+    //         let mut cache = BTreeSet::new();
+    //         for item in self.right.iter(tx, delta_rule, stores)? {
+    //             match item {
+    //                 Ok(tuple) => {
+    //                     let stored_tuple = right_store_indices
+    //                         .iter()
+    //                         .map(|i| tuple[*i].clone())
+    //                         .collect_vec();
+    //                     cache.insert(stored_tuple);
+    //                 }
+    //                 Err(e) => return Err(e),
+    //             }
+    //         }
+    //         cache.into_iter().collect_vec()
+    //     };
 
-        let (prefix, right_idx) =
-            build_mat_range_iter(&cached_data, &left_join_indices, &left_cache);
+    //     let (prefix, right_idx) =
+    //         build_mat_range_iter(&cached_data, &left_join_indices, &left_cache);
 
-        let it = CachedMaterializedIterator {
-            eliminate_indices,
-            left: left_iter,
-            left_cache,
-            left_join_indices,
-            materialized: cached_data,
-            right_invert_indices,
-            right_idx,
-            prefix,
-        };
-        Ok(Box::new(it))
-    }
+    //     let it = CachedMaterializedIterator {
+    //         eliminate_indices,
+    //         left: left_iter,
+    //         left_cache,
+    //         left_join_indices,
+    //         materialized: cached_data,
+    //         right_invert_indices,
+    //         right_idx,
+    //         prefix,
+    //     };
+    //     Ok(Box::new(it))
+    // }
 }
 
 struct CachedMaterializedIterator<'a> {

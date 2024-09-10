@@ -101,22 +101,22 @@ pub trait StoreTx<'s>: Sync {
     /// and discard all changes introduced by this transaction.
     fn commit(&mut self) -> Result<()>;
 
-    /// Scan on a range. `lower` is inclusive whereas `upper` is exclusive.
-    /// The default implementation calls [`range_scan_owned`](Self::range_scan) and converts the results.
-    ///
-    /// The implementation must call [`decode_tuple_from_kv`](crate::decode_tuple_from_kv) to obtain
-    /// a decoded tuple in the loop of the iterator.
-    fn range_scan_tuple<'a>(
-        &'a self,
-        lower: &[u8],
-        upper: &[u8],
-    ) -> Box<dyn Iterator<Item = Result<Tuple>> + 'a>
-    where
-        's: 'a,
-    {
-        let it = self.range_scan(lower, upper);
-        Box::new(it.map_ok(|(k, v)| decode_tuple_from_kv(&k, &v, None)))
-    }
+    // // /// Scan on a range. `lower` is inclusive whereas `upper` is exclusive.
+    // // /// The default implementation calls [`range_scan_owned`](Self::range_scan) and converts the results.
+    // // ///
+    // // /// The implementation must call [`decode_tuple_from_kv`](crate::decode_tuple_from_kv) to obtain
+    // // /// a decoded tuple in the loop of the iterator.
+    // // fn range_scan_tuple<'a>(
+    // //     &'a self,
+    // //     lower: &[u8],
+    // //     upper: &[u8],
+    // // ) -> Box<dyn Iterator<Item = Result<Tuple>> + 'a>
+    // // where
+    // //     's: 'a,
+    // // {
+    // //     let it = self.range_scan(lower, upper);
+    // //     Box::new(it.map_ok(|(k, v)| decode_tuple_from_kv(&k, &v, None)))
+    // // }
 
     // // /// Scan on a range with a certain validity.
     // // ///
@@ -141,23 +141,23 @@ pub trait StoreTx<'s>: Sync {
     // //     valid_at: ValidityTs,
     // // ) -> Box<dyn Iterator<Item = Result<Tuple>> + 'a>;
 
-    /// Scan on a range and return the raw results.
-    /// `lower` is inclusive whereas `upper` is exclusive.
-    fn range_scan<'a>(
-        &'a self,
-        lower: &[u8],
-        upper: &[u8],
-    ) -> Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>
-    where
-        's: 'a;
+    // // /// Scan on a range and return the raw results.
+    // // /// `lower` is inclusive whereas `upper` is exclusive.
+    // // fn range_scan<'a>(
+    // //     &'a self,
+    // //     lower: &[u8],
+    // //     upper: &[u8],
+    // // ) -> Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>
+    // // where
+    // //     's: 'a;
 
-    /// Return the number of rows in the range.
-    fn range_count<'a>(&'a self, lower: &[u8], upper: &[u8]) -> Result<usize>
-    where
-        's: 'a;
+    // /// Return the number of rows in the range.
+    // fn range_count<'a>(&'a self, lower: &[u8], upper: &[u8]) -> Result<usize>
+    // where
+    //     's: 'a;
 
-    /// Scan for all rows. The rows are required to be in ascending order.
-    fn total_scan<'a>(&'a self) -> Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>
-    where
-        's: 'a;
+    // /// Scan for all rows. The rows are required to be in ascending order.
+    // fn total_scan<'a>(&'a self) -> Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>
+    // where
+    //     's: 'a;
 }

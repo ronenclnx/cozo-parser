@@ -80,20 +80,20 @@ impl<'s> StoreTx<'s> for TempTx {
         Ok(())
     }
 
-    fn range_scan_tuple<'a>(
-        &'a self,
-        lower: &[u8],
-        upper: &[u8],
-    ) -> Box<dyn Iterator<Item = Result<Tuple>> + 'a>
-    where
-        's: 'a,
-    {
-        Box::new(
-            self.store
-                .range(lower.to_vec()..upper.to_vec())
-                .map(|(k, v)| Ok(decode_tuple_from_kv(k, v, None))),
-        )
-    }
+    // // fn range_scan_tuple<'a>(
+    // //     &'a self,
+    // //     lower: &[u8],
+    // //     upper: &[u8],
+    // // ) -> Box<dyn Iterator<Item = Result<Tuple>> + 'a>
+    // // where
+    // //     's: 'a,
+    // // {
+    // //     Box::new(
+    // //         self.store
+    // //             .range(lower.to_vec()..upper.to_vec())
+    // //             .map(|(k, v)| Ok(decode_tuple_from_kv(k, v, None))),
+    // //     )
+    // // }
 
     // // fn range_skip_scan_tuple<'a>(
     // //     &'a self,
@@ -113,29 +113,29 @@ impl<'s> StoreTx<'s> for TempTx {
     // //     )
     // // }
 
-    fn range_scan<'a>(
-        &'a self,
-        lower: &[u8],
-        upper: &[u8],
-    ) -> Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>
-    where
-        's: 'a,
-    {
-        Box::new(
-            self.store
-                .range(lower.to_vec()..upper.to_vec())
-                .map(|(k, v)| Ok((k.clone(), v.clone()))),
-        )
-    }
+    // // fn range_scan<'a>(
+    // //     &'a self,
+    // //     lower: &[u8],
+    // //     upper: &[u8],
+    // // ) -> Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>
+    // // where
+    // //     's: 'a,
+    // // {
+    // //     Box::new(
+    // //         self.store
+    // //             .range(lower.to_vec()..upper.to_vec())
+    // //             .map(|(k, v)| Ok((k.clone(), v.clone()))),
+    // //     )
+    // // }
 
-    fn range_count<'a>(&'a self, lower: &[u8], upper: &[u8]) -> Result<usize> where 's: 'a {
-        Ok(self.store.range(lower.to_vec()..upper.to_vec()).count())
-    }
+    // fn range_count<'a>(&'a self, lower: &[u8], upper: &[u8]) -> Result<usize> where 's: 'a {
+    //     Ok(self.store.range(lower.to_vec()..upper.to_vec()).count())
+    // }
 
-    fn total_scan<'a>(&'a self) -> Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>
-    where
-        's: 'a,
-    {
-        Box::new(self.store.iter().map(|(k, v)| Ok((k.clone(), v.clone()))))
-    }
+    // fn total_scan<'a>(&'a self) -> Box<dyn Iterator<Item = Result<(Vec<u8>, Vec<u8>)>> + 'a>
+    // where
+    //     's: 'a,
+    // {
+    //     Box::new(self.store.iter().map(|(k, v)| Ok((k.clone(), v.clone()))))
+    // }
 }

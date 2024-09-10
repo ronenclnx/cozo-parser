@@ -173,22 +173,22 @@ impl RelationHandle {
         ret.extend(prefix_bytes);
         ret
     }
-    pub(crate) fn as_named_rows(&self, tx: &SessionTx<'_>) -> Result<NamedRows> {
-        let rows: Vec<_> = self.scan_all(tx).try_collect()?;
-        let mut headers = self
-            .metadata
-            .keys
-            .iter()
-            .map(|col| col.name.to_string())
-            .collect_vec();
-        headers.extend(
-            self.metadata
-                .non_keys
-                .iter()
-                .map(|col| col.name.to_string()),
-        );
-        Ok(NamedRows::new(headers, rows))
-    }
+    // // pub(crate) fn as_named_rows(&self, tx: &SessionTx<'_>) -> Result<NamedRows> {
+    // //     let rows: Vec<_> = self.scan_all(tx).try_collect()?;
+    // //     let mut headers = self
+    // //         .metadata
+    // //         .keys
+    // //         .iter()
+    // //         .map(|col| col.name.to_string())
+    // //         .collect_vec();
+    // //     headers.extend(
+    // //         self.metadata
+    // //             .non_keys
+    // //             .iter()
+    // //             .map(|col| col.name.to_string()),
+    // //     );
+    // //     Ok(NamedRows::new(headers, rows))
+    // // }
     #[allow(dead_code)]
     pub(crate) fn amend_key_prefix(&self, data: &mut [u8]) {
         let prefix_bytes = self.id.0.to_be_bytes();
@@ -355,18 +355,18 @@ impl RelationHandle {
             RelationDeserError
         })?)
     }
-    pub(crate) fn scan_all<'a>(
-        &self,
-        tx: &'a SessionTx<'_>,
-    ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-        let lower = Tuple::default().encode_as_key(self.id);
-        let upper = Tuple::default().encode_as_key(self.id.next());
-        if self.is_temp {
-            tx.temp_store_tx.range_scan_tuple(&lower, &upper)
-        } else {
-            tx.store_tx.range_scan_tuple(&lower, &upper)
-        }
-    }
+    // // // pub(crate) fn scan_all<'a>(
+    // // //     &self,
+    // // //     tx: &'a SessionTx<'_>,
+    // // // ) -> impl Iterator<Item = Result<Tuple>> + 'a {
+    // // //     let lower = Tuple::default().encode_as_key(self.id);
+    // // //     let upper = Tuple::default().encode_as_key(self.id.next());
+    // // //     if self.is_temp {
+    // // //         tx.temp_store_tx.range_scan_tuple(&lower, &upper)
+    // // //     } else {
+    // // //         tx.store_tx.range_scan_tuple(&lower, &upper)
+    // // //     }
+    // // // }
 
     // // pub(crate) fn skip_scan_all<'a>(
     // //     &self,
@@ -426,25 +426,25 @@ impl RelationHandle {
         }
     }
 
-    pub(crate) fn scan_prefix<'a>(
-        &self,
-        tx: &'a SessionTx<'_>,
-        prefix: &Tuple,
-    ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-        let mut lower = prefix.clone();
-        lower.truncate(self.metadata.keys.len());
-        let mut upper = lower.clone();
-        upper.push(DataValue::Bot);
-        let prefix_encoded = lower.encode_as_key(self.id);
-        let upper_encoded = upper.encode_as_key(self.id);
-        if self.is_temp {
-            tx.temp_store_tx
-                .range_scan_tuple(&prefix_encoded, &upper_encoded)
-        } else {
-            tx.store_tx
-                .range_scan_tuple(&prefix_encoded, &upper_encoded)
-        }
-    }
+    // // pub(crate) fn scan_prefix<'a>(
+    // //     &self,
+    // //     tx: &'a SessionTx<'_>,
+    // //     prefix: &Tuple,
+    // // ) -> impl Iterator<Item = Result<Tuple>> + 'a {
+    // //     let mut lower = prefix.clone();
+    // //     lower.truncate(self.metadata.keys.len());
+    // //     let mut upper = lower.clone();
+    // //     upper.push(DataValue::Bot);
+    // //     let prefix_encoded = lower.encode_as_key(self.id);
+    // //     let upper_encoded = upper.encode_as_key(self.id);
+    // //     if self.is_temp {
+    // //         tx.temp_store_tx
+    // //             .range_scan_tuple(&prefix_encoded, &upper_encoded)
+    // //     } else {
+    // //         tx.store_tx
+    // //             .range_scan_tuple(&prefix_encoded, &upper_encoded)
+    // //     }
+    // // }
 
     // // pub(crate) fn skip_scan_prefix<'a>(
     // //     &self,
@@ -467,27 +467,27 @@ impl RelationHandle {
     // //     }
     // // }
 
-    pub(crate) fn scan_bounded_prefix<'a>(
-        &self,
-        tx: &'a SessionTx<'_>,
-        prefix: &[DataValue],
-        lower: &[DataValue],
-        upper: &[DataValue],
-    ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-        let mut lower_t = prefix.to_vec();
-        lower_t.extend_from_slice(lower);
-        let mut upper_t = prefix.to_vec();
-        upper_t.extend_from_slice(upper);
-        upper_t.push(DataValue::Bot);
-        let lower_encoded = lower_t.encode_as_key(self.id);
-        let upper_encoded = upper_t.encode_as_key(self.id);
-        if self.is_temp {
-            tx.temp_store_tx
-                .range_scan_tuple(&lower_encoded, &upper_encoded)
-        } else {
-            tx.store_tx.range_scan_tuple(&lower_encoded, &upper_encoded)
-        }
-    }
+    // pub(crate) fn scan_bounded_prefix<'a>(
+    //     &self,
+    //     tx: &'a SessionTx<'_>,
+    //     prefix: &[DataValue],
+    //     lower: &[DataValue],
+    //     upper: &[DataValue],
+    // ) -> impl Iterator<Item = Result<Tuple>> + 'a {
+    //     let mut lower_t = prefix.to_vec();
+    //     lower_t.extend_from_slice(lower);
+    //     let mut upper_t = prefix.to_vec();
+    //     upper_t.extend_from_slice(upper);
+    //     upper_t.push(DataValue::Bot);
+    //     let lower_encoded = lower_t.encode_as_key(self.id);
+    //     let upper_encoded = upper_t.encode_as_key(self.id);
+    //     if self.is_temp {
+    //         tx.temp_store_tx
+    //             .range_scan_tuple(&lower_encoded, &upper_encoded)
+    //     } else {
+    //         tx.store_tx.range_scan_tuple(&lower_encoded, &upper_encoded)
+    //     }
+    // }
 // //     pub(crate) fn skip_scan_bounded_prefix<'a>(
 // //         &self,
 // //         tx: &'a SessionTx<'_>,
@@ -1230,143 +1230,143 @@ impl<'a> SessionTx<'a> {
         Ok(idx_handle)
     }
 
-    pub(crate) fn create_index(
-        &mut self,
-        rel_name: &Symbol,
-        idx_name: &Symbol,
-        cols: &[Symbol],
-    ) -> Result<()> {
-        // Get relation handle
-        let mut rel_handle = self.get_relation(rel_name, true)?;
+    // pub(crate) fn create_index(
+    //     &mut self,
+    //     rel_name: &Symbol,
+    //     idx_name: &Symbol,
+    //     cols: &[Symbol],
+    // ) -> Result<()> {
+    //     // Get relation handle
+    //     let mut rel_handle = self.get_relation(rel_name, true)?;
 
-        // Check if index already exists
-        if rel_handle.has_index(&idx_name.name) {
-            bail!(IndexAlreadyExists(
-                idx_name.name.to_string(),
-                rel_name.name.to_string()
-            ));
-        }
+    //     // Check if index already exists
+    //     if rel_handle.has_index(&idx_name.name) {
+    //         bail!(IndexAlreadyExists(
+    //             idx_name.name.to_string(),
+    //             rel_name.name.to_string()
+    //         ));
+    //     }
 
-        // Build column definitions
-        let mut col_defs = vec![];
-        'outer: for col in cols.iter() {
-            for orig_col in rel_handle
-                .metadata
-                .keys
-                .iter()
-                .chain(rel_handle.metadata.non_keys.iter())
-            {
-                if orig_col.name == col.name {
-                    col_defs.push(orig_col.clone());
-                    continue 'outer;
-                }
-            }
+    //     // Build column definitions
+    //     let mut col_defs = vec![];
+    //     'outer: for col in cols.iter() {
+    //         for orig_col in rel_handle
+    //             .metadata
+    //             .keys
+    //             .iter()
+    //             .chain(rel_handle.metadata.non_keys.iter())
+    //         {
+    //             if orig_col.name == col.name {
+    //                 col_defs.push(orig_col.clone());
+    //                 continue 'outer;
+    //             }
+    //         }
 
-            #[derive(Debug, Error, Diagnostic)]
-            #[error("column {0} in index {1} for relation {2} not found")]
-            #[diagnostic(code(tx::col_in_idx_not_found))]
-            pub(crate) struct ColInIndexNotFound(String, String, String);
+    //         #[derive(Debug, Error, Diagnostic)]
+    //         #[error("column {0} in index {1} for relation {2} not found")]
+    //         #[diagnostic(code(tx::col_in_idx_not_found))]
+    //         pub(crate) struct ColInIndexNotFound(String, String, String);
 
-            bail!(ColInIndexNotFound(
-                col.name.to_string(),
-                idx_name.name.to_string(),
-                rel_name.name.to_string()
-            ));
-        }
+    //         bail!(ColInIndexNotFound(
+    //             col.name.to_string(),
+    //             idx_name.name.to_string(),
+    //             rel_name.name.to_string()
+    //         ));
+    //     }
 
-        'outer: for key in rel_handle.metadata.keys.iter() {
-            for col in cols.iter() {
-                if col.name == key.name {
-                    continue 'outer;
-                }
-            }
-            col_defs.push(key.clone());
-        }
+    //     'outer: for key in rel_handle.metadata.keys.iter() {
+    //         for col in cols.iter() {
+    //             if col.name == key.name {
+    //                 continue 'outer;
+    //             }
+    //         }
+    //         col_defs.push(key.clone());
+    //     }
 
-        let key_bindings = col_defs
-            .iter()
-            .map(|col| Symbol::new(col.name.clone(), Default::default()))
-            .collect_vec();
-        let idx_meta = StoredRelationMetadata {
-            keys: col_defs,
-            non_keys: vec![],
-        };
+    //     let key_bindings = col_defs
+    //         .iter()
+    //         .map(|col| Symbol::new(col.name.clone(), Default::default()))
+    //         .collect_vec();
+    //     let idx_meta = StoredRelationMetadata {
+    //         keys: col_defs,
+    //         non_keys: vec![],
+    //     };
 
-        // create index relation
-        let idx_handle = InputRelationHandle {
-            name: Symbol::new(
-                format!("{}:{}", rel_name.name, idx_name.name),
-                Default::default(),
-            ),
-            metadata: idx_meta,
-            key_bindings,
-            dep_bindings: vec![],
-            span: Default::default(),
-        };
+    //     // create index relation
+    //     let idx_handle = InputRelationHandle {
+    //         name: Symbol::new(
+    //             format!("{}:{}", rel_name.name, idx_name.name),
+    //             Default::default(),
+    //         ),
+    //         metadata: idx_meta,
+    //         key_bindings,
+    //         dep_bindings: vec![],
+    //         span: Default::default(),
+    //     };
 
-        let idx_handle = self.create_relation(idx_handle)?;
+    //     let idx_handle = self.create_relation(idx_handle)?;
 
-        // populate index
-        let extraction_indices = idx_handle
-            .metadata
-            .keys
-            .iter()
-            .map(|col| {
-                for (i, kc) in rel_handle.metadata.keys.iter().enumerate() {
-                    if kc.name == col.name {
-                        return i;
-                    }
-                }
-                for (i, kc) in rel_handle.metadata.non_keys.iter().enumerate() {
-                    if kc.name == col.name {
-                        return i + rel_handle.metadata.keys.len();
-                    }
-                }
-                unreachable!()
-            })
-            .collect_vec();
+    //     // populate index
+    //     let extraction_indices = idx_handle
+    //         .metadata
+    //         .keys
+    //         .iter()
+    //         .map(|col| {
+    //             for (i, kc) in rel_handle.metadata.keys.iter().enumerate() {
+    //                 if kc.name == col.name {
+    //                     return i;
+    //                 }
+    //             }
+    //             for (i, kc) in rel_handle.metadata.non_keys.iter().enumerate() {
+    //                 if kc.name == col.name {
+    //                     return i + rel_handle.metadata.keys.len();
+    //                 }
+    //             }
+    //             unreachable!()
+    //         })
+    //         .collect_vec();
 
-        if self.store_tx.supports_par_put() {
-            for tuple in rel_handle.scan_all(self) {
-                let tuple = tuple?;
-                let extracted = extraction_indices
-                    .iter()
-                    .map(|idx| tuple[*idx].clone())
-                    .collect_vec();
-                let key = idx_handle.encode_key_for_store(&extracted, Default::default())?;
-                self.store_tx.par_put(&key, &[])?;
-            }
-        } else {
-            let mut existing = TempCollector::default();
-            for tuple in rel_handle.scan_all(self) {
-                existing.push(tuple?);
-            }
-            for tuple in existing.into_iter() {
-                let extracted = extraction_indices
-                    .iter()
-                    .map(|idx| tuple[*idx].clone())
-                    .collect_vec();
-                let key = idx_handle.encode_key_for_store(&extracted, Default::default())?;
-                self.store_tx.put(&key, &[])?;
-            }
-        }
+    //     if self.store_tx.supports_par_put() {
+    //         for tuple in rel_handle.scan_all(self) {
+    //             let tuple = tuple?;
+    //             let extracted = extraction_indices
+    //                 .iter()
+    //                 .map(|idx| tuple[*idx].clone())
+    //                 .collect_vec();
+    //             let key = idx_handle.encode_key_for_store(&extracted, Default::default())?;
+    //             self.store_tx.par_put(&key, &[])?;
+    //         }
+    //     } else {
+    //         let mut existing = TempCollector::default();
+    //         for tuple in rel_handle.scan_all(self) {
+    //             existing.push(tuple?);
+    //         }
+    //         for tuple in existing.into_iter() {
+    //             let extracted = extraction_indices
+    //                 .iter()
+    //                 .map(|idx| tuple[*idx].clone())
+    //                 .collect_vec();
+    //             let key = idx_handle.encode_key_for_store(&extracted, Default::default())?;
+    //             self.store_tx.put(&key, &[])?;
+    //         }
+    //     }
 
-        // add index to relation
-        rel_handle
-            .indices
-            .insert(idx_name.name.clone(), (idx_handle, extraction_indices));
+    //     // add index to relation
+    //     rel_handle
+    //         .indices
+    //         .insert(idx_name.name.clone(), (idx_handle, extraction_indices));
 
-        // update relation metadata
-        let new_encoded =
-            vec![DataValue::from(&rel_name.name as &str)].encode_as_key(RelationId::SYSTEM);
-        let mut meta_val = vec![];
-        rel_handle
-            .serialize(&mut Serializer::new(&mut meta_val))
-            .unwrap();
-        self.store_tx.put(&new_encoded, &meta_val)?;
+    //     // update relation metadata
+    //     let new_encoded =
+    //         vec![DataValue::from(&rel_name.name as &str)].encode_as_key(RelationId::SYSTEM);
+    //     let mut meta_val = vec![];
+    //     rel_handle
+    //         .serialize(&mut Serializer::new(&mut meta_val))
+    //         .unwrap();
+    //     self.store_tx.put(&new_encoded, &meta_val)?;
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     pub(crate) fn remove_index(
         &mut self,
