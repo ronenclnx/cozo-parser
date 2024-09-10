@@ -105,9 +105,9 @@ fn merge_spans(symbs: &[Symbol]) -> SourceSpan {
 
 pub(crate) fn parse_query(
     src: Pairs<'_>,
-    param_pool: &BTreeMap<String, DataValue>,
     fixed_rules: &BTreeMap<String, Arc<Box<dyn FixedRule>>>,
 ) -> Result<InputProgram> {
+    let param_pool: &BTreeMap<String, DataValue> = &BTreeMap::new();
     let cur_vld = current_validity();
     let mut progs: BTreeMap<Symbol, InputInlineRulesOrFixed> = Default::default();
     let mut out_opts: QueryOutOptions = Default::default();

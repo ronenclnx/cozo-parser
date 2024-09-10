@@ -29,10 +29,10 @@ use crate::fixed_rule::FixedRule;
 
 pub(crate) fn parse_imperative_block(
     src: Pair<'_>,
-    param_pool: &BTreeMap<String, DataValue>,
     fixed_rules: &BTreeMap<String, Arc<Box<dyn FixedRule>>>,
 ) -> Result<ImperativeProgram> {
     let cur_vld = current_validity();
+    let param_pool: &BTreeMap<String, DataValue> = &BTreeMap::new();
     let mut collected = vec![];
 
     for pair in src.into_inner() {
@@ -96,7 +96,6 @@ fn parse_imperative_stmt(
                         let mut src = p.into_inner();
                         let prog = parse_query(
                             src.next().unwrap().into_inner(),
-                            param_pool,
                             fixed_rules,
                         )?;
                         let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
@@ -117,7 +116,6 @@ fn parse_imperative_stmt(
                     let mut src = condition.into_inner();
                     let prog = parse_query(
                         src.next().unwrap().into_inner(),
-                        param_pool,
                         fixed_rules,
                     )?;
                     let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
@@ -153,7 +151,7 @@ fn parse_imperative_stmt(
                 mark = Some(SmartString::from(nxt.as_str()));
                 nxt = inner.next().unwrap();
             }
-            let body = parse_imperative_block(nxt, param_pool, fixed_rules)?;
+            let body = parse_imperative_block(nxt, fixed_rules)?;
             ImperativeStmt::Loop { label: mark, body }
         }
         Rule::temp_swap => {
@@ -182,7 +180,6 @@ fn parse_imperative_stmt(
             let mut src = pair.into_inner();
             let sysop = parse_sys(
                 src.next().unwrap().into_inner(),
-                param_pool,
                 fixed_rules,
             )?;
             let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
@@ -194,7 +191,6 @@ fn parse_imperative_stmt(
             let mut src = pair.into_inner();
             let prog = parse_query(
                 src.next().unwrap().into_inner(),
-                param_pool,
                 fixed_rules,
             )?;
             let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));
@@ -207,7 +203,6 @@ fn parse_imperative_stmt(
             let mut src = pair.into_inner();
             let prog = parse_query(
                 src.next().unwrap().into_inner(),
-                param_pool,
                 fixed_rules,
             )?;
             let store_as = src.next().map(|p| SmartString::from(p.as_str().trim()));

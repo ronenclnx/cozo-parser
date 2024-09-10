@@ -50,43 +50,6 @@ pub(crate) enum SysOp {
     DescribeRelation(Symbol, SmartString<LazyCompact>)
 }
 
-// #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-// pub(crate) struct FtsIndexConfig {
-//     pub(crate) base_relation: SmartString<LazyCompact>,
-//     pub(crate) index_name: SmartString<LazyCompact>,
-//     pub(crate) extractor: String,
-//     // pub(crate) tokenizer: TokenizerConfig,
-//     // pub(crate) filters: Vec<TokenizerConfig>,
-// }
-
-// #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-// pub(crate) struct MinHashLshConfig {
-//     pub(crate) base_relation: SmartString<LazyCompact>,
-//     pub(crate) index_name: SmartString<LazyCompact>,
-//     pub(crate) extractor: String,
-//     pub(crate) tokenizer: TokenizerConfig,
-//     pub(crate) filters: Vec<TokenizerConfig>,
-//     pub(crate) n_gram: usize,
-//     pub(crate) n_perm: usize,
-//     pub(crate) false_positive_weight: OrderedFloat<f64>,
-//     pub(crate) false_negative_weight: OrderedFloat<f64>,
-//     pub(crate) target_threshold: OrderedFloat<f64>,
-// }
-
-// #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-// pub(crate) struct HnswIndexConfig {
-//     pub(crate) base_relation: SmartString<LazyCompact>,
-//     pub(crate) index_name: SmartString<LazyCompact>,
-//     pub(crate) vec_dim: usize,
-//     pub(crate) dtype: VecElementType,
-//     pub(crate) vec_fields: Vec<SmartString<LazyCompact>>,
-//     pub(crate) distance: HnswDistance,
-//     pub(crate) ef_construction: usize,
-//     pub(crate) m_neighbours: usize,
-//     pub(crate) index_filter: Option<String>,
-//     pub(crate) extend_candidates: bool,
-//     pub(crate) keep_pruned_connections: bool,
-// }
 
 // #[derive(
 //     Debug, Clone, Copy, PartialEq, Eq, Hash, serde_derive::Serialize, serde_derive::Deserialize,
@@ -104,9 +67,9 @@ struct ProcessIdError(String, #[label] SourceSpan);
 
 pub(crate) fn parse_sys(
     mut src: Pairs<'_>,
-    param_pool: &BTreeMap<String, DataValue>,
     algorithms: &BTreeMap<String, Arc<Box<dyn FixedRule>>>,
 ) -> Result<SysOp> {
+    let param_pool: &BTreeMap<String, DataValue> = &BTreeMap::new();
     let inner = src.next().unwrap();
     Ok(match inner.as_rule() {
         Rule::compact_op => SysOp::Compact,
@@ -123,7 +86,6 @@ pub(crate) fn parse_sys(
         Rule::explain_op => {
             let prog = parse_query(
                 inner.into_inner().next().unwrap().into_inner(),
-                param_pool,
                 algorithms,
             )?;
             SysOp::Explain(Box::new(prog))
@@ -206,7 +168,6 @@ pub(crate) fn parse_sys(
                 let script_str = script.as_str();
                 parse_query(
                     script.into_inner(),
-                    &Default::default(),
                     algorithms,
                 )?;
                 match op.as_rule() {

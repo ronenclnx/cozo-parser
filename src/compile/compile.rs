@@ -977,11 +977,9 @@ use crate::data::value::ValidityTs;
     fn do_compile_script(
         &mut self,
         payload: &str,
-        param_pool: &BTreeMap<String, DataValue>,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
         match parse_script(
             payload,
-            param_pool,
             &BTreeMap::new(),
         )? {
             CozoScript::Single(p) => self.compile_single(p),
@@ -1065,7 +1063,6 @@ use crate::data::value::ValidityTs;
         println!("xxx404");
          self.do_compile_script(
              payload,
-             &params,
          )
      }
 
