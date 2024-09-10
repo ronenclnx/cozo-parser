@@ -273,7 +273,7 @@ pub(crate) fn parse_expressions(
     build_expr(parsed.into_inner().next().unwrap(), param_pool)
 }
 
-pub(crate) fn parse_script(
+pub fn parse_script(
     src: &str,
     fixed_rules: &BTreeMap<String, Arc<Box<dyn FixedRule>>>,
 ) -> Result<CozoScript> {

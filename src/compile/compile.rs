@@ -131,7 +131,7 @@ use crate::data::value::ValidityTs;
  }
  
  pub struct Compiler {
-     compiled_relations: BTreeMap<String, CompiledRelationHandle>,
+     compiled_relations: HashMap<String, CompiledRelationHandle>,
      fixed_rules: Vec<u16>,// TODO: type
      relations: HashMap<String, u16>, //TODO: type
      rules: HashMap<String, u16>,
@@ -966,7 +966,7 @@ use crate::data::value::ValidityTs;
  impl Compiler {
     pub fn new() -> Self {
         Compiler {
-            compiled_relations: BTreeMap::new(),
+            compiled_relations: HashMap::new(),
             fixed_rules: Vec::new(),
             relations: HashMap::new(),
             rules: HashMap::new(),
