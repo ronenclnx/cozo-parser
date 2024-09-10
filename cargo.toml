@@ -1,5 +1,5 @@
 [package]
-name = "cozo"
+name = "cozo-compiler"
 version = "0.7.6"
 edition = "2021"
 description = "A general-purpose, transactional, relational database that uses Datalog and focuses on graph data and algorithms"
@@ -111,3 +111,5 @@ casey = "0.4.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { version = "0.3.70" }
+
+
