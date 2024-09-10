@@ -718,28 +718,6 @@ pub(crate) struct FixedRuleHandle {
     pub(crate) name: Symbol,
 }
 
-// // lazy_static! {
-// //     pub(crate) static ref DEFAULT_FIXED_RULES: BTreeMap<String, Arc<Box<dyn FixedRule>>> = {
-// //         BTreeMap::from([
-// //             // // (
-// //             // //     "ReorderSort".to_string(),
-// //             // //     Arc::<Box<dyn FixedRule>>::new(Box::new(ReorderSort)),
-// //             // // ),
-// //             (
-// //                 "JsonReader".to_string(),
-// //                 Arc::<Box<dyn FixedRule>>::new(Box::new(JsonReader)),
-// //             ),
-// //             (
-// //                 "CsvReader".to_string(),
-// //                 Arc::<Box<dyn FixedRule>>::new(Box::new(CsvReader)),
-// //             ),
-// //             (
-// //                 "Constant".to_string(),
-// //                 Arc::<Box<dyn FixedRule>>::new(Box::new(Constant)),
-// //             ),
-// //         ])
-// //     };
-// // }
 
 impl FixedRuleHandle {
     pub(crate) fn new(name: &str, span: SourceSpan) -> Self {
