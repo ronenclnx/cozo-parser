@@ -1569,9 +1569,9 @@ impl SearchInput {
     pub(crate) fn normalize(
         self,
         gen: &mut TempSymbGen,
-        tx: &Compiler,
+        compiler: &Compiler,
     ) -> Result<Disjunction> {
-        let base_handle = tx.get_relation(&self.relation)?;
+        // let base_handle = tx.get_relation(&self.relation)?;
         // if base_handle.access_level < AccessLevel::ReadOnly {
         //     bail!(InsufficientAccessLevel(
         //         base_handle.name.to_string(),

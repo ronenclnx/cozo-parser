@@ -131,10 +131,10 @@ impl InputAtom {
         })
     }
 
-    pub(crate) fn disjunctive_normal_form(self, tx: &Compiler) -> Result<Disjunction> {
+    pub(crate) fn disjunctive_normal_form(self, compiler: &Compiler) -> Result<Disjunction> {
         let neg_form = self.negation_normal_form()?;
         let mut gen = TempSymbGen::default();
-        neg_form.do_disjunctive_normal_form(&mut gen, tx)
+        neg_form.do_disjunctive_normal_form(&mut gen, compiler)
     }
 
     fn convert_named_field_relation(
@@ -145,9 +145,9 @@ impl InputAtom {
             span,
         }: InputNamedFieldRelationApplyAtom,
         gen: &mut TempSymbGen,
-        tx: &Compiler,
+        compiler: &Compiler,
     ) -> Result<InputRelationApplyAtom> {
-        let stored = tx.get_relation(&name)?;
+        let stored = compiler.get_relation(&name)?;
         // let fields: BTreeSet<_> = stored
         //     .keys
         //     .iter()

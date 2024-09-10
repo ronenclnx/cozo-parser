@@ -303,7 +303,7 @@ impl NormalFormProgram {
         }
         downstream_rules
     }
-    fn adorn(self, upstream_rules: &BTreeSet<Symbol>, tx: &Compiler) -> Result<MagicProgram> {
+    fn adorn(self, upstream_rules: &BTreeSet<Symbol>, compiler: &Compiler) -> Result<MagicProgram> {
         let rules_to_rewrite: BTreeSet<_> = self
             .prog
             .keys()
@@ -355,7 +355,7 @@ impl NormalFormProgram {
                                                 valid_at,
                                             } => {
                                                 if valid_at.is_some() {
-                                                    let relation = tx.get_relation(name)?;
+                                                    let relation = compiler.get_relation(name)?;
                                                     let last_col_type = &relation
                                                         .keys
                                                         .last()
@@ -387,7 +387,7 @@ impl NormalFormProgram {
                                                 valid_at,
                                                 span,
                                             } => {
-                                                let relation = tx.get_relation(name)?;
+                                                let relation = compiler.get_relation(name)?;
                                                 if valid_at.is_some() {
                                                     let last_col_type = &relation
                                                         .keys

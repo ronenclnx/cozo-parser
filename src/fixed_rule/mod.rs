@@ -38,261 +38,261 @@ use crate::parse::SourceSpan;
 use crate::runtime::temp_store::{EpochStore, RegularTempStore};
 use crate::runtime::transact::SessionTx;
 use crate::runtime::db::NamedRows;
-
+use crate::compile::fixed_rule::{FixedRuleInputRelation, FixedRulePayload};
 #[cfg(feature = "graph-algo")]
 // pub(crate) mod algos;
 pub(crate) mod utilities;
 
-/// Passed into implementation of fixed rule, can be used to obtain relation inputs and options
-pub struct FixedRulePayload<'a, 'b> {
-    pub(crate) manifest: &'a MagicFixedRuleApply,
-    pub(crate) stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    pub(crate) tx: &'a SessionTx<'b>,
-}
+// /// Passed into implementation of fixed rule, can be used to obtain relation inputs and options
+// pub struct FixedRulePayload<'a, 'b> {
+//     pub(crate) manifest: &'a MagicFixedRuleApply,
+//     pub(crate) stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+//     pub(crate) tx: &'a SessionTx<'b>,
+// }
 
-/// Represents an input relation during the execution of a fixed rule
-#[derive(Copy, Clone)]
-pub struct FixedRuleInputRelation<'a, 'b> {
-    arg_manifest: &'a MagicFixedRuleRuleArg,
-    stores: &'a BTreeMap<MagicSymbol, EpochStore>,
-    tx: &'a SessionTx<'b>,
-}
+// /// Represents an input relation during the execution of a fixed rule
+// #[derive(Copy, Clone)]
+// pub struct FixedRuleInputRelation<'a, 'b> {
+//     arg_manifest: &'a MagicFixedRuleRuleArg,
+//     stores: &'a BTreeMap<MagicSymbol, EpochStore>,
+//     compiler: &'a SessionTx<'b>,
+// }
 
-impl<'a, 'b> FixedRuleInputRelation<'a, 'b> {
-    /// The arity of the input relation
-    pub fn arity(&self) -> Result<usize> {
-        self.arg_manifest.arity(self.tx, self.stores)
-    }
-    // /// Ensure the input relation contains tuples of the given minimal length.
-    // pub fn ensure_min_len(self, len: usize) -> Result<Self> {
-    //     #[derive(Error, Diagnostic, Debug)]
-    //     #[error("Input relation to algorithm has insufficient arity")]
-    //     #[diagnostic(help("Arity should be at least {0} but is {1}"))]
-    //     #[diagnostic(code(algo::input_relation_bad_arity))]
-    //     struct InputRelationArityError(usize, usize, #[label] SourceSpan);
+// // // // // impl<'a, 'b> FixedRuleInputRelation<'a, 'b> {
+// // // // //     /// The arity of the input relation
+// // // // //     pub fn arity(&self) -> Result<usize> {
+// // // // //         self.arg_manifest.arity(self.compiler, self.stores)
+// // // // //     }
+// // // // //     // /// Ensure the input relation contains tuples of the given minimal length.
+// // // // //     // pub fn ensure_min_len(self, len: usize) -> Result<Self> {
+// // // // //     //     #[derive(Error, Diagnostic, Debug)]
+// // // // //     //     #[error("Input relation to algorithm has insufficient arity")]
+// // // // //     //     #[diagnostic(help("Arity should be at least {0} but is {1}"))]
+// // // // //     //     #[diagnostic(code(algo::input_relation_bad_arity))]
+// // // // //     //     struct InputRelationArityError(usize, usize, #[label] SourceSpan);
 
-    //     let arity = self.arg_manifest.arity(self.tx, self.stores)?;
-    //     ensure!(
-    //         arity >= len,
-    //         InputRelationArityError(len, arity, self.arg_manifest.span())
-    //     );
-    //     Ok(self)
-    // }
-    /// Get the binding map of the input relation
-    pub fn get_binding_map(&self, offset: usize) -> BTreeMap<Symbol, usize> {
-        self.arg_manifest.get_binding_map(offset)
-    }
-    /// Get the source span of the input relation. Useful for generating informative error messages.
-    pub fn span(&self) -> SourceSpan {
-        self.arg_manifest.span()
-    }
-}
+// // // // //     //     let arity = self.arg_manifest.arity(self.tx, self.stores)?;
+// // // // //     //     ensure!(
+// // // // //     //         arity >= len,
+// // // // //     //         InputRelationArityError(len, arity, self.arg_manifest.span())
+// // // // //     //     );
+// // // // //     //     Ok(self)
+// // // // //     // }
+// // // // //     /// Get the binding map of the input relation
+// // // // //     pub fn get_binding_map(&self, offset: usize) -> BTreeMap<Symbol, usize> {
+// // // // //         self.arg_manifest.get_binding_map(offset)
+// // // // //     }
+// // // // //     /// Get the source span of the input relation. Useful for generating informative error messages.
+// // // // //     pub fn span(&self) -> SourceSpan {
+// // // // //         self.arg_manifest.span()
+// // // // //     }
+// // // // // }
 
-impl<'a, 'b> FixedRulePayload<'a, 'b> {
-    /// Get the total number of input relations.
-    pub fn inputs_count(&self) -> usize {
-        self.manifest.relations_count()
-    }
-    /// Get the input relation at `idx`.
-    pub fn get_input(&self, idx: usize) -> Result<FixedRuleInputRelation<'a, 'b>> {
-        let arg_manifest = self.manifest.relation(idx)?;
-        Ok(FixedRuleInputRelation {
-            arg_manifest,
-            stores: self.stores,
-            tx: self.tx,
-        })
-    }
-    /// Get the name of the current fixed rule
-    pub fn name(&self) -> &str {
-        &self.manifest.fixed_handle.name
-    }
-    /// Get the source span of the payloads. Useful for generating informative errors.
-    pub fn span(&self) -> SourceSpan {
-        self.manifest.span
-    }
-    /// Extract an expression option
-    pub fn expr_option(&self, name: &str, default: Option<Expr>) -> Result<Expr> {
-        match self.manifest.options.get(name) {
-            Some(ex) => Ok(ex.clone()),
-            None => match default {
-                Some(ex) => Ok(ex),
-                None => Err(FixedRuleOptionNotFoundError {
-                    name: name.to_string(),
-                    span: self.manifest.span,
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                }
-                .into()),
-            },
-        }
-    }
+// // // // // impl<'a, 'b> FixedRulePayload<'a, 'b> {
+// // // // //     /// Get the total number of input relations.
+// // // // //     pub fn inputs_count(&self) -> usize {
+// // // // //         self.manifest.relations_count()
+// // // // //     }
+// // // // //     /// Get the input relation at `idx`.
+// // // // //     pub fn get_input(&self, idx: usize) -> Result<FixedRuleInputRelation<'a, 'b>> {
+// // // // //         let arg_manifest = self.manifest.relation(idx)?;
+// // // // //         Ok(FixedRuleInputRelation {
+// // // // //             arg_manifest,
+// // // // //             stores: self.stores,
+// // // // //             compiler: self.compiler,
+// // // // //         })
+// // // // //     }
+// // // // //     /// Get the name of the current fixed rule
+// // // // //     pub fn name(&self) -> &str {
+// // // // //         &self.manifest.fixed_handle.name
+// // // // //     }
+// // // // //     /// Get the source span of the payloads. Useful for generating informative errors.
+// // // // //     pub fn span(&self) -> SourceSpan {
+// // // // //         self.manifest.span
+// // // // //     }
+// // // // //     /// Extract an expression option
+// // // // //     pub fn expr_option(&self, name: &str, default: Option<Expr>) -> Result<Expr> {
+// // // // //         match self.manifest.options.get(name) {
+// // // // //             Some(ex) => Ok(ex.clone()),
+// // // // //             None => match default {
+// // // // //                 Some(ex) => Ok(ex),
+// // // // //                 None => Err(FixedRuleOptionNotFoundError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: self.manifest.span,
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //             },
+// // // // //         }
+// // // // //     }
 
-    /// Extract a string option
-    pub fn string_option(
-        &self,
-        name: &str,
-        default: Option<&str>,
-    ) -> Result<SmartString<LazyCompact>> {
-        match self.manifest.options.get(name) {
-            Some(ex) => match ex.clone().eval_to_const()? {
-                DataValue::Str(s) => Ok(s),
-                _ => Err(WrongFixedRuleOptionError {
-                    name: name.to_string(),
-                    span: ex.span(),
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                    help: "a string is required".to_string(),
-                }
-                .into()),
-            },
-            None => match default {
-                None => Err(FixedRuleOptionNotFoundError {
-                    name: name.to_string(),
-                    span: self.manifest.span,
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                }
-                .into()),
-                Some(s) => Ok(SmartString::from(s)),
-            },
-        }
-    }
+// // // // //     /// Extract a string option
+// // // // //     pub fn string_option(
+// // // // //         &self,
+// // // // //         name: &str,
+// // // // //         default: Option<&str>,
+// // // // //     ) -> Result<SmartString<LazyCompact>> {
+// // // // //         match self.manifest.options.get(name) {
+// // // // //             Some(ex) => match ex.clone().eval_to_const()? {
+// // // // //                 DataValue::Str(s) => Ok(s),
+// // // // //                 _ => Err(WrongFixedRuleOptionError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: ex.span(),
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                     help: "a string is required".to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //             },
+// // // // //             None => match default {
+// // // // //                 None => Err(FixedRuleOptionNotFoundError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: self.manifest.span,
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //                 Some(s) => Ok(SmartString::from(s)),
+// // // // //             },
+// // // // //         }
+// // // // //     }
 
-    /// Get the source span of the named option. Useful for generating informative error messages.
-    pub fn option_span(&self, name: &str) -> Result<SourceSpan> {
-        match self.manifest.options.get(name) {
-            None => Err(FixedRuleOptionNotFoundError {
-                name: name.to_string(),
-                span: self.manifest.span,
-                rule_name: self.manifest.fixed_handle.name.to_string(),
-            }
-            .into()),
-            Some(v) => Ok(v.span()),
-        }
-    }
-    /// Extract an integer option
-    pub fn integer_option(&self, name: &str, default: Option<i64>) -> Result<i64> {
-        match self.manifest.options.get(name) {
-            Some(v) => match v.clone().eval_to_const() {
-                Ok(DataValue::Num(n)) => match n.get_int() {
-                    Some(i) => Ok(i),
-                    None => Err(FixedRuleOptionNotFoundError {
-                        name: name.to_string(),
-                        span: self.manifest.span,
-                        rule_name: self.manifest.fixed_handle.name.to_string(),
-                    }
-                    .into()),
-                },
-                _ => Err(WrongFixedRuleOptionError {
-                    name: name.to_string(),
-                    span: v.span(),
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                    help: "an integer is required".to_string(),
-                }
-                .into()),
-            },
-            None => match default {
-                Some(v) => Ok(v),
-                None => Err(FixedRuleOptionNotFoundError {
-                    name: name.to_string(),
-                    span: self.manifest.span,
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                }
-                .into()),
-            },
-        }
-    }
-    // // /// Extract a positive integer option
-    // // pub fn pos_integer_option(&self, name: &str, default: Option<usize>) -> Result<usize> {
-    // //     let i = self.integer_option(name, default.map(|i| i as i64))?;
-    // //     ensure!(
-    // //         i > 0,
-    // //         WrongFixedRuleOptionError {
-    // //             name: name.to_string(),
-    // //             span: self.option_span(name)?,
-    // //             rule_name: self.manifest.fixed_handle.name.to_string(),
-    // //             help: "a positive integer is required".to_string(),
-    // //         }
-    // //     );
-    // //     Ok(i as usize)
-    // // }
-    /// Extract a non-negative integer option
-    pub fn non_neg_integer_option(&self, name: &str, default: Option<usize>) -> Result<usize> {
-        let i = self.integer_option(name, default.map(|i| i as i64))?;
-        ensure!(
-            i >= 0,
-            WrongFixedRuleOptionError {
-                name: name.to_string(),
-                span: self.option_span(name)?,
-                rule_name: self.manifest.fixed_handle.name.to_string(),
-                help: "a non-negative integer is required".to_string(),
-            }
-        );
-        Ok(i as usize)
-    }
-    /// Extract a floating point option
-    pub fn float_option(&self, name: &str, default: Option<f64>) -> Result<f64> {
-        match self.manifest.options.get(name) {
-            Some(v) => match v.clone().eval_to_const() {
-                Ok(DataValue::Num(n)) => {
-                    let f = n.get_float();
-                    Ok(f)
-                }
-                _ => Err(WrongFixedRuleOptionError {
-                    name: name.to_string(),
-                    span: v.span(),
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                    help: "a floating number is required".to_string(),
-                }
-                .into()),
-            },
-            None => match default {
-                Some(v) => Ok(v),
-                None => Err(FixedRuleOptionNotFoundError {
-                    name: name.to_string(),
-                    span: self.manifest.span,
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                }
-                .into()),
-            },
-        }
-    }
-    /// Extract a floating point option between 0. and 1.
-    pub fn unit_interval_option(&self, name: &str, default: Option<f64>) -> Result<f64> {
-        let f = self.float_option(name, default)?;
-        ensure!(
-            (0. ..=1.).contains(&f),
-            WrongFixedRuleOptionError {
-                name: name.to_string(),
-                span: self.option_span(name)?,
-                rule_name: self.manifest.fixed_handle.name.to_string(),
-                help: "a number between 0. and 1. is required".to_string(),
-            }
-        );
-        Ok(f)
-    }
-    /// Extract a boolean option
-    pub fn bool_option(&self, name: &str, default: Option<bool>) -> Result<bool> {
-        match self.manifest.options.get(name) {
-            Some(v) => match v.clone().eval_to_const() {
-                Ok(DataValue::Bool(b)) => Ok(b),
-                _ => Err(WrongFixedRuleOptionError {
-                    name: name.to_string(),
-                    span: v.span(),
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                    help: "a boolean value is required".to_string(),
-                }
-                .into()),
-            },
-            None => match default {
-                Some(v) => Ok(v),
-                None => Err(FixedRuleOptionNotFoundError {
-                    name: name.to_string(),
-                    span: self.manifest.span,
-                    rule_name: self.manifest.fixed_handle.name.to_string(),
-                }
-                .into()),
-            },
-        }
-    }
-}
+// // // // //     /// Get the source span of the named option. Useful for generating informative error messages.
+// // // // //     pub fn option_span(&self, name: &str) -> Result<SourceSpan> {
+// // // // //         match self.manifest.options.get(name) {
+// // // // //             None => Err(FixedRuleOptionNotFoundError {
+// // // // //                 name: name.to_string(),
+// // // // //                 span: self.manifest.span,
+// // // // //                 rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //             }
+// // // // //             .into()),
+// // // // //             Some(v) => Ok(v.span()),
+// // // // //         }
+// // // // //     }
+// // // // //     /// Extract an integer option
+// // // // //     pub fn integer_option(&self, name: &str, default: Option<i64>) -> Result<i64> {
+// // // // //         match self.manifest.options.get(name) {
+// // // // //             Some(v) => match v.clone().eval_to_const() {
+// // // // //                 Ok(DataValue::Num(n)) => match n.get_int() {
+// // // // //                     Some(i) => Ok(i),
+// // // // //                     None => Err(FixedRuleOptionNotFoundError {
+// // // // //                         name: name.to_string(),
+// // // // //                         span: self.manifest.span,
+// // // // //                         rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                     }
+// // // // //                     .into()),
+// // // // //                 },
+// // // // //                 _ => Err(WrongFixedRuleOptionError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: v.span(),
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                     help: "an integer is required".to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //             },
+// // // // //             None => match default {
+// // // // //                 Some(v) => Ok(v),
+// // // // //                 None => Err(FixedRuleOptionNotFoundError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: self.manifest.span,
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //             },
+// // // // //         }
+// // // // //     }
+// // // // //     // // /// Extract a positive integer option
+// // // // //     // // pub fn pos_integer_option(&self, name: &str, default: Option<usize>) -> Result<usize> {
+// // // // //     // //     let i = self.integer_option(name, default.map(|i| i as i64))?;
+// // // // //     // //     ensure!(
+// // // // //     // //         i > 0,
+// // // // //     // //         WrongFixedRuleOptionError {
+// // // // //     // //             name: name.to_string(),
+// // // // //     // //             span: self.option_span(name)?,
+// // // // //     // //             rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //     // //             help: "a positive integer is required".to_string(),
+// // // // //     // //         }
+// // // // //     // //     );
+// // // // //     // //     Ok(i as usize)
+// // // // //     // // }
+// // // // //     /// Extract a non-negative integer option
+// // // // //     pub fn non_neg_integer_option(&self, name: &str, default: Option<usize>) -> Result<usize> {
+// // // // //         let i = self.integer_option(name, default.map(|i| i as i64))?;
+// // // // //         ensure!(
+// // // // //             i >= 0,
+// // // // //             WrongFixedRuleOptionError {
+// // // // //                 name: name.to_string(),
+// // // // //                 span: self.option_span(name)?,
+// // // // //                 rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                 help: "a non-negative integer is required".to_string(),
+// // // // //             }
+// // // // //         );
+// // // // //         Ok(i as usize)
+// // // // //     }
+// // // // //     /// Extract a floating point option
+// // // // //     pub fn float_option(&self, name: &str, default: Option<f64>) -> Result<f64> {
+// // // // //         match self.manifest.options.get(name) {
+// // // // //             Some(v) => match v.clone().eval_to_const() {
+// // // // //                 Ok(DataValue::Num(n)) => {
+// // // // //                     let f = n.get_float();
+// // // // //                     Ok(f)
+// // // // //                 }
+// // // // //                 _ => Err(WrongFixedRuleOptionError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: v.span(),
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                     help: "a floating number is required".to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //             },
+// // // // //             None => match default {
+// // // // //                 Some(v) => Ok(v),
+// // // // //                 None => Err(FixedRuleOptionNotFoundError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: self.manifest.span,
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //             },
+// // // // //         }
+// // // // //     }
+// // // // //     /// Extract a floating point option between 0. and 1.
+// // // // //     pub fn unit_interval_option(&self, name: &str, default: Option<f64>) -> Result<f64> {
+// // // // //         let f = self.float_option(name, default)?;
+// // // // //         ensure!(
+// // // // //             (0. ..=1.).contains(&f),
+// // // // //             WrongFixedRuleOptionError {
+// // // // //                 name: name.to_string(),
+// // // // //                 span: self.option_span(name)?,
+// // // // //                 rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                 help: "a number between 0. and 1. is required".to_string(),
+// // // // //             }
+// // // // //         );
+// // // // //         Ok(f)
+// // // // //     }
+// // // // //     /// Extract a boolean option
+// // // // //     pub fn bool_option(&self, name: &str, default: Option<bool>) -> Result<bool> {
+// // // // //         match self.manifest.options.get(name) {
+// // // // //             Some(v) => match v.clone().eval_to_const() {
+// // // // //                 Ok(DataValue::Bool(b)) => Ok(b),
+// // // // //                 _ => Err(WrongFixedRuleOptionError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: v.span(),
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                     help: "a boolean value is required".to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //             },
+// // // // //             None => match default {
+// // // // //                 Some(v) => Ok(v),
+// // // // //                 None => Err(FixedRuleOptionNotFoundError {
+// // // // //                     name: name.to_string(),
+// // // // //                     span: self.manifest.span,
+// // // // //                     rule_name: self.manifest.fixed_handle.name.to_string(),
+// // // // //                 }
+// // // // //                 .into()),
+// // // // //             },
+// // // // //         }
+// // // // //     }
+// // // // // }
 
 /// Trait for an implementation of an algorithm or a utility
 pub trait FixedRule: Send + Sync + Debug {
