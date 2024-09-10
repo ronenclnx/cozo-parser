@@ -50,8 +50,8 @@ pub struct CallbackDeclaration {
     pub(crate) sender: Sender<(CallbackOp, NamedRows, NamedRows)>,
 }
 
-pub(crate) type CallbackCollector =
-    BTreeMap<SmartString<LazyCompact>, Vec<(CallbackOp, NamedRows, NamedRows)>>;
+// // pub(crate) type CallbackCollector =
+// //     BTreeMap<SmartString<LazyCompact>, Vec<(CallbackOp, NamedRows, NamedRows)>>;
 
 #[allow(dead_code)]
 pub(crate) type EventCallbackRegistry = (
@@ -60,60 +60,60 @@ pub(crate) type EventCallbackRegistry = (
 );
 
 impl<'s, S: Storage<'s>> Db<S> {
-    pub(crate) fn current_callback_targets(&self) -> BTreeSet<SmartString<LazyCompact>> {
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            self.event_callbacks
-                .read()
-                .unwrap()
-                .1
-                .keys()
-                .cloned()
-                .collect()
-        }
+    // // // pub(crate) fn current_callback_targets(&self) -> BTreeSet<SmartString<LazyCompact>> {
+    // // //     #[cfg(not(target_arch = "wasm32"))]
+    // // //     {
+    // // //         self.event_callbacks
+    // // //             .read()
+    // // //             .unwrap()
+    // // //             .1
+    // // //             .keys()
+    // // //             .cloned()
+    // // //             .collect()
+    // // //     }
 
-        #[cfg(target_arch = "wasm32")]
-        {
-            Default::default()
-        }
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    pub(crate) fn send_callbacks(&'s self, collector: CallbackCollector) {
-        let mut to_remove = vec![];
+    // // //     #[cfg(target_arch = "wasm32")]
+    // // //     {
+    // // //         Default::default()
+    // // //     }
+    // // // }
+    // // #[cfg(not(target_arch = "wasm32"))]
+    // // pub(crate) fn send_callbacks(&'s self, collector: CallbackCollector) {
+    // //     let mut to_remove = vec![];
 
-        for (table, vals) in collector {
-            for (op, new, old) in vals {
-                let (cbs, cb_dir) = &*self.event_callbacks.read().unwrap();
-                if let Some(cb_ids) = cb_dir.get(&table) {
-                    let mut it = cb_ids.iter();
-                    if let Some(fst) = it.next() {
-                        for cb_id in it {
-                            if let Some(cb) = cbs.get(cb_id) {
-                                if cb.sender.send((op, new.clone(), old.clone())).is_err() {
-                                    to_remove.push(*cb_id)
-                                }
-                            }
-                        }
+    // //     for (table, vals) in collector {
+    // //         for (op, new, old) in vals {
+    // //             let (cbs, cb_dir) = &*self.event_callbacks.read().unwrap();
+    // //             if let Some(cb_ids) = cb_dir.get(&table) {
+    // //                 let mut it = cb_ids.iter();
+    // //                 if let Some(fst) = it.next() {
+    // //                     for cb_id in it {
+    // //                         if let Some(cb) = cbs.get(cb_id) {
+    // //                             if cb.sender.send((op, new.clone(), old.clone())).is_err() {
+    // //                                 to_remove.push(*cb_id)
+    // //                             }
+    // //                         }
+    // //                     }
 
-                        if let Some(cb) = cbs.get(fst) {
-                            if cb.sender.send((op, new, old)).is_err() {
-                                to_remove.push(*fst)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    // //                     if let Some(cb) = cbs.get(fst) {
+    // //                         if cb.sender.send((op, new, old)).is_err() {
+    // //                             to_remove.push(*fst)
+    // //                         }
+    // //                     }
+    // //                 }
+    // //             }
+    // //         }
+    // //     }
 
-        if !to_remove.is_empty() {
-            let (cbs, cb_dir) = &mut *self.event_callbacks.write().unwrap();
-            for removing_id in &to_remove {
-                if let Some(removed) = cbs.remove(removing_id) {
-                    if let Some(set) = cb_dir.get_mut(&removed.dependent) {
-                        set.remove(removing_id);
-                    }
-                }
-            }
-        }
-    }
+    // //     if !to_remove.is_empty() {
+    // //         let (cbs, cb_dir) = &mut *self.event_callbacks.write().unwrap();
+    // //         for removing_id in &to_remove {
+    // //             if let Some(removed) = cbs.remove(removing_id) {
+    // //                 if let Some(set) = cb_dir.get_mut(&removed.dependent) {
+    // //                     set.remove(removing_id);
+    // //                 }
+    // //             }
+    // //         }
+    // //     }
+    // // }
 }

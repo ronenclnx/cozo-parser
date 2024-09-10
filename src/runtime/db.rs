@@ -49,7 +49,7 @@ use crate::query::ra::{
 };
 #[allow(unused_imports)]
 use crate::runtime::callback::{
-    CallbackCollector, CallbackDeclaration, CallbackOp, EventCallbackRegistry,
+    CallbackDeclaration, CallbackOp, EventCallbackRegistry,
 };
 use crate::runtime::relation::{
     extend_tuple_from_v, AccessLevel, InsufficientAccessLevel, RelationHandle, RelationId,

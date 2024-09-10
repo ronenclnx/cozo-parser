@@ -7,9 +7,9 @@
  */
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
-use std::hash::Hash;
+// use std::hash::Hash;
 use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
+// use std::time::{SystemTime, UNIX_EPOCH};
 
 use itertools::Itertools;
 use miette::{bail, ensure, Context, Diagnostic, Error, IntoDiagnostic, Result};
@@ -24,7 +24,6 @@ use crate::compile::symb::Symbol;
 use crate::data::value::DataValue;
 use crate::fixed_rule::{FixedRule, FixedRuleHandle};
 use crate::parse::{parse_script, CozoScript, SourceSpan};
-use crate::runtime::callback::CallbackCollector;
 use miette::Report;
 
 pub type CompiledProgram = BTreeMap<MagicSymbol, CompiledRuleSet>;
@@ -994,7 +993,6 @@ use crate::data::json::JsonValue;
         &mut self,
         p: InputProgram,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>, Report> {
-        let mut callback_collector = BTreeMap::new();
         let callback_targets = Default::default();
         let res;
         {
@@ -1002,7 +1000,6 @@ use crate::data::json::JsonValue;
             res = self.compile_single_program(
                 p,
                 &callback_targets,
-                &mut callback_collector,
             )?;
 
 
@@ -1015,10 +1012,9 @@ use crate::data::json::JsonValue;
         &mut self,
         p: InputProgram,
         callback_targets: &BTreeSet<SmartString<LazyCompact>>,
-        callback_collector: &mut CallbackCollector,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
         let compiled =
-            self.compile_query(p, callback_targets, callback_collector, true)?;
+            self.compile_query(p, callback_targets, true)?;
         Ok(compiled)
     }
 
@@ -1027,7 +1023,6 @@ use crate::data::json::JsonValue;
         &mut self,
         input_program: InputProgram,
         callback_targets: &BTreeSet<SmartString<LazyCompact>>,
-        callback_collector: &mut CallbackCollector,
         top_level: bool,
     ) -> Result<Vec<BTreeMap<MagicSymbol, CompiledRuleSet>>> {
         // cleanups contain stored relations that should be deleted at the end of query

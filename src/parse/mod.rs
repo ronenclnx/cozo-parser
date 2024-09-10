@@ -31,7 +31,6 @@ use crate::fixed_rule::FixedRule;
 use crate::compile::expr::Expr;
 
 pub(crate) mod expr;
-pub(crate) mod fts;
 pub(crate) mod imperative;
 pub(crate) mod query;
 pub(crate) mod schema;

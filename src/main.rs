@@ -54,7 +54,6 @@ use crate::compile::symb::Symbol;
 
 mod data;
 mod fixed_rule;
-mod fts;
 mod parse;
 mod query;
 mod runtime;
