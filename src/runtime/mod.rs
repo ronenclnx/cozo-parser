@@ -6,11 +6,7 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-pub(crate) mod callback;
 pub(crate) mod db;
-// pub(crate) mod imperative;
 pub(crate) mod relation;
 pub(crate) mod temp_store;
 pub(crate) mod transact;
-// pub(crate) mod hnsw;
-// pub(crate) mod minhash_lsh;

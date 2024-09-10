@@ -116,10 +116,10 @@ impl<S> Debug for Db<S> {
     }
 }
 
-#[derive(Debug, Diagnostic, Error)]
-#[error("Initialization of database failed")]
-#[diagnostic(code(db::init))]
-pub(crate) struct BadDbInit(#[help] pub(crate) String);
+// // #[derive(Debug, Diagnostic, Error)]
+// // #[error("Initialization of database failed")]
+// // #[diagnostic(code(db::init))]
+// // pub(crate) struct BadDbInit(#[help] pub(crate) String);
 
 // // #[derive(Debug, Error, Diagnostic)]
 // // #[error("Cannot import data into relation {0} as it is an index")]

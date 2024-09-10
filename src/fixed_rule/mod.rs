@@ -674,20 +674,6 @@ impl FixedRuleHandle {
 #[diagnostic(help("Edge relation requires tuples of length at least two"))]
 struct NotAnEdgeError(#[label] SourceSpan);
 
-// // #[derive(Error, Diagnostic, Debug)]
-// // #[error(
-// //     "The value {0:?} at the third position in the relation cannot be interpreted as edge weights"
-// // )]
-// // #[diagnostic(code(algo::invalid_edge_weight))]
-// // #[diagnostic(help(
-// //     "Edge weights must be finite numbers. Some algorithm also requires positivity."
-// // ))]
-// // struct BadEdgeWeightError(DataValue, #[label] SourceSpan);
-
-// #[derive(Error, Diagnostic, Debug)]
-// #[error("The requested rule '{0}' cannot be found")]
-// #[diagnostic(code(algo::rule_not_found))]
-// pub struct RuleNotFoundError(String, #[label] SourceSpan);
 use crate::compile::fixed_rule::RuleNotFoundError;
 
 #[derive(Error, Diagnostic, Debug)]

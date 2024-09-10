@@ -355,33 +355,6 @@ impl RelationHandle {
             RelationDeserError
         })?)
     }
-    // // // pub(crate) fn scan_all<'a>(
-    // // //     &self,
-    // // //     tx: &'a SessionTx<'_>,
-    // // // ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-    // // //     let lower = Tuple::default().encode_as_key(self.id);
-    // // //     let upper = Tuple::default().encode_as_key(self.id.next());
-    // // //     if self.is_temp {
-    // // //         tx.temp_store_tx.range_scan_tuple(&lower, &upper)
-    // // //     } else {
-    // // //         tx.store_tx.range_scan_tuple(&lower, &upper)
-    // // //     }
-    // // // }
-
-    // // pub(crate) fn skip_scan_all<'a>(
-    // //     &self,
-    // //     tx: &'a SessionTx<'_>,
-    // //     valid_at: ValidityTs,
-    // // ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-    // //     let lower = Tuple::default().encode_as_key(self.id);
-    // //     let upper = Tuple::default().encode_as_key(self.id.next());
-    // //     if self.is_temp {
-    // //         tx.temp_store_tx
-    // //             .range_skip_scan_tuple(&lower, &upper, valid_at)
-    // //     } else {
-    // //         tx.store_tx.range_skip_scan_tuple(&lower, &upper, valid_at)
-    // //     }
-    // // }
 
     pub(crate) fn get(&self, tx: &SessionTx<'_>, key: &[DataValue]) -> Result<Option<Tuple>> {
         let key_data = key.encode_as_key(self.id);
@@ -398,24 +371,6 @@ impl RelationHandle {
         }
     }
 
-    // // pub(crate) fn get_val_only(
-    // //     &self,
-    // //     tx: &SessionTx<'_>,
-    // //     key: &[DataValue],
-    // // ) -> Result<Option<Tuple>> {
-    // //     let key_data = key.encode_as_key(self.id);
-    // //     if self.is_temp {
-    // //         Ok(tx
-    // //             .temp_store_tx
-    // //             .get(&key_data, false)?
-    // //             .map(|val_data| rmp_serde::from_slice(&val_data[ENCODED_KEY_MIN_LEN..]).unwrap()))
-    // //     } else {
-    // //         Ok(tx
-    // //             .store_tx
-    // //             .get(&key_data, false)?
-    // //             .map(|val_data| rmp_serde::from_slice(&val_data[ENCODED_KEY_MIN_LEN..]).unwrap()))
-    // //     }
-    // // }
 
     pub(crate) fn exists(&self, tx: &SessionTx<'_>, key: &[DataValue]) -> Result<bool> {
         let key_data = key.encode_as_key(self.id);
@@ -426,91 +381,6 @@ impl RelationHandle {
         }
     }
 
-    // // pub(crate) fn scan_prefix<'a>(
-    // //     &self,
-    // //     tx: &'a SessionTx<'_>,
-    // //     prefix: &Tuple,
-    // // ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-    // //     let mut lower = prefix.clone();
-    // //     lower.truncate(self.metadata.keys.len());
-    // //     let mut upper = lower.clone();
-    // //     upper.push(DataValue::Bot);
-    // //     let prefix_encoded = lower.encode_as_key(self.id);
-    // //     let upper_encoded = upper.encode_as_key(self.id);
-    // //     if self.is_temp {
-    // //         tx.temp_store_tx
-    // //             .range_scan_tuple(&prefix_encoded, &upper_encoded)
-    // //     } else {
-    // //         tx.store_tx
-    // //             .range_scan_tuple(&prefix_encoded, &upper_encoded)
-    // //     }
-    // // }
-
-    // // pub(crate) fn skip_scan_prefix<'a>(
-    // //     &self,
-    // //     tx: &'a SessionTx<'_>,
-    // //     prefix: &Tuple,
-    // //     valid_at: ValidityTs,
-    // // ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-    // //     let mut lower = prefix.clone();
-    // //     lower.truncate(self.metadata.keys.len());
-    // //     let mut upper = lower.clone();
-    // //     upper.push(DataValue::Bot);
-    // //     let prefix_encoded = lower.encode_as_key(self.id);
-    // //     let upper_encoded = upper.encode_as_key(self.id);
-    // //     if self.is_temp {
-    // //         tx.temp_store_tx
-    // //             .range_skip_scan_tuple(&prefix_encoded, &upper_encoded, valid_at)
-    // //     } else {
-    // //         tx.store_tx
-    // //             .range_skip_scan_tuple(&prefix_encoded, &upper_encoded, valid_at)
-    // //     }
-    // // }
-
-    // pub(crate) fn scan_bounded_prefix<'a>(
-    //     &self,
-    //     tx: &'a SessionTx<'_>,
-    //     prefix: &[DataValue],
-    //     lower: &[DataValue],
-    //     upper: &[DataValue],
-    // ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-    //     let mut lower_t = prefix.to_vec();
-    //     lower_t.extend_from_slice(lower);
-    //     let mut upper_t = prefix.to_vec();
-    //     upper_t.extend_from_slice(upper);
-    //     upper_t.push(DataValue::Bot);
-    //     let lower_encoded = lower_t.encode_as_key(self.id);
-    //     let upper_encoded = upper_t.encode_as_key(self.id);
-    //     if self.is_temp {
-    //         tx.temp_store_tx
-    //             .range_scan_tuple(&lower_encoded, &upper_encoded)
-    //     } else {
-    //         tx.store_tx.range_scan_tuple(&lower_encoded, &upper_encoded)
-    //     }
-    // }
-// //     pub(crate) fn skip_scan_bounded_prefix<'a>(
-// //         &self,
-// //         tx: &'a SessionTx<'_>,
-// //         prefix: &Tuple,
-// //         lower: &[DataValue],
-// //         upper: &[DataValue],
-// //         valid_at: ValidityTs,
-// //     ) -> impl Iterator<Item = Result<Tuple>> + 'a {
-// //         let mut lower_t = prefix.clone();
-// //         lower_t.extend_from_slice(lower);
-// //         let mut upper_t = prefix.clone();
-// //         upper_t.extend_from_slice(upper);
-// //         upper_t.push(DataValue::Bot);
-// //         let lower_encoded = lower_t.encode_as_key(self.id);
-// //         let upper_encoded = upper_t.encode_as_key(self.id);
-// //         if self.is_temp {
-// //             tx.temp_store_tx
-// //                 .range_skip_scan_tuple(&lower_encoded, &upper_encoded, valid_at)
-// //         } else {
-// //             tx.store_tx
-// //                 .range_skip_scan_tuple(&lower_encoded, &upper_encoded, valid_at)
-// //         }
-// //     }
 }
 
 const DEFAULT_SIZE_HINT: usize = 16;
