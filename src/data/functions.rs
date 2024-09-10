@@ -31,7 +31,7 @@ use crate::compile::expr::Op;
 use crate::data::json::JsonValue;
 use crate::data::relation::VecElementType;
 use crate::data::value::{
-    DataValue, JsonData, Num, RegexWrapper, UuidWrapper, Validity, ValidityTs, Vector,
+    DataValue, JsonData, Num, RegexWrapper, UuidWrapper, Validity, ValidityTs,
 };
 
 macro_rules! define_op {

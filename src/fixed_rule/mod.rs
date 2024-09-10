@@ -10,7 +10,7 @@ use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use crossbeam::channel::{bounded, Receiver, Sender};
+// use crossbeam::channel::{bounded, Receiver, Sender};
 #[allow(unused_imports)]
 use either::{Left, Right};
 #[cfg(feature = "graph-algo")]
@@ -356,32 +356,32 @@ impl SimpleFixedRule {
             rule: Box::new(rule),
         }
     }
-    /// Construct a SimpleFixedRule that uses channels for communication.
-    pub fn rule_with_channel(
-        return_arity: usize,
-    ) -> (
-        Self,
-        Receiver<(
-            Vec<NamedRows>,
-            BTreeMap<String, DataValue>,
-            Sender<Result<NamedRows>>,
-        )>,
-    ) {
-        let (db2app_sender, db2app_receiver) = bounded(0);
-        (
-            Self {
-                return_arity,
-                rule: Box::new(move |inputs, options| -> Result<NamedRows> {
-                    let (app2db_sender, app2db_receiver) = bounded(0);
-                    db2app_sender
-                        .send((inputs, options, app2db_sender))
-                        .into_diagnostic()?;
-                    app2db_receiver.recv().into_diagnostic()?
-                }),
-            },
-            db2app_receiver,
-        )
-    }
+    // // /// Construct a SimpleFixedRule that uses channels for communication.
+    // // pub fn rule_with_channel(
+    // //     return_arity: usize,
+    // // ) -> (
+    // //     Self,
+    // //     Receiver<(
+    // //         Vec<NamedRows>,
+    // //         BTreeMap<String, DataValue>,
+    // //         Sender<Result<NamedRows>>,
+    // //     )>,
+    // // ) {
+    // //     let (db2app_sender, db2app_receiver) = bounded(0);
+    // //     (
+    // //         Self {
+    // //             return_arity,
+    // //             rule: Box::new(move |inputs, options| -> Result<NamedRows> {
+    // //                 let (app2db_sender, app2db_receiver) = bounded(0);
+    // //                 db2app_sender
+    // //                     .send((inputs, options, app2db_sender))
+    // //                     .into_diagnostic()?;
+    // //                 app2db_receiver.recv().into_diagnostic()?
+    // //             }),
+    // //         },
+    // //         db2app_receiver,
+    // //     )
+    // // }
 }
 
 impl FixedRule for SimpleFixedRule {

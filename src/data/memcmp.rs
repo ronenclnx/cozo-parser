@@ -15,7 +15,7 @@ use byteorder::{BigEndian, ByteOrder, WriteBytesExt};
 use regex::Regex;
 
 use crate::data::value::{
-    DataValue, JsonData, Num, RegexWrapper, UuidWrapper, Validity, ValidityTs, Vector,
+    DataValue, JsonData, Num, RegexWrapper, UuidWrapper, Validity, ValidityTs,
 };
 
 const INIT_TAG: u8 = 0x00;

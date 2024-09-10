@@ -80,26 +80,21 @@ pub trait StoreTx<'s>: Sync {
     }
 
     /// Delete a key-value pair from the storage.
-    fn del(&mut self, key: &[u8]) -> Result<()>;
-
-    /// Delete a key-value pair from the storage.
     /// The difference between this one and `del` is the mutability of self.
     /// It is OK to always panic if `supports_par_put` returns `false`.
     fn par_del(&self, _key: &[u8]) -> Result<()> {
         panic!("par_del is not supported")
     }
 
-    /// Delete a range from persisted data only.
-    fn del_range_from_persisted(&mut self, lower: &[u8], upper: &[u8]) -> Result<()>;
 
     /// Check if a key exists. If `for_update` is `true` (only possible in a write transaction),
     /// then the database needs to guarantee that `commit()` can only succeed if
     /// the key has not been modified outside the transaction.
     fn exists(&self, key: &[u8], for_update: bool) -> Result<bool>;
 
-    /// Commit a transaction. Must return an `Err` if MVCC consistency cannot be guaranteed,
-    /// and discard all changes introduced by this transaction.
-    fn commit(&mut self) -> Result<()>;
+    // // // /// Commit a transaction. Must return an `Err` if MVCC consistency cannot be guaranteed,
+    // // // /// and discard all changes introduced by this transaction.
+    // // // fn commit(&mut self) -> Result<()>;
 
     // // /// Scan on a range. `lower` is inclusive whereas `upper` is exclusive.
     // // /// The default implementation calls [`range_scan_owned`](Self::range_scan) and converts the results.

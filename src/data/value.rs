@@ -8,7 +8,7 @@
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
-use ndarray::Array1;
+// use ndarray::Array1;
 use std::cmp::{Ordering, Reverse};
 use std::collections::BTreeSet;
 use std::fmt::{Debug, Display, Formatter};
@@ -202,14 +202,14 @@ impl Hash for JsonData {
     }
 }
 
-/// Vector of floating numbers
-#[derive(Debug, Clone)]
-pub enum Vector {
-    /// 32-bit float array
-    F32(Array1<f32>),
-    /// 64-bit float array
-    F64(Array1<f64>),
-}
+// // /// Vector of floating numbers
+// // #[derive(Debug, Clone)]
+// // pub enum Vector {
+// //     /// 32-bit float array
+// //     F32(Array1<f32>),
+// //     /// 64-bit float array
+// //     F64(Array1<f64>),
+// // }
 
 struct VecBytes<'a>(&'a [u8]);
 
@@ -222,163 +222,163 @@ impl serde::Serialize for VecBytes<'_> {
     }
 }
 
-impl serde::Serialize for Vector {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-    {
-        let mut state = serializer.serialize_tuple(2)?;
-        match self {
-            Vector::F32(a) => {
-                state.serialize_element(&0u8)?;
-                let arr = a.as_slice().unwrap();
-                let len = std::mem::size_of_val(arr);
-                let ptr = arr.as_ptr() as *const u8;
-                let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
-                state.serialize_element(&VecBytes(bytes))?;
-            }
-            Vector::F64(a) => {
-                state.serialize_element(&1u8)?;
-                let arr = a.as_slice().unwrap();
-                let len = std::mem::size_of_val(arr);
-                let ptr = arr.as_ptr() as *const u8;
-                let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
-                state.serialize_element(&VecBytes(bytes))?;
-            }
-        }
-        state.end()
-    }
-}
+// impl serde::Serialize for Vector {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//         where
+//             S: Serializer,
+//     {
+//         let mut state = serializer.serialize_tuple(2)?;
+//         match self {
+//             Vector::F32(a) => {
+//                 state.serialize_element(&0u8)?;
+//                 let arr = a.as_slice().unwrap();
+//                 let len = std::mem::size_of_val(arr);
+//                 let ptr = arr.as_ptr() as *const u8;
+//                 let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
+//                 state.serialize_element(&VecBytes(bytes))?;
+//             }
+//             Vector::F64(a) => {
+//                 state.serialize_element(&1u8)?;
+//                 let arr = a.as_slice().unwrap();
+//                 let len = std::mem::size_of_val(arr);
+//                 let ptr = arr.as_ptr() as *const u8;
+//                 let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
+//                 state.serialize_element(&VecBytes(bytes))?;
+//             }
+//         }
+//         state.end()
+//     }
+// }
 
 
-impl Vector {
-    /// Get the length of the vector
-    pub fn len(&self) -> usize {
-        match self {
-            Vector::F32(v) => v.len(),
-            Vector::F64(v) => v.len(),
-        }
-    }
-    /// Check if the vector is empty
-    pub fn is_empty(&self) -> bool {
-        match self {
-            Vector::F32(v) => v.is_empty(),
-            Vector::F64(v) => v.is_empty(),
-        }
-    }
-    pub(crate) fn el_type(&self) -> VecElementType {
-        match self {
-            Vector::F32(_) => VecElementType::F32,
-            Vector::F64(_) => VecElementType::F64,
-        }
-    }
-    pub(crate) fn get_hash(&self) -> impl AsRef<[u8]> {
-        let mut hasher = Sha256::new();
-        match self {
-            Vector::F32(v) => {
-                for e in v.iter() {
-                    hasher.update(e.to_le_bytes());
-                }
-            }
-            Vector::F64(v) => {
-                for e in v.iter() {
-                    hasher.update(e.to_le_bytes());
-                }
-            }
-        }
-        hasher.finalize_fixed()
-    }
-}
+// // // // // impl Vector {
+// // // // //     /// Get the length of the vector
+// // // // //     pub fn len(&self) -> usize {
+// // // // //         match self {
+// // // // //             Vector::F32(v) => v.len(),
+// // // // //             Vector::F64(v) => v.len(),
+// // // // //         }
+// // // // //     }
+// // // // //     /// Check if the vector is empty
+// // // // //     pub fn is_empty(&self) -> bool {
+// // // // //         match self {
+// // // // //             Vector::F32(v) => v.is_empty(),
+// // // // //             Vector::F64(v) => v.is_empty(),
+// // // // //         }
+// // // // //     }
+// // // // //     pub(crate) fn el_type(&self) -> VecElementType {
+// // // // //         match self {
+// // // // //             Vector::F32(_) => VecElementType::F32,
+// // // // //             Vector::F64(_) => VecElementType::F64,
+// // // // //         }
+// // // // //     }
+// // // // //     pub(crate) fn get_hash(&self) -> impl AsRef<[u8]> {
+// // // // //         let mut hasher = Sha256::new();
+// // // // //         match self {
+// // // // //             Vector::F32(v) => {
+// // // // //                 for e in v.iter() {
+// // // // //                     hasher.update(e.to_le_bytes());
+// // // // //                 }
+// // // // //             }
+// // // // //             Vector::F64(v) => {
+// // // // //                 for e in v.iter() {
+// // // // //                     hasher.update(e.to_le_bytes());
+// // // // //                 }
+// // // // //             }
+// // // // //         }
+// // // // //         hasher.finalize_fixed()
+// // // // //     }
+// // // // // }
 
-impl PartialEq<Self> for Vector {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Vector::F32(l), Vector::F32(r)) => {
-                if l.len() != r.len() {
-                    return false;
-                }
-                for (le, re) in l.iter().zip(r) {
-                    if !OrderedFloat(*le).eq(&OrderedFloat(*re)) {
-                        return false;
-                    }
-                }
-                true
-            }
-            (Vector::F64(l), Vector::F64(r)) => {
-                if l.len() != r.len() {
-                    return false;
-                }
-                for (le, re) in l.iter().zip(r) {
-                    if !OrderedFloat(*le).eq(&OrderedFloat(*re)) {
-                        return false;
-                    }
-                }
-                true
-            }
-            _ => false,
-        }
-    }
-}
+// // impl PartialEq<Self> for Vector {
+// //     fn eq(&self, other: &Self) -> bool {
+// //         match (self, other) {
+// //             (Vector::F32(l), Vector::F32(r)) => {
+// //                 if l.len() != r.len() {
+// //                     return false;
+// //                 }
+// //                 for (le, re) in l.iter().zip(r) {
+// //                     if !OrderedFloat(*le).eq(&OrderedFloat(*re)) {
+// //                         return false;
+// //                     }
+// //                 }
+// //                 true
+// //             }
+// //             (Vector::F64(l), Vector::F64(r)) => {
+// //                 if l.len() != r.len() {
+// //                     return false;
+// //                 }
+// //                 for (le, re) in l.iter().zip(r) {
+// //                     if !OrderedFloat(*le).eq(&OrderedFloat(*re)) {
+// //                         return false;
+// //                     }
+// //                 }
+// //                 true
+// //             }
+// //             _ => false,
+// //         }
+// //     }
+// // }
 
-impl Eq for Vector {}
+// // impl Eq for Vector {}
 
-impl PartialOrd for Vector {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
+// // impl PartialOrd for Vector {
+// //     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+// //         Some(self.cmp(other))
+// //     }
+// // }
 
-impl Ord for Vector {
-    fn cmp(&self, other: &Self) -> Ordering {
-        match (self, other) {
-            (Vector::F32(l), Vector::F32(r)) => {
-                match l.len().cmp(&r.len()) {
-                    Ordering::Equal => (),
-                    o => return o,
-                }
-                for (le, re) in l.iter().zip(r) {
-                    match OrderedFloat(*le).cmp(&OrderedFloat(*re)) {
-                        Ordering::Equal => continue,
-                        o => return o,
-                    }
-                }
-                Ordering::Equal
-            }
-            (Vector::F32(_), Vector::F64(_)) => Ordering::Less,
-            (Vector::F64(l), Vector::F64(r)) => {
-                match l.len().cmp(&r.len()) {
-                    Ordering::Equal => (),
-                    o => return o,
-                }
-                for (le, re) in l.iter().zip(r) {
-                    match OrderedFloat(*le).cmp(&OrderedFloat(*re)) {
-                        Ordering::Equal => continue,
-                        o => return o,
-                    }
-                }
-                Ordering::Equal
-            }
-            (Vector::F64(_), Vector::F32(_)) => Ordering::Greater,
-        }
-    }
-}
+// // impl Ord for Vector {
+// //     fn cmp(&self, other: &Self) -> Ordering {
+// //         match (self, other) {
+// //             (Vector::F32(l), Vector::F32(r)) => {
+// //                 match l.len().cmp(&r.len()) {
+// //                     Ordering::Equal => (),
+// //                     o => return o,
+// //                 }
+// //                 for (le, re) in l.iter().zip(r) {
+// //                     match OrderedFloat(*le).cmp(&OrderedFloat(*re)) {
+// //                         Ordering::Equal => continue,
+// //                         o => return o,
+// //                     }
+// //                 }
+// //                 Ordering::Equal
+// //             }
+// //             (Vector::F32(_), Vector::F64(_)) => Ordering::Less,
+// //             (Vector::F64(l), Vector::F64(r)) => {
+// //                 match l.len().cmp(&r.len()) {
+// //                     Ordering::Equal => (),
+// //                     o => return o,
+// //                 }
+// //                 for (le, re) in l.iter().zip(r) {
+// //                     match OrderedFloat(*le).cmp(&OrderedFloat(*re)) {
+// //                         Ordering::Equal => continue,
+// //                         o => return o,
+// //                     }
+// //                 }
+// //                 Ordering::Equal
+// //             }
+// //             (Vector::F64(_), Vector::F32(_)) => Ordering::Greater,
+// //         }
+// //     }
+// // }
 
-impl Hash for Vector {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        match self {
-            Vector::F32(a) => {
-                for el in a {
-                    OrderedFloat(*el).hash(state)
-                }
-            }
-            Vector::F64(a) => {
-                for el in a {
-                    OrderedFloat(*el).hash(state)
-                }
-            }
-        }
-    }
-}
+// // impl Hash for Vector {
+// //     fn hash<H: Hasher>(&self, state: &mut H) {
+// //         match self {
+// //             Vector::F32(a) => {
+// //                 for el in a {
+// //                     OrderedFloat(*el).hash(state)
+// //                 }
+// //             }
+// //             Vector::F64(a) => {
+// //                 for el in a {
+// //                     OrderedFloat(*el).hash(state)
+// //                 }
+// //             }
+// //         }
+// //     }
+// // }
 
 impl From<bool> for DataValue {
     fn from(value: bool) -> Self {

@@ -11,7 +11,7 @@ use base64::Engine;
 use serde_json::json;
 pub(crate) use serde_json::Value as JsonValue;
 
-use crate::data::value::{JsonData, DataValue, Num, Vector};
+use crate::data::value::{JsonData, DataValue, Num};
 
 impl From<JsonValue> for DataValue {
     fn from(v: JsonValue) -> Self {

@@ -63,22 +63,15 @@ impl<'s> StoreTx<'s> for TempTx {
         false
     }
 
-    fn del(&mut self, key: &[u8]) -> Result<()> {
-        self.store.remove(key);
-        Ok(())
-    }
 
-    fn del_range_from_persisted(&mut self, _lower: &[u8], _upper: &[u8]) -> Result<()> {
-        Ok(())
-    }
 
     fn exists(&self, key: &[u8], _for_update: bool) -> Result<bool> {
         Ok(self.store.contains_key(key))
     }
 
-    fn commit(&mut self) -> Result<()> {
-        Ok(())
-    }
+    // // // fn commit(&mut self) -> Result<()> {
+    // // //     Ok(())
+    // // // }
 
     // // fn range_scan_tuple<'a>(
     // //     &'a self,
